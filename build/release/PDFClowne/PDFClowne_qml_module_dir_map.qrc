@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/qt/qml/PDFClowne">D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne</file>
+
+  </qresource>
+</RCC>

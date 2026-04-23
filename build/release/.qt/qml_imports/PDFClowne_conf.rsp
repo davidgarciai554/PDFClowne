@@ -1,0 +1,14 @@
+-rootPath
+D:/Aplicaciones/PDFClowne 2
+-cmake-output
+-output-file
+D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_conf.cmake
+-importPath
+D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne
+-importPath
+D:/Aplicaciones/PDFClowne 2/build/release
+-importPath
+C:/Qt/6.8.3/msvc2022_64/qml
+-qrcFiles
+D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qmake_PDFClowne.qrc
+D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/PDFClowne_raw_qml_0.qrc

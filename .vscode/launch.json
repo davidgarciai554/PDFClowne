@@ -1,0 +1,44 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Qt Debug (MSVC)",
+      "type": "qt-cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${command:cmake.launchTargetDirectory}",
+      "environment": [
+        {
+          "name": "PATH",
+          "value": "${env:QT6_DIR}/bin;${env:PATH}"
+        },
+        {
+          "name": "QML_IMPORT_PATH",
+          "value": "${env:QT6_DIR}/qml"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "msvc",
+      "preLaunchTask": "CMake: build"
+    },
+    {
+      "name": "Qt Debug Native (CppVsdbg)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${command:cmake.launchTargetDirectory}",
+      "environment": [
+        {
+          "name": "PATH",
+          "value": "${env:QT6_DIR}/bin;${env:PATH}"
+        }
+      ],
+      "console": "internalConsole",
+      "preLaunchTask": "CMake: build"
+    }
+  ]
+}

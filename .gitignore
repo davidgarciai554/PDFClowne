@@ -1,0 +1,12 @@
+# Agent and assistant tooling
+.agents/
+.claude/
+.claude-flow/
+.codex/
+.mcp.json
+AGENTS.md
+CLAUDE.md
+
+# Obsidian workspaces
+Obsidian/
+PDFClowne - Obsidian/

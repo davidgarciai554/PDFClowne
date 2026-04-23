@@ -1,0 +1,27 @@
+{
+	"BUILD_DIR" : "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen",
+	"CMAKE_BINARY_DIR" : "D:/Aplicaciones/PDFClowne 2/build/debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "D:/Aplicaciones/PDFClowne 2/build/debug",
+	"CMAKE_CURRENT_SOURCE_DIR" : "D:/Aplicaciones/PDFClowne 2",
+	"CMAKE_SOURCE_DIR" : "D:/Aplicaciones/PDFClowne 2",
+	"CROSS_CONFIG" : false,
+	"GENERATOR" : "Ninja",
+	"INCLUDE_DIR" : "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/include",
+	"INPUTS" : 
+	[
+		"D:/Aplicaciones/PDFClowne 2/resources/qtquickcontrols2.conf",
+		"D:/Aplicaciones/PDFClowne 2/resources/PdfClowne.ico",
+		"D:/Aplicaciones/PDFClowne 2/resources/PdfClowne.svg"
+	],
+	"LOCK_FILE" : "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/AutoRcc_resources_3YJK5W5UP7_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "--no-zstd", "-name", "resources" ],
+	"OUTPUT_CHECKSUM" : "3YJK5W5UP7",
+	"OUTPUT_NAME" : "qrc_resources.cpp",
+	"RCC_EXECUTABLE" : "C:/Qt/6.8.3/msvc2022_64/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/AutoRcc_resources_3YJK5W5UP7_Used.txt",
+	"SOURCE" : "D:/Aplicaciones/PDFClowne 2/resources/resources.qrc",
+	"USE_BETTER_GRAPH" : true,
+	"VERBOSITY" : 0
+}

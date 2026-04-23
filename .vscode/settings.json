@@ -1,0 +1,30 @@
+{
+  "cmake.configureOnOpen": true,
+  "cmake.generator": "Ninja",
+  "cmake.configureSettings": {
+    "CMAKE_PREFIX_PATH": "${env:QT6_DIR}",
+    "CMAKE_TOOLCHAIN_FILE": "${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+  },
+  "cmake.defaultVariants": {
+    "buildType": {
+      "default": "debug",
+      "choices": {
+        "debug": {
+          "short": "Debug",
+          "buildType": "Debug"
+        },
+        "release": {
+          "short": "Release",
+          "buildType": "Release"
+        }
+      }
+    }
+  },
+  "qt.defaultQtVersion": "6",
+  "qt.qtInstallationRoot": "${env:QT6_DIR}",
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "*.qml": "qml"
+  }
+}
