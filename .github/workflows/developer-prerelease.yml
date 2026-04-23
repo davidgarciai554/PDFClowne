@@ -58,6 +58,13 @@ jobs:
             /p:Platform=x64 `
             "/t:libmupdf;libthirdparty"
 
+      - name: Clean CI build directory
+        shell: pwsh
+        run: |
+          if (Test-Path build\release) {
+            Remove-Item build\release -Recurse -Force
+          }
+
       - name: Configure PDFClowne release build
         shell: pwsh
         run: |
