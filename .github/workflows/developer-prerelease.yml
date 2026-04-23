@@ -58,6 +58,13 @@ jobs:
             /p:Platform=x64 `
             "/t:libmupdf;libthirdparty"
 
+      - name: Stage MuPDF libraries for CMake
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:MUPDF_ROOT\lib" | Out-Null
+          Copy-Item "$env:MUPDF_ROOT\platform\win32\x64\Release\libmupdf.lib" "$env:MUPDF_ROOT\lib\libmupdf.lib" -Force
+          Copy-Item "$env:MUPDF_ROOT\platform\win32\x64\Release\libthirdparty.lib" "$env:MUPDF_ROOT\lib\libthirdparty.lib" -Force
+
       - name: Clean CI build directory
         shell: pwsh
         run: |
