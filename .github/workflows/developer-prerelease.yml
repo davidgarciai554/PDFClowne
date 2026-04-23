@@ -4,51 +4,105 @@ on:
   push:
     branches:
       - developer
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  build-and-release:
-    runs-on: [self-hosted, windows, x64]
-
+  prerelease:
+    name: Build And Publish Pre-Release
+    runs-on: windows-latest
     env:
-      QT6_DIR: C:\Qt\6.8.3\msvc2022_64
-      MUPDF_ROOT: D:\Aplicaciones\mupdf
+      QT_VERSION: 6.8.3
+      QT_ARCH: win64_msvc2022_64
+      MUPDF_REPO: ArtifexSoftware/mupdf
+      MUPDF_REF: master
+      MUPDF_ROOT: ${{ github.workspace }}\deps\mupdf
+      QT6_DIR: ${{ github.workspace }}\Qt\6.8.3\msvc2022_64
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Configure
-        shell: pwsh
-        run: cmake --preset release-msvc
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: ${{ env.QT_ARCH }}
+          dir: ${{ github.workspace }}\Qt
+          cache: true
 
-      - name: Stop running PDFClowne
+      - name: Configure MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Clone MuPDF
         shell: pwsh
         run: |
-          Get-Process PDFClowne -ErrorAction SilentlyContinue | Stop-Process -Force
+          git clone --recursive --depth 1 --branch $env:MUPDF_REF https://github.com/$env:MUPDF_REPO.git $env:MUPDF_ROOT
 
-      - name: Build
+      - name: Build MuPDF static libraries
         shell: pwsh
-        run: cmake --build --preset release-msvc
+        working-directory: ${{ env.MUPDF_ROOT }}
+        run: |
+          msbuild platform\win32\mupdf.sln `
+            /m `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            "/t:libmupdf;libthirdparty"
 
-      - name: Package release folder
+      - name: Configure PDFClowne release build
         shell: pwsh
         run: |
-          $packageDir = Join-Path $env:GITHUB_WORKSPACE 'dist'
-          New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
-          $zipPath = Join-Path $packageDir "PDFClowne-developer-${{ github.run_number }}.zip"
-          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-          Compress-Archive -Path "build\release\*" -DestinationPath $zipPath
+          cmake -S . -B build\release -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON `
+            "-DCMAKE_PREFIX_PATH=$env:QT6_DIR" `
+            "-DMUPDF_ROOT=$env:MUPDF_ROOT"
+
+      - name: Build PDFClowne release
+        shell: pwsh
+        run: cmake --build build\release --config Release
+
+      - name: Create release notes
+        shell: pwsh
+        run: |
+          @"
+          Automated pre-release build for the developer branch.
+
+          Commit: ${{ github.sha }}
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          MuPDF source: https://github.com/${{ env.MUPDF_REPO }}/tree/${{ env.MUPDF_REF }}
+          Qt version: ${{ env.QT_VERSION }}
+          "@ | Set-Content build\release\RELEASE_NOTES.md
+
+      - name: Package release bundle
+        shell: pwsh
+        run: |
+          $archive = "PDFClowne-developer-${{ github.run_number }}.zip"
+          if (Test-Path $archive) {
+            Remove-Item $archive -Force
+          }
+          Compress-Archive -Path build\release\* -DestinationPath $archive
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDFClowne-developer-${{ github.run_number }}
+          path: PDFClowne-developer-${{ github.run_number }}.zip
+          if-no-files-found: error
 
       - name: Publish GitHub pre-release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: developer-build-${{ github.run_number }}
-          name: PDFClowne Developer Build #${{ github.run_number }}
           target_commitish: ${{ github.sha }}
+          name: PDFClowne Developer Build ${{ github.run_number }}
+          body_path: build\release\RELEASE_NOTES.md
           prerelease: true
           generate_release_notes: true
-          files: |
-            dist/PDFClowne-developer-${{ github.run_number }}.zip
+          files: PDFClowne-developer-${{ github.run_number }}.zip

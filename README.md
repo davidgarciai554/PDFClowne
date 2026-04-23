@@ -132,6 +132,14 @@ Each push to `developer` can generate:
 - a packaged zip artifact
 - a GitHub pre-release tied to that build
 
+The workflow is designed for **GitHub-hosted Windows runners** and installs its own dependencies during CI:
+
+- Qt `6.8.3` through `jurplel/install-qt-action`
+- MSVC command-line environment through `ilammy/msvc-dev-cmd`
+- MuPDF built from the official `ArtifexSoftware/mupdf` repository
+
+You can also trigger the same pipeline manually from the **Actions** tab with `workflow_dispatch`.
+
 ## Project Structure
 
 ```text
