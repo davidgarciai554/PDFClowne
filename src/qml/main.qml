@@ -1119,6 +1119,34 @@ ApplicationWindow {
                             }
                         }
 
+                        Button {
+                            id: homeDefaultAppButton
+                            visible: Qt.platform.os === "windows"
+                            text: "Default PDF App"
+                            Layout.preferredWidth: 160
+                            Layout.preferredHeight: 40
+                            onClicked: desktopIntegration.openDefaultAppsSettings()
+
+                            contentItem: Text {
+                                text: homeDefaultAppButton.text
+                                color: Theme.text
+                                font.pixelSize: 13
+                                font.weight: Font.Medium
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
+                            }
+
+                            background: Rectangle {
+                                radius: Theme.radius
+                                color: homeDefaultAppButton.down ? Theme.tabActive
+                                      : homeDefaultAppButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: homeDefaultAppButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: homeDefaultAppButton.activeFocus ? 2 : 1
+                            }
+                        }
+
                         Label {
                             text: "Ctrl+O"
                             color: Theme.secondaryText

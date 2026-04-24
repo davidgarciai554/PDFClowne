@@ -23,7 +23,7 @@
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 79,
+				"line" : 81,
 				"parent" : 0
 			},
 			{
@@ -72,12 +72,12 @@
 	"dependencies" : 
 	[
 		{
-			"backtrace" : 5,
-			"id" : "PDFClowne_copy_qml::@6890427a1f51a3e7e1df"
-		},
-		{
 			"backtrace" : 0,
 			"id" : "PDFClowne_qmlimportscan::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 5,
+			"id" : "PDFClowne_copy_qml::@6890427a1f51a3e7e1df"
 		},
 		{
 			"backtrace" : 7,
@@ -99,19 +99,19 @@
 		},
 		{
 			"backtrace" : 0,
-			"id" : "Qt6::Gui::@6890427a1f51a3e7e1df"
-		},
-		{
-			"backtrace" : 0,
 			"id" : "Qt6::Core::@6890427a1f51a3e7e1df"
 		},
 		{
 			"backtrace" : 0,
-			"id" : "Qt6::Qml::@6890427a1f51a3e7e1df"
+			"id" : "Qt6::Gui::@6890427a1f51a3e7e1df"
 		},
 		{
 			"backtrace" : 0,
 			"id" : "Qt6::QmlPrivate::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 0,
+			"id" : "Qt6::Qml::@6890427a1f51a3e7e1df"
 		},
 		{
 			"backtrace" : 0,

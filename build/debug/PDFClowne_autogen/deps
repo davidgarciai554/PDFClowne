@@ -1013,6 +1013,8 @@ PDFClowne_autogen/timestamp: \
 	D:/Aplicaciones/PDFClowne\ 2/build/debug/CMakeFiles/4.3.1/CMakeRCCompiler.cmake \
 	D:/Aplicaciones/PDFClowne\ 2/build/debug/CMakeFiles/4.3.1/CMakeSystem.cmake \
 	D:/Aplicaciones/PDFClowne\ 2/resources/resources.qrc \
+	D:/Aplicaciones/PDFClowne\ 2/src/backend/DesktopIntegration.cpp \
+	D:/Aplicaciones/PDFClowne\ 2/src/backend/DesktopIntegration.h \
 	D:/Aplicaciones/PDFClowne\ 2/src/backend/Logger.h \
 	D:/Aplicaciones/PDFClowne\ 2/src/backend/PdfDocument.cpp \
 	D:/Aplicaciones/PDFClowne\ 2/src/backend/PdfDocument.h \

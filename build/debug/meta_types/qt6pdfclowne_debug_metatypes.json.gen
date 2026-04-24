@@ -2,6 +2,32 @@
     {
         "classes": [
             {
+                "className": "DesktopIntegration",
+                "lineNumber": 5,
+                "methods": [
+                    {
+                        "access": "public",
+                        "index": 0,
+                        "name": "openDefaultAppsSettings",
+                        "returnType": "bool"
+                    }
+                ],
+                "object": true,
+                "qualifiedClassName": "DesktopIntegration",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "DesktopIntegration.h",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
                 "className": "PdfDocument",
                 "lineNumber": 7,
                 "object": true,

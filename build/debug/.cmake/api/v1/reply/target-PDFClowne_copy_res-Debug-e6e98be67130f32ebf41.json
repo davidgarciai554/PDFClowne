@@ -23,7 +23,7 @@
 			{
 				"command" : 4,
 				"file" : 1,
-				"line" : 79,
+				"line" : 81,
 				"parent" : 0
 			},
 			{
@@ -41,7 +41,7 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 3482,
+				"line" : 3488,
 				"parent" : 3
 			},
 			{
@@ -61,8 +61,8 @@
 	{
 		"name" : "QtInternalTargets"
 	},
-	"id" : "PDFClowne_copy_qml::@6890427a1f51a3e7e1df",
-	"name" : "PDFClowne_copy_qml",
+	"id" : "PDFClowne_copy_res::@6890427a1f51a3e7e1df",
+	"name" : "PDFClowne_copy_res",
 	"paths" : 
 	{
 		"build" : ".",
@@ -91,19 +91,19 @@
 		{
 			"backtrace" : 5,
 			"isGenerated" : true,
-			"path" : "build/debug/CMakeFiles/PDFClowne_copy_qml",
+			"path" : "build/debug/CMakeFiles/PDFClowne_copy_res",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 0,
 			"isGenerated" : true,
-			"path" : "build/debug/CMakeFiles/PDFClowne_copy_qml.rule",
+			"path" : "build/debug/CMakeFiles/PDFClowne_copy_res.rule",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 0,
 			"isGenerated" : true,
-			"path" : "build/debug/.qt/PDFClowne_qml.txt.rule",
+			"path" : "build/debug/.qt/PDFClowne_res.txt.rule",
 			"sourceGroupIndex" : 1
 		}
 	],
