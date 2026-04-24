@@ -2,7 +2,7 @@
     "classes": [
         {
             "className": "PdfDocument",
-            "lineNumber": 7,
+            "lineNumber": 10,
             "object": true,
             "properties": [
                 {
@@ -52,6 +52,34 @@
                     "designable": true,
                     "final": false,
                     "index": 3,
+                    "name": "thumbnailSources",
+                    "notify": "thumbnailSourcesChanged",
+                    "read": "thumbnailSources",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QStringList",
+                    "user": false
+                },
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 4,
+                    "name": "pageSizesJson",
+                    "notify": "pageSizesJsonChanged",
+                    "read": "pageSizesJson",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QString",
+                    "user": false
+                },
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 5,
                     "name": "pageCount",
                     "notify": "pageCountChanged",
                     "read": "pageCount",
@@ -65,7 +93,7 @@
                     "constant": false,
                     "designable": true,
                     "final": false,
-                    "index": 4,
+                    "index": 6,
                     "name": "title",
                     "notify": "titleChanged",
                     "read": "title",
@@ -79,7 +107,7 @@
                     "constant": false,
                     "designable": true,
                     "final": false,
-                    "index": 5,
+                    "index": 7,
                     "name": "isLoaded",
                     "notify": "isLoadedChanged",
                     "read": "isLoaded",
@@ -93,7 +121,7 @@
                     "constant": false,
                     "designable": true,
                     "final": false,
-                    "index": 6,
+                    "index": 8,
                     "name": "errorMessage",
                     "notify": "errorMessageChanged",
                     "read": "errorMessage",
@@ -145,24 +173,36 @@
                 {
                     "access": "public",
                     "index": 5,
-                    "name": "pageCountChanged",
+                    "name": "thumbnailSourcesChanged",
                     "returnType": "void"
                 },
                 {
                     "access": "public",
                     "index": 6,
-                    "name": "titleChanged",
+                    "name": "pageSizesJsonChanged",
                     "returnType": "void"
                 },
                 {
                     "access": "public",
                     "index": 7,
-                    "name": "isLoadedChanged",
+                    "name": "pageCountChanged",
                     "returnType": "void"
                 },
                 {
                     "access": "public",
                     "index": 8,
+                    "name": "titleChanged",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "index": 9,
+                    "name": "isLoadedChanged",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "index": 10,
                     "name": "errorMessageChanged",
                     "returnType": "void"
                 }
@@ -176,9 +216,50 @@
                             "type": "QString"
                         }
                     ],
-                    "index": 9,
+                    "index": 11,
                     "name": "load",
                     "returnType": "bool"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "pageIndex",
+                            "type": "int"
+                        },
+                        {
+                            "name": "scale",
+                            "type": "qreal"
+                        }
+                    ],
+                    "index": 12,
+                    "name": "renderPage",
+                    "returnType": "QString"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "pageIndex",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 13,
+                    "isCloned": true,
+                    "name": "renderPage",
+                    "returnType": "QString"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "pageIndex",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 14,
+                    "name": "renderThumbnail",
+                    "returnType": "QString"
                 },
                 {
                     "access": "public",
@@ -196,13 +277,13 @@
                             "type": "QString"
                         }
                     ],
-                    "index": 10,
+                    "index": 15,
                     "name": "saveRotatedCopy",
                     "returnType": "bool"
                 },
                 {
                     "access": "public",
-                    "index": 11,
+                    "index": 16,
                     "name": "clear",
                     "returnType": "void"
                 }

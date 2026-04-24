@@ -10,3 +10,27 @@ CLAUDE.md
 # Obsidian workspaces
 Obsidian/
 PDFClowne - Obsidian/
+
+# Local PDF test files
+PDFTest/
+
+# Local build output
+build/
+
+# Local Python runtime cache
+Python/_cache/
+
+# Common Windows / Qt / CMake local artifacts
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.exe
+*.dll
+*.lib
+*.exp
+*.aotstats
+*.qmlls.ini
+
+# Local IDE state
+.vs/

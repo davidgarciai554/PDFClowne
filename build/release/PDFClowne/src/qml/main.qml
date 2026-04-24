@@ -17,10 +17,23 @@ ApplicationWindow {
     title: hasActiveDocument ? activeDocumentTitle() + " - PDFClowne" : "PDFClowne"
     color: Theme.background
     property real viewerZoom: 1.0
-    property string viewMode: "fitPage"
+    property string layoutMode: "continuous"
+    property string zoomMode: "fitPage"
+    property bool navigationPanelVisible: true
     property int activePageIndex: 0
     property int activeDocumentIndex: -1
     property string saveMessage: ""
+    property var zoomPresetOptions: [
+        { text: "50%", value: 50 },
+        { text: "75%", value: 75 },
+        { text: "100%", value: 100 },
+        { text: "125%", value: 125 },
+        { text: "150%", value: 150 },
+        { text: "200%", value: 200 },
+        { text: "300%", value: 300 },
+        { text: "400%", value: 400 },
+        { text: "Manual", value: 0 }
+    ]
     readonly property int maximumZoomPercent: 450
     readonly property bool hasActiveDocument: activeDocumentIndex >= 0 && activeDocumentIndex < documentModel.count
     signal jumpToPageRequested(int index)
@@ -35,6 +48,12 @@ ApplicationWindow {
         id: recentSettings
         category: "RecentFiles"
         property string filesJson: "[]"
+    }
+
+    Settings {
+        id: documentViewSettings
+        category: "DocumentViewState"
+        property string statesJson: "{}"
     }
 
     ListModel {
@@ -62,14 +81,240 @@ ApplicationWindow {
         onAccepted: window.saveActiveDocumentAsRotated(selectedFile.toString())
     }
 
+    Popup {
+        id: openPdfErrorDialog
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        width: Math.min(420, window.width - 48)
+        x: Math.round((window.width - width) / 2)
+        y: Math.round((window.height - height) / 2)
+        padding: 0
+
+        property string fileName: ""
+        property string reason: ""
+
+        Overlay.modal: Rectangle {
+            color: Theme.isDark ? "#AA0F1020" : "#660F1020"
+        }
+
+        background: Rectangle {
+            color: Theme.surface
+            radius: Theme.radius
+            border.color: Theme.border
+            border.width: 1
+        }
+
+        contentItem: ColumnLayout {
+            spacing: 0
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 48
+                Layout.leftMargin: 18
+                Layout.rightMargin: 12
+                spacing: 12
+
+                Rectangle {
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
+                    radius: 12
+                    color: Theme.danger
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "!"
+                        color: Theme.accentText
+                        font.pixelSize: 15
+                        font.weight: Font.DemiBold
+                    }
+                }
+
+                Text {
+                    text: "No se pudo abrir el PDF"
+                    color: Theme.text
+                    font.pixelSize: 14
+                    font.weight: Font.DemiBold
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Button {
+                    id: closeErrorIconButton
+                    text: "X"
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: 30
+                    onClicked: openPdfErrorDialog.close()
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Cerrar"
+
+                    contentItem: Text {
+                        text: closeErrorIconButton.text
+                        color: Theme.secondaryText
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        color: closeErrorIconButton.down ? Theme.tabActive
+                              : closeErrorIconButton.hovered ? Theme.hover
+                              : "transparent"
+                        radius: Theme.radius
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.border
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 22
+                Layout.rightMargin: 22
+                Layout.topMargin: 18
+                Layout.bottomMargin: 18
+                spacing: 12
+
+                Text {
+                    text: "PDFClowne no puede leer este archivo."
+                    color: Theme.text
+                    font.pixelSize: 13
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 42
+                    radius: Theme.radius
+                    color: Theme.surfaceAlt
+                    border.color: Theme.border
+
+                    Text {
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                            verticalCenter: parent.verticalCenter
+                            leftMargin: 12
+                            rightMargin: 12
+                        }
+                        text: openPdfErrorDialog.fileName
+                        color: Theme.text
+                        font.pixelSize: 12
+                        elide: Text.ElideMiddle
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                Text {
+                    text: openPdfErrorDialog.reason
+                    color: Theme.secondaryText
+                    font.pixelSize: 12
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 6
+
+                    Item { Layout.fillWidth: true }
+
+                    Button {
+                        id: closeErrorButton
+                        text: "Cerrar"
+                        Layout.preferredWidth: 96
+                        Layout.preferredHeight: 34
+                        onClicked: openPdfErrorDialog.close()
+
+                        contentItem: Text {
+                            text: closeErrorButton.text
+                            color: Theme.accentText
+                            font.pixelSize: 13
+                            font.weight: Font.DemiBold
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            color: closeErrorButton.down ? Qt.darker(Theme.accent, 1.12)
+                                  : closeErrorButton.hovered ? Qt.lighter(Theme.accent, 1.08)
+                                  : Theme.accent
+                            radius: Theme.radius
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Shortcut { sequence: "Ctrl+O"; onActivated: fileDialog.open() }
     Shortcut { sequence: "Ctrl+S"; enabled: window.activeDocumentHasRotations(); onActivated: window.saveActiveDocumentRotated() }
     Shortcut { sequence: "Ctrl+Shift+S"; enabled: window.activeDocumentHasRotations(); onActivated: saveRotatedDialog.open() }
+    Shortcut { sequence: "Ctrl+1"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("single") }
+    Shortcut { sequence: "Ctrl+2"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("continuous") }
+    Shortcut { sequence: "Ctrl+3"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("twoPage") }
+    Shortcut { sequence: "Ctrl+4"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("twoPageContinuous") }
 
     function fileNameFromPath(path) {
         var normalized = String(path || "").replace(/\\/g, "/")
         var index = normalized.lastIndexOf("/")
         return index >= 0 ? normalized.slice(index + 1) : normalized
+    }
+
+    function readDocumentViewStates() {
+        try {
+            var parsed = JSON.parse(documentViewSettings.statesJson || "{}")
+            return parsed && typeof parsed === "object" ? parsed : {}
+        } catch(e) {
+            return {}
+        }
+    }
+
+    function writeDocumentViewStates(states) {
+        documentViewSettings.statesJson = JSON.stringify(states || {})
+    }
+
+    function defaultDocumentViewState() {
+        return {
+            zoom: 1.0,
+            layoutMode: "continuous",
+            zoomMode: "fitPage"
+        }
+    }
+
+    function savedViewStateFor(path) {
+        var states = readDocumentViewStates()
+        var key = String(path || "")
+        if (!key || !states[key])
+            return defaultDocumentViewState()
+
+        var state = states[key]
+        return {
+            zoom: normalizedZoom(state.zoom),
+            layoutMode: state.layoutMode || "continuous",
+            zoomMode: state.zoomMode || "fitPage"
+        }
+    }
+
+    function persistViewState(path, state) {
+        var key = String(path || "")
+        if (!key)
+            return
+
+        var states = readDocumentViewStates()
+        states[key] = {
+            zoom: normalizedZoom(state.zoom),
+            layoutMode: state.layoutMode || "continuous",
+            zoomMode: state.zoomMode || "fitPage"
+        }
+        writeDocumentViewStates(states)
     }
 
     function loadRecentFiles() {
@@ -126,6 +371,15 @@ ApplicationWindow {
         saveRecentFiles()
     }
 
+    function removeRecentFile(path) {
+        for (var i = recentModel.count - 1; i >= 0; --i) {
+            if (recentModel.get(i).path === path)
+                recentModel.remove(i)
+        }
+
+        saveRecentFiles()
+    }
+
     function loadedPageSources() {
         var sources = []
         try {
@@ -139,6 +393,20 @@ ApplicationWindow {
 
         if (sources.length === 0 && pdfDocument.previewSource.length > 0)
             sources.push(pdfDocument.previewSource)
+
+        return sources
+    }
+
+    function loadedThumbnailSources() {
+        var sources = []
+        try {
+            if (pdfDocument.thumbnailSources && pdfDocument.thumbnailSources.length > 0) {
+                for (var i = 0; i < pdfDocument.thumbnailSources.length; ++i)
+                    sources.push(pdfDocument.thumbnailSources[i])
+            }
+        } catch(e) {
+            sources = []
+        }
 
         return sources
     }
@@ -169,6 +437,21 @@ ApplicationWindow {
         return sources
     }
 
+    function activeDocumentThumbnailSources() {
+        if (!hasActiveDocument)
+            return []
+
+        try {
+            return JSON.parse(documentModel.get(activeDocumentIndex).thumbnailSourcesJson || "[]")
+        } catch(e) {
+            return []
+        }
+    }
+
+    function activeDocumentPageSizesJson() {
+        return hasActiveDocument ? documentModel.get(activeDocumentIndex).pageSizesJson || "[]" : "[]"
+    }
+
     function activeDocumentPageRotations() {
         if (!hasActiveDocument)
             return []
@@ -196,8 +479,15 @@ ApplicationWindow {
 
         viewerZoom = normalizedZoom(viewerZoom)
         documentModel.setProperty(activeDocumentIndex, "zoom", viewerZoom)
-        documentModel.setProperty(activeDocumentIndex, "viewMode", viewMode)
+        documentModel.setProperty(activeDocumentIndex, "layoutMode", layoutMode)
+        documentModel.setProperty(activeDocumentIndex, "zoomMode", zoomMode)
+        documentModel.setProperty(activeDocumentIndex, "navigationPanelVisible", navigationPanelVisible)
         documentModel.setProperty(activeDocumentIndex, "activePageIndex", activePageIndex)
+        persistViewState(documentModel.get(activeDocumentIndex).path, {
+            zoom: viewerZoom,
+            layoutMode: layoutMode,
+            zoomMode: zoomMode
+        })
     }
 
     function normalizedZoom(value) {
@@ -231,19 +521,36 @@ ApplicationWindow {
         return Math.max(10, Math.min(maximumZoomPercent, Math.round(percent)))
     }
 
+    function zoomPresetIndex() {
+        var current = effectiveZoomPercent()
+        for (var i = 0; i < zoomPresetOptions.length - 1; ++i) {
+            if (zoomPresetOptions[i].value === current)
+                return i
+        }
+        return zoomPresetOptions.length - 1
+    }
+
     function setActiveDocument(index) {
         if (index < 0 || index >= documentModel.count) {
             activeDocumentIndex = -1
             viewerZoom = 1.0
+            layoutMode = "continuous"
+            zoomMode = "fitPage"
             activePageIndex = 0
             return
         }
 
         activeDocumentIndex = index
         var doc = documentModel.get(index)
-        viewerZoom = normalizedZoom(doc.zoom)
-        viewMode = doc.viewMode || "fitPage"
+        var savedState = savedViewStateFor(doc.path)
+        viewerZoom = normalizedZoom(doc.zoom !== undefined ? doc.zoom : savedState.zoom)
+        layoutMode = doc.layoutMode || savedState.layoutMode || "continuous"
+        zoomMode = doc.zoomMode || doc.viewMode || savedState.zoomMode || "fitPage"
+        navigationPanelVisible = doc.navigationPanelVisible === undefined ? true : doc.navigationPanelVisible
         activePageIndex = doc.activePageIndex || 0
+
+        if (pdfDocument.filePath !== doc.path)
+            pdfDocument.load(doc.path)
     }
 
     function closeActiveDocument() {
@@ -274,21 +581,55 @@ ApplicationWindow {
             }
 
             var sources = loadedPageSources()
+            var thumbnails = loadedThumbnailSources()
+            var savedState = savedViewStateFor(pdfDocument.filePath)
 
             documentModel.append({
                 path: pdfDocument.filePath,
                 title: pdfDocument.title,
                 previewSource: pdfDocument.previewSource,
                 pageSourcesJson: JSON.stringify(sources),
-                pageCount: Math.max(sources.length, pdfDocument.pageCount),
-                zoom: 1.0,
-                viewMode: "fitPage",
+                thumbnailSourcesJson: JSON.stringify(thumbnails),
+                pageSizesJson: pdfDocument.pageSizesJson,
+                pageCount: pdfDocument.pageCount,
+                zoom: savedState.zoom,
+                layoutMode: savedState.layoutMode,
+                zoomMode: savedState.zoomMode,
+                navigationPanelVisible: true,
                 activePageIndex: 0,
                 pageRotationsJson: "[]"
             })
             setActiveDocument(documentModel.count - 1)
             addRecentFile(pdfDocument.filePath, pdfDocument.title)
+        } else {
+            showOpenPdfError(source)
         }
+    }
+
+    function showOpenPdfError(source) {
+        openPdfErrorDialog.fileName = fileNameFromPath(source)
+        openPdfErrorDialog.reason = friendlyOpenPdfError()
+        openPdfErrorDialog.open()
+    }
+
+    function friendlyOpenPdfError() {
+        var raw = String(pdfDocument.errorMessage || "").toLowerCase()
+
+        if (raw.indexOf("password") >= 0 || raw.indexOf("contrasena") >= 0)
+            return "El PDF parece protegido con contrasena. Esta version todavia no puede abrir documentos protegidos."
+
+        if (raw.indexOf("valid pdf") >= 0 || raw.indexOf("no objects") >= 0 ||
+            raw.indexOf("cannot recognize") >= 0 || raw.indexOf("corrupt") >= 0)
+            return "El archivo parece estar corrupto, incompleto o no ser un PDF valido."
+
+        if (raw.indexOf("permission") >= 0 || raw.indexOf("access") >= 0 ||
+            raw.indexOf("denied") >= 0)
+            return "Windows no permite leer este archivo. Revisa permisos o si otra aplicacion lo tiene bloqueado."
+
+        if (raw.indexOf("path") >= 0 || raw.indexOf("resolved") >= 0)
+            return "No se pudo resolver la ruta del archivo. Prueba a moverlo a otra carpeta y abrirlo de nuevo."
+
+        return "Posibles motivos: archivo corrupto, PDF no valido, contrasena, permisos insuficientes o bloqueo por otra aplicacion."
     }
 
     function saveActiveDocumentAsRotated(target) {
@@ -311,23 +652,73 @@ ApplicationWindow {
         var path = documentModel.get(index).path
         var page = activePageIndex
         var zoom = viewerZoom
-        var mode = viewMode
+        var layout = layoutMode
+        var zoomModeValue = zoomMode
 
         if (!pdfDocument.load(path))
             return false
 
         var sources = loadedPageSources()
+        var thumbnails = loadedThumbnailSources()
         documentModel.setProperty(index, "title", pdfDocument.title)
         documentModel.setProperty(index, "previewSource", pdfDocument.previewSource)
         documentModel.setProperty(index, "pageSourcesJson", JSON.stringify(sources))
-        documentModel.setProperty(index, "pageCount", Math.max(sources.length, pdfDocument.pageCount))
+        documentModel.setProperty(index, "thumbnailSourcesJson", JSON.stringify(thumbnails))
+        documentModel.setProperty(index, "pageSizesJson", pdfDocument.pageSizesJson)
+        documentModel.setProperty(index, "pageCount", pdfDocument.pageCount)
         documentModel.setProperty(index, "pageRotationsJson", "[]")
         documentModel.setProperty(index, "zoom", zoom)
-        documentModel.setProperty(index, "viewMode", mode)
-        documentModel.setProperty(index, "activePageIndex", Math.min(page, Math.max(0, sources.length - 1)))
+        documentModel.setProperty(index, "layoutMode", layout)
+        documentModel.setProperty(index, "zoomMode", zoomModeValue)
+        documentModel.setProperty(index, "activePageIndex", Math.min(page, Math.max(0, pdfDocument.pageCount - 1)))
         setActiveDocument(index)
         jumpToPageRequested(activePageIndex)
         return true
+    }
+
+    function renderActivePage(pageIndex, scale) {
+        if (!hasActiveDocument)
+            return ""
+
+        var doc = documentModel.get(activeDocumentIndex)
+        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
+            return ""
+
+        var rendered = pdfDocument.renderPage(pageIndex, scale)
+        if (!rendered || rendered.length === 0)
+            return ""
+
+        var sources = activeDocumentPageSources()
+        while (sources.length < doc.pageCount)
+            sources.push("")
+        sources[pageIndex] = rendered
+        documentModel.setProperty(activeDocumentIndex, "pageSourcesJson", JSON.stringify(sources))
+        return rendered
+    }
+
+    function renderActiveThumbnail(pageIndex) {
+        if (!hasActiveDocument)
+            return ""
+
+        var doc = documentModel.get(activeDocumentIndex)
+        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
+            return ""
+
+        var rendered = pdfDocument.renderThumbnail(pageIndex)
+        if (!rendered || rendered.length === 0)
+            return ""
+
+        var sources = activeDocumentThumbnailSources()
+        while (sources.length < doc.pageCount)
+            sources.push("")
+        sources[pageIndex] = rendered
+        documentModel.setProperty(activeDocumentIndex, "thumbnailSourcesJson", JSON.stringify(sources))
+        return rendered
+    }
+
+    function toggleNavigationPanel() {
+        navigationPanelVisible = !navigationPanelVisible
+        syncActiveDocumentState()
     }
 
     function saveActiveDocumentRotated() {
@@ -368,7 +759,9 @@ ApplicationWindow {
 
         activePageIndex = Math.max(0, Math.min(page, activeDocumentPageCount() - 1))
         syncActiveDocumentState()
-        jumpToPageRequested(activePageIndex)
+        Qt.callLater(function() {
+            jumpToPageRequested(activePageIndex)
+        })
     }
 
     function reportActivePage(index) {
@@ -396,13 +789,42 @@ ApplicationWindow {
         setActivePage(activeDocumentPageCount() - 1)
     }
 
-    function setViewMode(mode) {
-        if (mode !== "fitWidth" && mode !== "fitPage")
+    function setLayoutMode(mode) {
+        if (mode !== "single" && mode !== "continuous" && mode !== "twoPage" && mode !== "twoPageContinuous")
             return
 
-        viewMode = mode
+        layoutMode = mode
+        syncActiveDocumentState()
+        jumpToPageRequested(activePageIndex)
+    }
+
+    function setZoomMode(mode) {
+        if (mode !== "fitWidth" && mode !== "fitPage" && mode !== "fitHeight" && mode !== "actualSize")
+            return
+
+        zoomMode = mode
         viewerZoom = 1.0
         syncActiveDocumentState()
+    }
+
+    function layoutModeIndex() {
+        if (layoutMode === "single")
+            return 0
+        if (layoutMode === "twoPage")
+            return 2
+        if (layoutMode === "twoPageContinuous")
+            return 3
+        return 1
+    }
+
+    function zoomModeIndex() {
+        if (zoomMode === "fitWidth")
+            return 0
+        if (zoomMode === "fitHeight")
+            return 2
+        if (zoomMode === "actualSize")
+            return 3
+        return 1
     }
 
     function rotateCurrentPage(delta) {
@@ -423,6 +845,8 @@ ApplicationWindow {
         var page = Math.max(0, Math.min(activePageIndex, doc.pageCount - 1))
         rotations[page] = (rotations[page] + delta + 360) % 360
         documentModel.setProperty(activeDocumentIndex, "pageRotationsJson", JSON.stringify(rotations))
+        renderActivePage(page, pdfViewer ? pdfViewer.renderScale : 4.0)
+        renderActiveThumbnail(page)
         saveMessage = ""
     }
 
@@ -489,13 +913,43 @@ ApplicationWindow {
                 }
 
                 Button {
+                    id: navigationPanelButton
+                    text: "▦"
+                    visible: window.hasActiveDocument
+                    Layout.preferredWidth: 42
+                    Layout.preferredHeight: 34
+                    onClicked: window.toggleNavigationPanel()
+                    ToolTip.visible: hovered
+                    ToolTip.text: window.navigationPanelVisible ? "Ocultar miniaturas" : "Mostrar miniaturas"
+
+                    contentItem: Text {
+                        text: navigationPanelButton.text
+                        color: Theme.text
+                        font.pixelSize: 18
+                        font.weight: Font.Medium
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        color: navigationPanelButton.down ? Theme.tabActive
+                              : navigationPanelButton.hovered ? Theme.hover
+                              : window.navigationPanelVisible ? Theme.tabActive
+                              : Theme.surfaceAlt
+                        border.color: navigationPanelButton.activeFocus ? Theme.accent : Theme.border
+                        border.width: navigationPanelButton.activeFocus ? 2 : 1
+                        radius: Theme.radius
+                    }
+                }
+
+                Button {
                     id: themeButton
                     text: Theme.modeIcon
                     Layout.preferredWidth: 42
                     Layout.preferredHeight: 34
                     onClicked: Theme.cycleMode()
                     ToolTip.visible: hovered
-                    ToolTip.text: Theme.modeName
+                    ToolTip.text: "Cambiar tema: " + Theme.modeName
 
                     contentItem: Text {
                         text: themeButton.text
@@ -513,6 +967,70 @@ ApplicationWindow {
                               : Theme.surfaceAlt
                         border.color: themeButton.activeFocus ? Theme.accent : Theme.border
                         border.width: themeButton.activeFocus ? 2 : 1
+                        radius: Theme.radius
+                    }
+                }
+
+                Button {
+                    id: defaultPdfButton
+                    visible: Qt.platform.os === "windows"
+                    Layout.preferredWidth: 42
+                    Layout.preferredHeight: 34
+                    onClicked: desktopIntegration.openDefaultAppsSettings()
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Elegir PDFClowne como visor PDF predeterminado"
+
+                    contentItem: Canvas {
+                        id: defaultPdfIcon
+                        anchors.centerIn: parent
+                        width: 22
+                        height: 22
+                        property color strokeColor: Theme.text
+                        property color markColor: Theme.accent
+
+                        onStrokeColorChanged: requestPaint()
+                        onMarkColorChanged: requestPaint()
+
+                        onPaint: {
+                            var ctx = getContext("2d")
+                            ctx.clearRect(0, 0, width, height)
+                            ctx.lineCap = "round"
+                            ctx.lineJoin = "round"
+                            ctx.lineWidth = 1.8
+                            ctx.strokeStyle = strokeColor
+
+                            ctx.beginPath()
+                            ctx.moveTo(6, 2)
+                            ctx.lineTo(13, 2)
+                            ctx.lineTo(18, 7)
+                            ctx.lineTo(18, 20)
+                            ctx.lineTo(5, 20)
+                            ctx.lineTo(5, 2)
+                            ctx.closePath()
+                            ctx.stroke()
+
+                            ctx.beginPath()
+                            ctx.moveTo(13, 2)
+                            ctx.lineTo(13, 7)
+                            ctx.lineTo(18, 7)
+                            ctx.stroke()
+
+                            ctx.strokeStyle = markColor
+                            ctx.lineWidth = 2.2
+                            ctx.beginPath()
+                            ctx.moveTo(8, 13)
+                            ctx.lineTo(11, 16)
+                            ctx.lineTo(16, 10)
+                            ctx.stroke()
+                        }
+                    }
+
+                    background: Rectangle {
+                        color: defaultPdfButton.down ? Theme.tabActive
+                              : defaultPdfButton.hovered ? Theme.hover
+                              : Theme.surfaceAlt
+                        border.color: defaultPdfButton.activeFocus ? Theme.accent : Theme.border
+                        border.width: defaultPdfButton.activeFocus ? 2 : 1
                         radius: Theme.radius
                     }
                 }
@@ -1011,19 +1529,26 @@ ApplicationWindow {
                 anchors.fill: parent
                 visible: window.hasActiveDocument
                 pageSources: window.activeDocumentPageSources()
+                thumbnailSources: window.activeDocumentThumbnailSources()
+                pageCount: window.activeDocumentPageCount()
+                pageSizesJson: window.activeDocumentPageSizesJson()
                 pageRotations: window.activeDocumentPageRotations()
                 currentPageIndex: window.activePageIndex
                 zoom: window.viewerZoom
-                viewMode: window.viewMode
+                layoutMode: window.layoutMode
+                zoomMode: window.zoomMode
+                sidePanelVisible: window.navigationPanelVisible
                 zoomInAction: window.zoomIn
                 zoomOutAction: window.zoomOut
+                renderPageAction: window.renderActivePage
+                renderThumbnailAction: window.renderActiveThumbnail
                 currentPageChangedAction: window.reportActivePage
             }
 
             Connections {
                 target: window
                 function onJumpToPageRequested(index) {
-                    pdfViewer.jumpToPage(index)
+                    pdfViewer.navigateToPage(index)
                 }
             }
 
@@ -1230,6 +1755,34 @@ ApplicationWindow {
                                                 Layout.fillWidth: true
                                             }
                                         }
+
+                                        Button {
+                                            id: removeRecentButton
+                                            text: "X"
+                                            Layout.preferredWidth: 28
+                                            Layout.preferredHeight: 28
+                                            onClicked: window.removeRecentFile(recentButton.path)
+                                            ToolTip.visible: hovered
+                                            ToolTip.text: "Quitar del historial"
+
+                                            contentItem: Text {
+                                                text: removeRecentButton.text
+                                                color: Theme.secondaryText
+                                                font.pixelSize: 12
+                                                font.weight: Font.DemiBold
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
+
+                                            background: Rectangle {
+                                                color: removeRecentButton.down ? Theme.tabActive
+                                                      : removeRecentButton.hovered ? Theme.hover
+                                                      : "transparent"
+                                                radius: Theme.radius
+                                                border.color: removeRecentButton.activeFocus ? Theme.accent : "transparent"
+                                                border.width: removeRecentButton.activeFocus ? 2 : 0
+                                            }
+                                        }
                                     }
 
                                     background: Rectangle {
@@ -1249,10 +1802,15 @@ ApplicationWindow {
         }
 
         Rectangle {
+            id: statusBar
             Layout.fillWidth: true
             Layout.preferredHeight: 34
             visible: window.hasActiveDocument
             color: Theme.surface
+            readonly property color controlFill: Theme.isDark ? "#1B1D31" : "#FCFCFE"
+            readonly property color controlHover: Theme.isDark ? "#252945" : "#EFF3FB"
+            readonly property color controlActive: Theme.isDark ? "#2F3557" : "#E3EAF8"
+            readonly property color controlBorder: Theme.isDark ? "#41496F" : "#CCD5E8"
 
             Rectangle {
                 anchors { top: parent.top; left: parent.left; right: parent.right }
@@ -1293,12 +1851,18 @@ ApplicationWindow {
                         text: firstPageButton.text
                         color: firstPageButton.enabled ? Theme.text : Theme.secondaryText
                         font.pixelSize: 12
+                        font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: firstPageButton.hovered ? Theme.hover : "transparent"
+                        color: firstPageButton.down ? statusBar.controlActive
+                              : firstPageButton.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
                         radius: Theme.radius
+                        border.color: firstPageButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: firstPageButton.activeFocus ? 2 : 1
+                        opacity: firstPageButton.enabled ? 1.0 : 0.55
                     }
                 }
 
@@ -1315,12 +1879,18 @@ ApplicationWindow {
                         text: previousPageButton.text
                         color: previousPageButton.enabled ? Theme.text : Theme.secondaryText
                         font.pixelSize: 16
+                        font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: previousPageButton.hovered ? Theme.hover : "transparent"
+                        color: previousPageButton.down ? statusBar.controlActive
+                              : previousPageButton.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
                         radius: Theme.radius
+                        border.color: previousPageButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: previousPageButton.activeFocus ? 2 : 1
+                        opacity: previousPageButton.enabled ? 1.0 : 0.55
                     }
                 }
 
@@ -1337,8 +1907,8 @@ ApplicationWindow {
                     onAccepted: window.setActivePage(parseInt(text) - 1)
                     onEditingFinished: window.setActivePage(parseInt(text) - 1)
                     background: Rectangle {
-                        color: Theme.background
-                        border.color: pageField.activeFocus ? Theme.accent : Theme.border
+                        color: statusBar.controlFill
+                        border.color: pageField.activeFocus ? Theme.accent : statusBar.controlBorder
                         border.width: pageField.activeFocus ? 2 : 1
                         radius: Theme.radius
                     }
@@ -1364,12 +1934,18 @@ ApplicationWindow {
                         text: nextPageButton.text
                         color: nextPageButton.enabled ? Theme.text : Theme.secondaryText
                         font.pixelSize: 16
+                        font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: nextPageButton.hovered ? Theme.hover : "transparent"
+                        color: nextPageButton.down ? statusBar.controlActive
+                              : nextPageButton.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
                         radius: Theme.radius
+                        border.color: nextPageButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: nextPageButton.activeFocus ? 2 : 1
+                        opacity: nextPageButton.enabled ? 1.0 : 0.55
                     }
                 }
 
@@ -1386,12 +1962,18 @@ ApplicationWindow {
                         text: lastPageButton.text
                         color: lastPageButton.enabled ? Theme.text : Theme.secondaryText
                         font.pixelSize: 12
+                        font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: lastPageButton.hovered ? Theme.hover : "transparent"
+                        color: lastPageButton.down ? statusBar.controlActive
+                              : lastPageButton.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
                         radius: Theme.radius
+                        border.color: lastPageButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: lastPageButton.activeFocus ? 2 : 1
+                        opacity: lastPageButton.enabled ? 1.0 : 0.55
                     }
                 }
 
@@ -1402,25 +1984,27 @@ ApplicationWindow {
                 }
 
                 ComboBox {
-                    id: viewModeBox
+                    id: layoutModeBox
                     model: [
-                        { text: "Ajustar ancho", value: "fitWidth" },
-                        { text: "Hoja completa", value: "fitPage" }
+                        { text: "Pagina", value: "single" },
+                        { text: "Continuo", value: "continuous" },
+                        { text: "2 paginas", value: "twoPage" },
+                        { text: "2 pag. continuo", value: "twoPageContinuous" }
                     ]
                     textRole: "text"
                     valueRole: "value"
-                    currentIndex: window.viewMode === "fitPage" ? 1 : 0
-                    Layout.preferredWidth: 132
+                    currentIndex: window.layoutModeIndex()
+                    Layout.preferredWidth: 136
                     Layout.preferredHeight: 24
                     font.pixelSize: 11
-                    onActivated: window.setViewMode(currentValue)
+                    onActivated: window.setLayoutMode(currentValue)
                     ToolTip.visible: hovered
-                    ToolTip.text: "Modo de vista"
+                    ToolTip.text: "Distribucion de paginas"
 
                     contentItem: Text {
                         leftPadding: 10
                         rightPadding: 26
-                        text: viewModeBox.displayText
+                        text: layoutModeBox.displayText
                         color: Theme.text
                         font.pixelSize: 11
                         elide: Text.ElideRight
@@ -1428,34 +2012,34 @@ ApplicationWindow {
                     }
 
                     indicator: Text {
-                        x: viewModeBox.width - width - 9
-                        y: (viewModeBox.height - height) / 2
+                        x: layoutModeBox.width - width - 9
+                        y: (layoutModeBox.height - height) / 2
                         text: "⌄"
                         color: Theme.secondaryText
                         font.pixelSize: 14
                     }
 
                     background: Rectangle {
-                        color: viewModeBox.pressed ? Theme.tabActive
-                              : viewModeBox.hovered ? Theme.hover
-                              : Theme.background
-                        border.color: viewModeBox.activeFocus ? Theme.accent : Theme.border
-                        border.width: viewModeBox.activeFocus ? 2 : 1
+                        color: layoutModeBox.pressed ? statusBar.controlActive
+                              : layoutModeBox.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
+                        border.color: layoutModeBox.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: layoutModeBox.activeFocus ? 2 : 1
                         radius: Theme.radius
                     }
 
                     delegate: ItemDelegate {
-                        id: viewModeDelegate
+                        id: layoutModeDelegate
                         required property int index
                         required property var modelData
 
-                        width: viewModeBox.width
+                        width: layoutModeBox.width
                         height: 28
                         text: modelData.text
-                        highlighted: viewModeBox.highlightedIndex === index
+                        highlighted: layoutModeBox.highlightedIndex === index
 
                         contentItem: Text {
-                            text: viewModeDelegate.text
+                            text: layoutModeDelegate.text
                             color: Theme.text
                             font.pixelSize: 11
                             elide: Text.ElideRight
@@ -1464,31 +2048,131 @@ ApplicationWindow {
 
                         background: Rectangle {
                             radius: Theme.radius
-                            color: viewModeDelegate.highlighted ? Theme.tabActive
-                                  : viewModeDelegate.hovered ? Theme.hover
+                            color: layoutModeDelegate.highlighted ? statusBar.controlActive
+                                  : layoutModeDelegate.hovered ? statusBar.controlHover
                                   : "transparent"
-                            border.color: viewModeDelegate.index === viewModeBox.currentIndex ? Theme.accent : "transparent"
+                            border.color: layoutModeDelegate.index === layoutModeBox.currentIndex ? Theme.accent : "transparent"
                         }
                     }
 
                     popup: Popup {
-                        y: viewModeBox.height + 4
-                        width: viewModeBox.width
-                        height: Math.min(72, viewModeList.contentHeight + 8)
+                        y: layoutModeBox.height + 4
+                        width: layoutModeBox.width
+                        height: Math.min(120, layoutModeList.contentHeight + 8)
                         padding: 4
+                        topInset: -2
+                        bottomInset: -4
 
                         contentItem: ListView {
-                            id: viewModeList
+                            id: layoutModeList
                             clip: true
                             implicitHeight: contentHeight
-                            model: viewModeBox.popup.visible ? viewModeBox.delegateModel : null
-                            currentIndex: viewModeBox.highlightedIndex
+                            model: layoutModeBox.popup.visible ? layoutModeBox.delegateModel : null
+                            currentIndex: layoutModeBox.highlightedIndex
                         }
 
                         background: Rectangle {
                             color: Theme.surface
-                            border.color: Theme.border
+                            border.color: statusBar.controlBorder
+                            border.width: 1
+                            radius: Theme.radiusLg
+                        }
+                    }
+                }
+
+                ComboBox {
+                    id: zoomModeBox
+                    model: [
+                        { text: "Ancho", value: "fitWidth" },
+                        { text: "Pagina", value: "fitPage" },
+                        { text: "Alto", value: "fitHeight" },
+                        { text: "100%", value: "actualSize" }
+                    ]
+                    textRole: "text"
+                    valueRole: "value"
+                    currentIndex: window.zoomModeIndex()
+                    Layout.preferredWidth: 92
+                    Layout.preferredHeight: 24
+                    font.pixelSize: 11
+                    onActivated: window.setZoomMode(currentValue)
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Ajuste de zoom"
+
+                    contentItem: Text {
+                        leftPadding: 10
+                        rightPadding: 24
+                        text: zoomModeBox.displayText
+                        color: Theme.text
+                        font.pixelSize: 11
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    indicator: Text {
+                        x: zoomModeBox.width - width - 9
+                        y: (zoomModeBox.height - height) / 2
+                        text: "⌄"
+                        color: Theme.secondaryText
+                        font.pixelSize: 14
+                    }
+
+                    background: Rectangle {
+                        color: zoomModeBox.pressed ? statusBar.controlActive
+                              : zoomModeBox.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
+                        border.color: zoomModeBox.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: zoomModeBox.activeFocus ? 2 : 1
+                        radius: Theme.radius
+                    }
+
+                    delegate: ItemDelegate {
+                        id: zoomModeDelegate
+                        required property int index
+                        required property var modelData
+
+                        width: zoomModeBox.width
+                        height: 28
+                        text: modelData.text
+                        highlighted: zoomModeBox.highlightedIndex === index
+
+                        contentItem: Text {
+                            text: zoomModeDelegate.text
+                            color: Theme.text
+                            font.pixelSize: 11
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
                             radius: Theme.radius
+                            color: zoomModeDelegate.highlighted ? statusBar.controlActive
+                                  : zoomModeDelegate.hovered ? statusBar.controlHover
+                                  : "transparent"
+                            border.color: zoomModeDelegate.index === zoomModeBox.currentIndex ? Theme.accent : "transparent"
+                        }
+                    }
+
+                    popup: Popup {
+                        y: zoomModeBox.height + 4
+                        width: zoomModeBox.width
+                        height: Math.min(120, zoomModeList.contentHeight + 8)
+                        padding: 4
+                        topInset: -2
+                        bottomInset: -4
+
+                        contentItem: ListView {
+                            id: zoomModeList
+                            clip: true
+                            implicitHeight: contentHeight
+                            model: zoomModeBox.popup.visible ? zoomModeBox.delegateModel : null
+                            currentIndex: zoomModeBox.highlightedIndex
+                        }
+
+                        background: Rectangle {
+                            color: Theme.surface
+                            border.color: statusBar.controlBorder
+                            border.width: 1
+                            radius: Theme.radiusLg
                         }
                     }
                 }
@@ -1497,6 +2181,102 @@ ApplicationWindow {
                     Layout.preferredWidth: 1
                     Layout.preferredHeight: 20
                     color: Theme.border
+                }
+
+                ComboBox {
+                    id: zoomPresetBox
+                    model: window.zoomPresetOptions
+                    textRole: "text"
+                    valueRole: "value"
+                    currentIndex: window.zoomPresetIndex()
+                    Layout.preferredWidth: 84
+                    Layout.preferredHeight: 24
+                    font.pixelSize: 11
+                    onActivated: {
+                        if (currentValue > 0)
+                            window.setZoomPercent(currentValue)
+                    }
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Presets de zoom"
+
+                    contentItem: Text {
+                        leftPadding: 10
+                        rightPadding: 24
+                        text: zoomPresetBox.displayText
+                        color: Theme.text
+                        font.pixelSize: 11
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    indicator: Text {
+                        x: zoomPresetBox.width - width - 9
+                        y: (zoomPresetBox.height - height) / 2
+                        text: "⌄"
+                        color: Theme.secondaryText
+                        font.pixelSize: 14
+                    }
+
+                    background: Rectangle {
+                        color: zoomPresetBox.pressed ? statusBar.controlActive
+                              : zoomPresetBox.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
+                        border.color: zoomPresetBox.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: zoomPresetBox.activeFocus ? 2 : 1
+                        radius: Theme.radius
+                    }
+
+                    delegate: ItemDelegate {
+                        id: zoomPresetDelegate
+                        required property int index
+                        required property var modelData
+
+                        width: zoomPresetBox.width
+                        height: 28
+                        text: modelData.text
+                        highlighted: zoomPresetBox.highlightedIndex === index
+                        enabled: modelData.value > 0
+
+                        contentItem: Text {
+                            text: zoomPresetDelegate.text
+                            color: zoomPresetDelegate.enabled ? Theme.text : Theme.secondaryText
+                            font.pixelSize: 11
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            radius: Theme.radius
+                            color: zoomPresetDelegate.highlighted ? statusBar.controlActive
+                                  : zoomPresetDelegate.hovered ? statusBar.controlHover
+                                  : "transparent"
+                            border.color: zoomPresetDelegate.index === zoomPresetBox.currentIndex ? Theme.accent : "transparent"
+                        }
+                    }
+
+                    popup: Popup {
+                        y: zoomPresetBox.height + 4
+                        width: zoomPresetBox.width
+                        height: Math.min(220, zoomPresetList.contentHeight + 8)
+                        padding: 4
+                        topInset: -2
+                        bottomInset: -4
+
+                        contentItem: ListView {
+                            id: zoomPresetList
+                            clip: true
+                            implicitHeight: contentHeight
+                            model: zoomPresetBox.popup.visible ? zoomPresetBox.delegateModel : null
+                            currentIndex: zoomPresetBox.highlightedIndex
+                        }
+
+                        background: Rectangle {
+                            color: Theme.surface
+                            border.color: statusBar.controlBorder
+                            border.width: 1
+                            radius: Theme.radiusLg
+                        }
+                    }
                 }
 
                 TextField {
@@ -1511,8 +2291,8 @@ ApplicationWindow {
                     onAccepted: window.setZoomPercent(text.replace("%", ""))
                     onEditingFinished: window.setZoomPercent(text.replace("%", ""))
                     background: Rectangle {
-                        color: Theme.background
-                        border.color: zoomField.activeFocus ? Theme.accent : Theme.border
+                        color: statusBar.controlFill
+                        border.color: zoomField.activeFocus ? Theme.accent : statusBar.controlBorder
                         border.width: zoomField.activeFocus ? 2 : 1
                         radius: Theme.radius
                     }
@@ -1531,12 +2311,18 @@ ApplicationWindow {
                         text: statusZoomOutButton.text
                         color: statusZoomOutButton.enabled ? Theme.text : Theme.secondaryText
                         font.pixelSize: 14
+                        font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: statusZoomOutButton.hovered ? Theme.hover : "transparent"
+                        color: statusZoomOutButton.down ? statusBar.controlActive
+                              : statusZoomOutButton.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
                         radius: Theme.radius
+                        border.color: statusZoomOutButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: statusZoomOutButton.activeFocus ? 2 : 1
+                        opacity: statusZoomOutButton.enabled ? 1.0 : 0.55
                     }
                 }
 
@@ -1558,7 +2344,7 @@ ApplicationWindow {
                         width: zoomSlider.availableWidth
                         height: 4
                         radius: 2
-                        color: Theme.border
+                        color: statusBar.controlBorder
 
                         Rectangle {
                             width: zoomSlider.visualPosition * parent.width
@@ -1593,12 +2379,18 @@ ApplicationWindow {
                         text: statusZoomInButton.text
                         color: statusZoomInButton.enabled ? Theme.text : Theme.secondaryText
                         font.pixelSize: 14
+                        font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: statusZoomInButton.hovered ? Theme.hover : "transparent"
+                        color: statusZoomInButton.down ? statusBar.controlActive
+                              : statusZoomInButton.hovered ? statusZoomInButton.enabled ? statusBar.controlHover : statusBar.controlFill
+                              : statusBar.controlFill
                         radius: Theme.radius
+                        border.color: statusZoomInButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: statusZoomInButton.activeFocus ? 2 : 1
+                        opacity: statusZoomInButton.enabled ? 1.0 : 0.55
                     }
                 }
             }

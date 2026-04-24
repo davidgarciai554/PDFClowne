@@ -45,12 +45,18 @@ static constexpr auto qt_meta_stringdata_ZN11PdfDocumentE = QtMocHelpers::string
     "filePathChanged",
     "previewSourceChanged",
     "pageSourcesChanged",
+    "thumbnailSourcesChanged",
+    "pageSizesJsonChanged",
     "pageCountChanged",
     "titleChanged",
     "isLoadedChanged",
     "errorMessageChanged",
     "load",
     "source",
+    "renderPage",
+    "pageIndex",
+    "scale",
+    "renderThumbnail",
     "saveRotatedCopy",
     "target",
     "rotationsJson",
@@ -58,6 +64,8 @@ static constexpr auto qt_meta_stringdata_ZN11PdfDocumentE = QtMocHelpers::string
     "filePath",
     "previewSource",
     "pageSources",
+    "thumbnailSources",
+    "pageSizesJson",
     "pageCount",
     "title",
     "isLoaded",
@@ -73,28 +81,33 @@ Q_CONSTINIT static const uint qt_meta_data_ZN11PdfDocumentE[] = {
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-      12,   14, // methods
-       7,  108, // properties
+      17,   14, // methods
+       9,  151, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       9,       // signalCount
+      11,       // signalCount
 
  // signals: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    0,   86,    2, 0x06,    8 /* Public */,
-       3,    1,   87,    2, 0x06,    9 /* Public */,
-       5,    0,   90,    2, 0x06,   11 /* Public */,
-       6,    0,   91,    2, 0x06,   12 /* Public */,
-       7,    0,   92,    2, 0x06,   13 /* Public */,
-       8,    0,   93,    2, 0x06,   14 /* Public */,
-       9,    0,   94,    2, 0x06,   15 /* Public */,
-      10,    0,   95,    2, 0x06,   16 /* Public */,
-      11,    0,   96,    2, 0x06,   17 /* Public */,
+       1,    0,  116,    2, 0x06,   10 /* Public */,
+       3,    1,  117,    2, 0x06,   11 /* Public */,
+       5,    0,  120,    2, 0x06,   13 /* Public */,
+       6,    0,  121,    2, 0x06,   14 /* Public */,
+       7,    0,  122,    2, 0x06,   15 /* Public */,
+       8,    0,  123,    2, 0x06,   16 /* Public */,
+       9,    0,  124,    2, 0x06,   17 /* Public */,
+      10,    0,  125,    2, 0x06,   18 /* Public */,
+      11,    0,  126,    2, 0x06,   19 /* Public */,
+      12,    0,  127,    2, 0x06,   20 /* Public */,
+      13,    0,  128,    2, 0x06,   21 /* Public */,
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-      12,    1,   97,    2, 0x0a,   18 /* Public */,
-      14,    3,  100,    2, 0x0a,   20 /* Public */,
-      17,    0,  107,    2, 0x0a,   24 /* Public */,
+      14,    1,  129,    2, 0x0a,   22 /* Public */,
+      16,    2,  132,    2, 0x0a,   24 /* Public */,
+      16,    1,  137,    2, 0x2a,   27 /* Public | MethodCloned */,
+      19,    1,  140,    2, 0x0a,   29 /* Public */,
+      20,    3,  143,    2, 0x0a,   31 /* Public */,
+      23,    0,  150,    2, 0x0a,   35 /* Public */,
 
  // signals: parameters
     QMetaType::Void,
@@ -106,20 +119,27 @@ Q_CONSTINIT static const uint qt_meta_data_ZN11PdfDocumentE[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
 
  // slots: parameters
-    QMetaType::Bool, QMetaType::QString,   13,
-    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString,   13,   15,   16,
+    QMetaType::Bool, QMetaType::QString,   15,
+    QMetaType::QString, QMetaType::Int, QMetaType::QReal,   17,   18,
+    QMetaType::QString, QMetaType::Int,   17,
+    QMetaType::QString, QMetaType::Int,   17,
+    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString,   15,   21,   22,
     QMetaType::Void,
 
  // properties: name, type, flags, notifyId, revision
-      18, QMetaType::QString, 0x00015001, uint(2), 0,
-      19, QMetaType::QString, 0x00015001, uint(3), 0,
-      20, QMetaType::QStringList, 0x00015001, uint(4), 0,
-      21, QMetaType::Int, 0x00015001, uint(5), 0,
-      22, QMetaType::QString, 0x00015001, uint(6), 0,
-      23, QMetaType::Bool, 0x00015001, uint(7), 0,
-      24, QMetaType::QString, 0x00015001, uint(8), 0,
+      24, QMetaType::QString, 0x00015001, uint(2), 0,
+      25, QMetaType::QString, 0x00015001, uint(3), 0,
+      26, QMetaType::QStringList, 0x00015001, uint(4), 0,
+      27, QMetaType::QStringList, 0x00015001, uint(5), 0,
+      28, QMetaType::QString, 0x00015001, uint(6), 0,
+      29, QMetaType::Int, 0x00015001, uint(7), 0,
+      30, QMetaType::QString, 0x00015001, uint(8), 0,
+      31, QMetaType::Bool, 0x00015001, uint(9), 0,
+      32, QMetaType::QString, 0x00015001, uint(10), 0,
 
        0        // eod
 };
@@ -137,6 +157,10 @@ Q_CONSTINIT const QMetaObject PdfDocument::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<QString, std::true_type>,
         // property 'pageSources'
         QtPrivate::TypeAndForceComplete<QStringList, std::true_type>,
+        // property 'thumbnailSources'
+        QtPrivate::TypeAndForceComplete<QStringList, std::true_type>,
+        // property 'pageSizesJson'
+        QtPrivate::TypeAndForceComplete<QString, std::true_type>,
         // property 'pageCount'
         QtPrivate::TypeAndForceComplete<int, std::true_type>,
         // property 'title'
@@ -158,6 +182,10 @@ Q_CONSTINIT const QMetaObject PdfDocument::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'pageSourcesChanged'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'thumbnailSourcesChanged'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'pageSizesJsonChanged'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'pageCountChanged'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'titleChanged'
@@ -169,6 +197,16 @@ Q_CONSTINIT const QMetaObject PdfDocument::staticMetaObject = { {
         // method 'load'
         QtPrivate::TypeAndForceComplete<bool, std::false_type>,
         QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        // method 'renderPage'
+        QtPrivate::TypeAndForceComplete<QString, std::false_type>,
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
+        QtPrivate::TypeAndForceComplete<qreal, std::false_type>,
+        // method 'renderPage'
+        QtPrivate::TypeAndForceComplete<QString, std::false_type>,
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
+        // method 'renderThumbnail'
+        QtPrivate::TypeAndForceComplete<QString, std::false_type>,
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
         // method 'saveRotatedCopy'
         QtPrivate::TypeAndForceComplete<bool, std::false_type>,
         QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
@@ -190,15 +228,23 @@ void PdfDocument::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 2: _t->filePathChanged(); break;
         case 3: _t->previewSourceChanged(); break;
         case 4: _t->pageSourcesChanged(); break;
-        case 5: _t->pageCountChanged(); break;
-        case 6: _t->titleChanged(); break;
-        case 7: _t->isLoadedChanged(); break;
-        case 8: _t->errorMessageChanged(); break;
-        case 9: { bool _r = _t->load((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
+        case 5: _t->thumbnailSourcesChanged(); break;
+        case 6: _t->pageSizesJsonChanged(); break;
+        case 7: _t->pageCountChanged(); break;
+        case 8: _t->titleChanged(); break;
+        case 9: _t->isLoadedChanged(); break;
+        case 10: _t->errorMessageChanged(); break;
+        case 11: { bool _r = _t->load((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 10: { bool _r = _t->saveRotatedCopy((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])));
+        case 12: { QString _r = _t->renderPage((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<qreal>>(_a[2])));
+            if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
+        case 13: { QString _r = _t->renderPage((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])));
+            if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
+        case 14: { QString _r = _t->renderThumbnail((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])));
+            if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
+        case 15: { bool _r = _t->saveRotatedCopy((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 11: _t->clear(); break;
+        case 16: _t->clear(); break;
         default: ;
         }
     }
@@ -241,29 +287,43 @@ void PdfDocument::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         }
         {
             using _q_method_type = void (PdfDocument::*)();
-            if (_q_method_type _q_method = &PdfDocument::pageCountChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+            if (_q_method_type _q_method = &PdfDocument::thumbnailSourcesChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
                 *result = 5;
                 return;
             }
         }
         {
             using _q_method_type = void (PdfDocument::*)();
-            if (_q_method_type _q_method = &PdfDocument::titleChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+            if (_q_method_type _q_method = &PdfDocument::pageSizesJsonChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
                 *result = 6;
                 return;
             }
         }
         {
             using _q_method_type = void (PdfDocument::*)();
-            if (_q_method_type _q_method = &PdfDocument::isLoadedChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+            if (_q_method_type _q_method = &PdfDocument::pageCountChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
                 *result = 7;
                 return;
             }
         }
         {
             using _q_method_type = void (PdfDocument::*)();
-            if (_q_method_type _q_method = &PdfDocument::errorMessageChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+            if (_q_method_type _q_method = &PdfDocument::titleChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
                 *result = 8;
+                return;
+            }
+        }
+        {
+            using _q_method_type = void (PdfDocument::*)();
+            if (_q_method_type _q_method = &PdfDocument::isLoadedChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+                *result = 9;
+                return;
+            }
+        }
+        {
+            using _q_method_type = void (PdfDocument::*)();
+            if (_q_method_type _q_method = &PdfDocument::errorMessageChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+                *result = 10;
                 return;
             }
         }
@@ -274,10 +334,12 @@ void PdfDocument::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 0: *reinterpret_cast< QString*>(_v) = _t->filePath(); break;
         case 1: *reinterpret_cast< QString*>(_v) = _t->previewSource(); break;
         case 2: *reinterpret_cast< QStringList*>(_v) = _t->pageSources(); break;
-        case 3: *reinterpret_cast< int*>(_v) = _t->pageCount(); break;
-        case 4: *reinterpret_cast< QString*>(_v) = _t->title(); break;
-        case 5: *reinterpret_cast< bool*>(_v) = _t->isLoaded(); break;
-        case 6: *reinterpret_cast< QString*>(_v) = _t->errorMessage(); break;
+        case 3: *reinterpret_cast< QStringList*>(_v) = _t->thumbnailSources(); break;
+        case 4: *reinterpret_cast< QString*>(_v) = _t->pageSizesJson(); break;
+        case 5: *reinterpret_cast< int*>(_v) = _t->pageCount(); break;
+        case 6: *reinterpret_cast< QString*>(_v) = _t->title(); break;
+        case 7: *reinterpret_cast< bool*>(_v) = _t->isLoaded(); break;
+        case 8: *reinterpret_cast< QString*>(_v) = _t->errorMessage(); break;
         default: break;
         }
     }
@@ -302,20 +364,20 @@ int PdfDocument::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 12)
+        if (_id < 17)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 17;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 12)
+        if (_id < 17)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 12;
+        _id -= 17;
     }
     if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty
             || _c == QMetaObject::ResetProperty || _c == QMetaObject::BindableProperty
             || _c == QMetaObject::RegisterPropertyMetaType) {
         qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 9;
     }
     return _id;
 }
@@ -352,26 +414,38 @@ void PdfDocument::pageSourcesChanged()
 }
 
 // SIGNAL 5
-void PdfDocument::pageCountChanged()
+void PdfDocument::thumbnailSourcesChanged()
 {
     QMetaObject::activate(this, &staticMetaObject, 5, nullptr);
 }
 
 // SIGNAL 6
-void PdfDocument::titleChanged()
+void PdfDocument::pageSizesJsonChanged()
 {
     QMetaObject::activate(this, &staticMetaObject, 6, nullptr);
 }
 
 // SIGNAL 7
-void PdfDocument::isLoadedChanged()
+void PdfDocument::pageCountChanged()
 {
     QMetaObject::activate(this, &staticMetaObject, 7, nullptr);
 }
 
 // SIGNAL 8
-void PdfDocument::errorMessageChanged()
+void PdfDocument::titleChanged()
 {
     QMetaObject::activate(this, &staticMetaObject, 8, nullptr);
+}
+
+// SIGNAL 9
+void PdfDocument::isLoadedChanged()
+{
+    QMetaObject::activate(this, &staticMetaObject, 9, nullptr);
+}
+
+// SIGNAL 10
+void PdfDocument::errorMessageChanged()
+{
+    QMetaObject::activate(this, &staticMetaObject, 10, nullptr);
 }
 QT_WARNING_POP

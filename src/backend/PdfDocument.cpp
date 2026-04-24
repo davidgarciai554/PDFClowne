@@ -9,6 +9,7 @@
 #include <QIODevice>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QJsonValue>
 #include <QUrl>
 #include <QVector>
@@ -20,6 +21,7 @@
 
 namespace {
 constexpr float kRenderScale = 4.0f;
+constexpr float kThumbnailScale = 0.30f;
 
 QString toLocalPath(const QString &source)
 {
@@ -121,6 +123,45 @@ QString pixmapToDataUrl(fz_pixmap *pix)
 
     return QStringLiteral("data:image/png;base64,") + QString::fromLatin1(png.toBase64());
 }
+
+void dropOpenDocument(fz_context *&ctx, fz_document *&doc)
+{
+    if (doc) {
+        fz_drop_document(ctx, doc);
+        doc = nullptr;
+    }
+
+    if (ctx) {
+        fz_drop_context(ctx);
+        ctx = nullptr;
+    }
+}
+
+QString renderPageToDataUrl(fz_context *ctx, fz_document *doc, int pageIndex, float scale, QString *error)
+{
+    if (!ctx || !doc || pageIndex < 0)
+        return {};
+
+    fz_pixmap *pix = nullptr;
+    QString source;
+
+    fz_try(ctx)
+    {
+        const fz_matrix matrix = fz_scale(scale, scale);
+        pix = fz_new_pixmap_from_page_number(ctx, doc, pageIndex, matrix, fz_device_rgb(ctx), 0);
+        source = pixmapToDataUrl(pix);
+    }
+    fz_catch(ctx)
+    {
+        if (error)
+            *error = QString::fromUtf8(fz_caught_message(ctx));
+    }
+
+    if (pix)
+        fz_drop_pixmap(ctx, pix);
+
+    return source;
+}
 }
 
 PdfDocument::PdfDocument(QObject *parent)
@@ -128,15 +169,25 @@ PdfDocument::PdfDocument(QObject *parent)
 {
 }
 
+PdfDocument::~PdfDocument()
+{
+    dropOpenDocument(m_ctx, m_doc);
+}
+
 void PdfDocument::clear()
 {
-    if (m_filePath.isEmpty() && m_previewSource.isEmpty() && m_pageSources.isEmpty() && m_pageCount == 0 &&
-        m_title.isEmpty() && m_errorMessage.isEmpty() && !m_isLoaded)
+    if (m_filePath.isEmpty() && m_previewSource.isEmpty() && m_pageSources.isEmpty() &&
+        m_thumbnailSources.isEmpty() && m_pageSizesJson.isEmpty() && m_pageCount == 0 &&
+        m_title.isEmpty() && m_errorMessage.isEmpty() && !m_isLoaded && !m_ctx && !m_doc)
         return;
+
+    dropOpenDocument(m_ctx, m_doc);
 
     m_filePath.clear();
     m_previewSource.clear();
     m_pageSources.clear();
+    m_thumbnailSources.clear();
+    m_pageSizesJson.clear();
     m_title.clear();
     m_errorMessage.clear();
     m_pageCount = 0;
@@ -145,6 +196,8 @@ void PdfDocument::clear()
     emit filePathChanged();
     emit previewSourceChanged();
     emit pageSourcesChanged();
+    emit thumbnailSourcesChanged();
+    emit pageSizesJsonChanged();
     emit pageCountChanged();
     emit titleChanged();
     emit errorMessageChanged();
@@ -158,11 +211,16 @@ bool PdfDocument::load(const QString &source)
 
     m_previewSource.clear();
     m_pageSources.clear();
+    m_thumbnailSources.clear();
+    m_pageSizesJson.clear();
     m_errorMessage.clear();
     m_pageCount = 0;
     m_isLoaded = false;
+    dropOpenDocument(m_ctx, m_doc);
     emit previewSourceChanged();
     emit pageSourcesChanged();
+    emit thumbnailSourcesChanged();
+    emit pageSizesJsonChanged();
     emit errorMessageChanged();
     emit pageCountChanged();
     emit isLoadedChanged();
@@ -188,71 +246,76 @@ bool PdfDocument::load(const QString &source)
     emit filePathChanged();
     emit titleChanged();
 
-    fz_context *ctx = nullptr;
-    fz_document *doc = nullptr;
-    fz_pixmap *pix = nullptr;
     QString error;
     const QByteArray pathBytes = canonical.toUtf8();
 
-    ctx = fz_new_context(nullptr, nullptr, FZ_STORE_UNLIMITED);
-    if (!ctx) {
+    m_ctx = fz_new_context(nullptr, nullptr, FZ_STORE_UNLIMITED);
+    if (!m_ctx) {
         m_errorMessage = tr("MuPDF could not create a rendering context.");
         emit errorMessageChanged();
         emit loadFailed(m_errorMessage);
         return false;
     }
 
-    fz_try(ctx)
+    fz_try(m_ctx)
     {
-        fz_register_document_handlers(ctx);
-        doc = fz_open_document(ctx, pathBytes.constData());
+        fz_register_document_handlers(m_ctx);
+        m_doc = fz_open_document(m_ctx, pathBytes.constData());
 
-        if (fz_needs_password(ctx, doc))
-            fz_throw(ctx, FZ_ERROR_GENERIC, "password-protected PDFs are not enabled in this reset build");
+        if (fz_needs_password(m_ctx, m_doc))
+            fz_throw(m_ctx, FZ_ERROR_GENERIC, "password-protected PDFs are not enabled in this reset build");
 
-        m_pageCount = fz_count_pages(ctx, doc);
+        m_pageCount = fz_count_pages(m_ctx, m_doc);
         if (m_pageCount <= 0)
-            fz_throw(ctx, FZ_ERROR_GENERIC, "PDF has no pages");
+            fz_throw(m_ctx, FZ_ERROR_GENERIC, "PDF has no pages");
 
-        const fz_matrix matrix = fz_scale(kRenderScale, kRenderScale);
+        QJsonArray pageSizes;
+        m_pageSources = QStringList();
+        m_thumbnailSources = QStringList();
+        m_pageSources.reserve(m_pageCount);
+        m_thumbnailSources.reserve(m_pageCount);
         for (int page = 0; page < m_pageCount; ++page) {
-            pix = fz_new_pixmap_from_page_number(ctx, doc, page, matrix, fz_device_rgb(ctx), 0);
-            const QString pageSource = pixmapToDataUrl(pix);
-            fz_drop_pixmap(ctx, pix);
-            pix = nullptr;
+            fz_page *loadedPage = fz_load_page(m_ctx, m_doc, page);
+            const fz_rect bounds = fz_bound_page(m_ctx, loadedPage);
+            fz_drop_page(m_ctx, loadedPage);
 
-            if (pageSource.isEmpty())
-                fz_throw(ctx, FZ_ERROR_GENERIC, "page could not be converted to an image");
+            QJsonObject size;
+            size.insert(QStringLiteral("width"), bounds.x1 - bounds.x0);
+            size.insert(QStringLiteral("height"), bounds.y1 - bounds.y0);
+            pageSizes.append(size);
 
-            m_pageSources.append(pageSource);
+            m_pageSources.append(QString());
+            m_thumbnailSources.append(QString());
         }
 
-        if (m_pageSources.isEmpty())
-            fz_throw(ctx, FZ_ERROR_GENERIC, "PDF has no rendered pages");
+        m_pageSizesJson = QString::fromUtf8(QJsonDocument(pageSizes).toJson(QJsonDocument::Compact));
 
-        m_previewSource = m_pageSources.first();
+        m_previewSource = renderPageToDataUrl(m_ctx, m_doc, 0, kRenderScale, &error);
+        if (!error.isEmpty() || m_previewSource.isEmpty())
+            fz_throw(m_ctx, FZ_ERROR_GENERIC, "first page could not be rendered");
 
+        m_pageSources[0] = m_previewSource;
+        m_thumbnailSources[0] = renderPageToDataUrl(m_ctx, m_doc, 0, kThumbnailScale, nullptr);
         m_isLoaded = true;
     }
-    fz_catch(ctx)
+    fz_catch(m_ctx)
     {
-        error = QString::fromUtf8(fz_caught_message(ctx));
+        error = QString::fromUtf8(fz_caught_message(m_ctx));
     }
 
-    if (pix)
-        fz_drop_pixmap(ctx, pix);
-    if (doc)
-        fz_drop_document(ctx, doc);
-    fz_drop_context(ctx);
-
     if (!error.isEmpty()) {
+        dropOpenDocument(m_ctx, m_doc);
         m_previewSource.clear();
         m_pageSources.clear();
+        m_thumbnailSources.clear();
+        m_pageSizesJson.clear();
         m_pageCount = 0;
         m_isLoaded = false;
         m_errorMessage = tr("MuPDF failed to open this PDF: %1").arg(error);
         emit previewSourceChanged();
         emit pageSourcesChanged();
+        emit thumbnailSourcesChanged();
+        emit pageSizesJsonChanged();
         emit pageCountChanged();
         emit errorMessageChanged();
         emit isLoadedChanged();
@@ -262,10 +325,49 @@ bool PdfDocument::load(const QString &source)
 
     emit previewSourceChanged();
     emit pageSourcesChanged();
+    emit thumbnailSourcesChanged();
+    emit pageSizesJsonChanged();
     emit pageCountChanged();
     emit isLoadedChanged();
     emit loaded();
     return true;
+}
+
+QString PdfDocument::renderPage(int pageIndex, qreal scale)
+{
+    if (!m_ctx || !m_doc || pageIndex < 0 || pageIndex >= m_pageCount)
+        return {};
+
+    const float safeScale = std::clamp(static_cast<float>(scale), 0.25f, kRenderScale);
+    QString error;
+    const QString source = renderPageToDataUrl(m_ctx, m_doc, pageIndex, safeScale, &error);
+    if (source.isEmpty())
+        return {};
+
+    if (pageIndex >= 0 && pageIndex < m_pageSources.size() && safeScale >= kRenderScale * 0.95f) {
+        m_pageSources[pageIndex] = source;
+        emit pageSourcesChanged();
+    }
+
+    return source;
+}
+
+QString PdfDocument::renderThumbnail(int pageIndex)
+{
+    if (!m_ctx || !m_doc || pageIndex < 0 || pageIndex >= m_pageCount)
+        return {};
+
+    QString error;
+    const QString source = renderPageToDataUrl(m_ctx, m_doc, pageIndex, kThumbnailScale, &error);
+    if (source.isEmpty())
+        return {};
+
+    if (pageIndex >= 0 && pageIndex < m_thumbnailSources.size()) {
+        m_thumbnailSources[pageIndex] = source;
+        emit thumbnailSourcesChanged();
+    }
+
+    return source;
 }
 
 bool PdfDocument::saveRotatedCopy(const QString &source, const QString &target, const QString &rotationsJson)
@@ -396,6 +498,9 @@ bool PdfDocument::saveRotatedCopy(const QString &source, const QString &target, 
     }
 
     if (overwriteOriginal) {
+        if (QDir::cleanPath(m_filePath).compare(QDir::cleanPath(sourceCanonical), Qt::CaseInsensitive) == 0)
+            dropOpenDocument(m_ctx, m_doc);
+
         QString replaceError;
         if (!replaceFileWithBackup(sourceCanonical, savePath, &replaceError)) {
             QFile::remove(savePath);
