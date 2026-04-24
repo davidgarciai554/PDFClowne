@@ -6,7 +6,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 36,
-                        "durationMicroseconds": 206,
+                        "durationMicroseconds": 105,
                         "errorMessage": "Cannot load property previewSource from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pdfDocument with type QVariant.",
                         "functionName": "previewSource",
                         "line": 9
@@ -14,7 +14,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 31,
-                        "durationMicroseconds": 538,
+                        "durationMicroseconds": 435,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "pageSources",
                         "line": 10
@@ -22,7 +22,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 47,
-                        "durationMicroseconds": 90,
+                        "durationMicroseconds": 141,
                         "errorMessage": "",
                         "functionName": "visiblePageSources",
                         "line": 11
@@ -30,7 +30,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 33,
-                        "durationMicroseconds": 51,
+                        "durationMicroseconds": 59,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "pageRotations",
                         "line": 12
@@ -38,7 +38,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 48,
-                        "durationMicroseconds": 208,
+                        "durationMicroseconds": 201,
                         "errorMessage": "",
                         "functionName": "currentZoomPercent",
                         "line": 18
@@ -46,7 +46,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 32,
-                        "durationMicroseconds": 110,
+                        "durationMicroseconds": 107,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "onCurrentPageIndexChanged",
                         "line": 23
@@ -54,7 +54,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 20,
-                        "durationMicroseconds": 101,
+                        "durationMicroseconds": 48,
                         "errorMessage": "",
                         "functionName": "onZoomChanged",
                         "line": 24
@@ -62,7 +62,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 24,
-                        "durationMicroseconds": 262,
+                        "durationMicroseconds": 229,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "onViewModeChanged",
                         "line": 25
@@ -78,7 +78,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 60,
+                        "durationMicroseconds": 47,
                         "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageSources with type QVariant.",
                         "functionName": "normalizedPageSources",
                         "line": 116
@@ -94,7 +94,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 102,
+                        "durationMicroseconds": 94,
                         "errorMessage": "Cannot load property index from conversion to QVariant.",
                         "functionName": "updateCurrentBaseScale",
                         "line": 146
@@ -102,7 +102,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 186,
+                        "durationMicroseconds": 180,
                         "errorMessage": "Cannot load property index from conversion to QVariant.",
                         "functionName": "updateCurrentPage",
                         "line": 160
@@ -110,7 +110,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 16,
-                        "durationMicroseconds": 4841,
+                        "durationMicroseconds": 11895,
                         "errorMessage": "",
                         "functionName": "color",
                         "line": 32
@@ -118,7 +118,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 23,
-                        "durationMicroseconds": 76,
+                        "durationMicroseconds": 65,
                         "errorMessage": "",
                         "functionName": "fill",
                         "line": 31
@@ -126,7 +126,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 23,
-                        "durationMicroseconds": 291,
+                        "durationMicroseconds": 327,
                         "errorMessage": "",
                         "functionName": "contentWidth",
                         "line": 39
@@ -134,7 +134,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 24,
-                        "durationMicroseconds": 244,
+                        "durationMicroseconds": 284,
                         "errorMessage": "",
                         "functionName": "contentHeight",
                         "line": 40
@@ -142,7 +142,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 25,
-                        "durationMicroseconds": 76,
+                        "durationMicroseconds": 143,
                         "errorMessage": "",
                         "functionName": "boundsBehavior",
                         "line": 41
@@ -150,7 +150,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 28,
-                        "durationMicroseconds": 98,
+                        "durationMicroseconds": 85,
                         "errorMessage": "",
                         "functionName": "onContentYChanged",
                         "line": 42
@@ -158,7 +158,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 25,
-                        "durationMicroseconds": 151,
+                        "durationMicroseconds": 141,
                         "errorMessage": "Cannot generate efficient code for lookup of function property.",
                         "functionName": "onWidthChanged",
                         "line": 43
@@ -166,7 +166,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 26,
-                        "durationMicroseconds": 156,
+                        "durationMicroseconds": 128,
                         "errorMessage": "Cannot generate efficient code for lookup of function property.",
                         "functionName": "onHeightChanged",
                         "line": 44
@@ -174,7 +174,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 23,
-                        "durationMicroseconds": 59,
+                        "durationMicroseconds": 46,
                         "errorMessage": "",
                         "functionName": "fill",
                         "line": 37
@@ -182,7 +182,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 32,
-                        "durationMicroseconds": 135,
+                        "durationMicroseconds": 129,
                         "errorMessage": "Cannot generate efficient code for LoadClosure",
                         "functionName": "onCompleted",
                         "line": 45
@@ -190,7 +190,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 119,
+                        "durationMicroseconds": 94,
                         "errorMessage": "",
                         "functionName": "acceptedModifiers",
                         "line": 51
@@ -198,7 +198,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 22,
-                        "durationMicroseconds": 113,
+                        "durationMicroseconds": 95,
                         "errorMessage": "Type  stored as QQuickItem does not have a property zoomInAction for calling",
                         "functionName": "onWheel",
                         "line": 52
@@ -206,7 +206,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 22,
-                        "durationMicroseconds": 41,
+                        "durationMicroseconds": 39,
                         "errorMessage": "",
                         "functionName": "onWheel",
                         "line": 52
@@ -214,7 +214,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 16,
-                        "durationMicroseconds": 304,
+                        "durationMicroseconds": 278,
                         "errorMessage": "",
                         "functionName": "x",
                         "line": 63
@@ -222,7 +222,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 24,
-                        "durationMicroseconds": 83,
+                        "durationMicroseconds": 76,
                         "errorMessage": "",
                         "functionName": "model",
                         "line": 68
@@ -230,7 +230,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 57,
-                        "durationMicroseconds": 154,
+                        "durationMicroseconds": 152,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "pageRotation",
                         "line": 74
@@ -238,7 +238,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 54,
-                        "durationMicroseconds": 234,
+                        "durationMicroseconds": 288,
                         "errorMessage": "",
                         "functionName": "sideways",
                         "line": 75
@@ -246,7 +246,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 57,
-                        "durationMicroseconds": 65,
+                        "durationMicroseconds": 81,
                         "errorMessage": "",
                         "functionName": "sourceWidth",
                         "line": 76
@@ -254,7 +254,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 58,
-                        "durationMicroseconds": 54,
+                        "durationMicroseconds": 61,
                         "errorMessage": "",
                         "functionName": "sourceHeight",
                         "line": 77
@@ -262,7 +262,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 58,
-                        "durationMicroseconds": 103,
+                        "durationMicroseconds": 109,
                         "errorMessage": "",
                         "functionName": "rotatedWidth",
                         "line": 78
@@ -270,7 +270,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 59,
-                        "durationMicroseconds": 92,
+                        "durationMicroseconds": 93,
                         "errorMessage": "",
                         "functionName": "rotatedHeight",
                         "line": 79
@@ -278,7 +278,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 56,
-                        "durationMicroseconds": 378,
+                        "durationMicroseconds": 391,
                         "errorMessage": "",
                         "functionName": "widthScale",
                         "line": 80
@@ -286,7 +286,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 55,
-                        "durationMicroseconds": 797,
+                        "durationMicroseconds": 779,
                         "errorMessage": "",
                         "functionName": "pageScale",
                         "line": 81
@@ -294,7 +294,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 55,
-                        "durationMicroseconds": 211,
+                        "durationMicroseconds": 184,
                         "errorMessage": "",
                         "functionName": "baseScale",
                         "line": 85
@@ -302,7 +302,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 28,
-                        "durationMicroseconds": 407,
+                        "durationMicroseconds": 363,
                         "errorMessage": "",
                         "functionName": "width",
                         "line": 86
@@ -310,7 +310,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 29,
-                        "durationMicroseconds": 323,
+                        "durationMicroseconds": 531,
                         "errorMessage": "",
                         "functionName": "height",
                         "line": 87
@@ -318,7 +318,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 41,
-                        "durationMicroseconds": 291,
+                        "durationMicroseconds": 246,
                         "errorMessage": "",
                         "functionName": "onBaseScaleChanged",
                         "line": 88
@@ -326,7 +326,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 292,
+                        "durationMicroseconds": 298,
                         "errorMessage": "",
                         "functionName": "width",
                         "line": 93
@@ -334,7 +334,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 33,
-                        "durationMicroseconds": 374,
+                        "durationMicroseconds": 352,
                         "errorMessage": "",
                         "functionName": "height",
                         "line": 94
@@ -342,7 +342,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 33,
-                        "durationMicroseconds": 89,
+                        "durationMicroseconds": 84,
                         "errorMessage": "",
                         "functionName": "source",
                         "line": 95
@@ -350,7 +350,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 35,
-                        "durationMicroseconds": 67,
+                        "durationMicroseconds": 68,
                         "errorMessage": "",
                         "functionName": "fillMode",
                         "line": 96
@@ -358,7 +358,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 35,
-                        "durationMicroseconds": 60,
+                        "durationMicroseconds": 67,
                         "errorMessage": "",
                         "functionName": "rotation",
                         "line": 100
@@ -366,7 +366,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 42,
-                        "durationMicroseconds": 53,
+                        "durationMicroseconds": 118,
                         "errorMessage": "",
                         "functionName": "transformOrigin",
                         "line": 101
@@ -374,7 +374,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 49,
-                        "durationMicroseconds": 288,
+                        "durationMicroseconds": 320,
                         "errorMessage": "",
                         "functionName": "onImplicitWidthChanged",
                         "line": 102
@@ -382,7 +382,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 50,
-                        "durationMicroseconds": 206,
+                        "durationMicroseconds": 229,
                         "errorMessage": "",
                         "functionName": "onImplicitHeightChanged",
                         "line": 103
@@ -390,7 +390,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 43,
-                        "durationMicroseconds": 50,
+                        "durationMicroseconds": 51,
                         "errorMessage": "",
                         "functionName": "centerIn",
                         "line": 92

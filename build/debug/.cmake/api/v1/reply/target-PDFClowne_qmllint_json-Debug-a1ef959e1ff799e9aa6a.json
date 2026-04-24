@@ -23,7 +23,7 @@
 			{
 				"command" : 4,
 				"file" : 1,
-				"line" : 79,
+				"line" : 81,
 				"parent" : 0
 			},
 			{
@@ -47,7 +47,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 1474,
+				"line" : 1501,
 				"parent" : 4
 			}
 		]
@@ -67,8 +67,8 @@
 	{
 		"name" : "QtInternalTargets/QmlLinter"
 	},
-	"id" : "PDFClowne_qmllint::@6890427a1f51a3e7e1df",
-	"name" : "PDFClowne_qmllint",
+	"id" : "PDFClowne_qmllint_json::@6890427a1f51a3e7e1df",
+	"name" : "PDFClowne_qmllint_json",
 	"orderDependencies" : 
 	[
 		{
@@ -106,13 +106,13 @@
 		{
 			"backtrace" : 5,
 			"isGenerated" : true,
-			"path" : "build/debug/CMakeFiles/PDFClowne_qmllint",
+			"path" : "build/debug/CMakeFiles/PDFClowne_qmllint_json",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 0,
 			"isGenerated" : true,
-			"path" : "build/debug/CMakeFiles/PDFClowne_qmllint.rule",
+			"path" : "build/debug/CMakeFiles/PDFClowne_qmllint_json.rule",
 			"sourceGroupIndex" : 1
 		}
 	],

@@ -1,1 +1,2 @@
+D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/include/../VU2PALRVTW/moc_DesktopIntegration.cpp.json
 D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/include/../VU2PALRVTW/moc_PdfDocument.cpp.json

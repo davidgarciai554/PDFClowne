@@ -1,0 +1,146 @@
+name: Developer Pre-Release
+
+on:
+  push:
+    branches:
+      - developer
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+jobs:
+  prerelease:
+    name: Build And Publish Pre-Release
+    runs-on: windows-latest
+    env:
+      QT_VERSION: 6.8.3
+      QT_ARCH: win64_msvc2022_64
+      MUPDF_REPO: ArtifexSoftware/mupdf
+      MUPDF_REF: master
+      MUPDF_ROOT: ${{ github.workspace }}\deps\mupdf
+      QT6_DIR: ${{ github.workspace }}\Qt\6.8.3\msvc2022_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: ${{ env.QT_ARCH }}
+          dir: ${{ github.workspace }}\Qt
+          cache: true
+
+      - name: Configure MSVC developer environment
+        uses: TheMrMilchmann/setup-msvc-dev@v4
+        with:
+          arch: x64
+
+      - name: Clone MuPDF
+        shell: pwsh
+        run: |
+          git clone --recursive --depth 1 --branch $env:MUPDF_REF https://github.com/$env:MUPDF_REPO.git $env:MUPDF_ROOT
+
+      - name: Build MuPDF static libraries
+        shell: pwsh
+        working-directory: ${{ env.MUPDF_ROOT }}
+        run: |
+          msbuild platform\win32\mupdf.sln `
+            /m `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            "/t:libmupdf;libthirdparty"
+
+      - name: Stage MuPDF libraries for CMake
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:MUPDF_ROOT\lib" | Out-Null
+          Copy-Item "$env:MUPDF_ROOT\platform\win32\x64\Release\libmupdf.lib" "$env:MUPDF_ROOT\lib\libmupdf.lib" -Force
+          Copy-Item "$env:MUPDF_ROOT\platform\win32\x64\Release\libthirdparty.lib" "$env:MUPDF_ROOT\lib\libthirdparty.lib" -Force
+
+      - name: Clean CI build directory
+        shell: pwsh
+        run: |
+          if (Test-Path build\release) {
+            Remove-Item build\release -Recurse -Force
+          }
+
+      - name: Configure PDFClowne release build
+        shell: pwsh
+        run: |
+          cmake -S . -B build\release -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF `
+            "-DCMAKE_PREFIX_PATH=$env:QT6_DIR" `
+            "-DMUPDF_ROOT=$env:MUPDF_ROOT"
+
+      - name: Build PDFClowne release
+        shell: pwsh
+        run: cmake --build build\release --config Release
+
+      - name: Create release notes
+        shell: pwsh
+        run: |
+          @"
+          Automated pre-release build for the developer branch.
+
+          Commit: ${{ github.sha }}
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          MuPDF source: https://github.com/${{ env.MUPDF_REPO }}/tree/${{ env.MUPDF_REF }}
+          Qt version: ${{ env.QT_VERSION }}
+          "@ | Set-Content build\release\RELEASE_NOTES.md
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build\installer | Out-Null
+          $sourceDir = (Resolve-Path build\release).Path
+          $outputDir = (Resolve-Path build\installer).Path
+          $appVersion = "2.0.0-dev.${{ github.run_number }}"
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" `
+            "/DMyAppVersion=$appVersion" `
+            "/DMySourceDir=$sourceDir" `
+            "/DMyOutputDir=$outputDir" `
+            "config\windows\PDFClowne.iss"
+
+      - name: Package release bundle
+        shell: pwsh
+        run: |
+          $archive = "PDFClowne-developer-${{ github.run_number }}.zip"
+          if (Test-Path $archive) {
+            Remove-Item $archive -Force
+          }
+          Compress-Archive -Path build\release\* -DestinationPath $archive
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDFClowne-developer-${{ github.run_number }}
+          path: |
+            PDFClowne-developer-${{ github.run_number }}.zip
+            build\installer\PDFClowne-Setup.exe
+          if-no-files-found: error
+
+      - name: Publish GitHub pre-release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: developer-build-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: PDFClowne Developer Build ${{ github.run_number }}
+          body_path: build\release\RELEASE_NOTES.md
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            PDFClowne-developer-${{ github.run_number }}.zip
+            build\installer\PDFClowne-Setup.exe

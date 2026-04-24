@@ -56,6 +56,7 @@ qt_standard_project_setup(REQUIRES 6.5)
 
 set(CPP_SOURCES
     src/main.cpp
+    src/backend/DesktopIntegration.cpp
     src/backend/PdfDocument.cpp
 )
 
@@ -64,6 +65,7 @@ if(WIN32)
 endif()
 
 set(CPP_HEADERS
+    src/backend/DesktopIntegration.h
     src/backend/Logger.h
     src/backend/PdfDocument.h
 )
