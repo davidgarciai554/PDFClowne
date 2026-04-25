@@ -20,14 +20,66 @@ ApplicationWindow {
     property string layoutMode: "continuous"
     property string zoomMode: "fitPage"
     property bool navigationPanelVisible: true
+    property string navigationSidePanelMode: "thumbnails"
+    property bool pageSnapEnabled: false
+    property int pageSpacing: 18
     property int activePageIndex: 0
     property int activeDocumentIndex: -1
     property string saveMessage: ""
+    property bool readingFullscreenEnabled: false
+    property bool presentationModeEnabled: false
+    property bool handToolEnabled: false
+    property bool reflowModeEnabled: false
+    property bool reflowLoading: false
+    property string readingPanelText: ""
+    property bool readingPanelTextLoading: false
+    property bool readingToolsMenuVisible: false
+    property bool searchOverlayVisible: false
+    property var pendingSearchFocusResult: null
+    readonly property bool immersiveModeActive: readingFullscreenEnabled || presentationModeEnabled
+    property real presentationRestoreZoom: 1.0
+    property string presentationRestoreLayoutMode: "continuous"
+    property string presentationRestoreZoomMode: "fitPage"
+    property bool presentationRestoreNavigationPanelVisible: true
+    property string presentationRestoreSidePanelMode: "thumbnails"
+    property bool presentationRestoreHandToolEnabled: false
+    property bool presentationRestoreReflowModeEnabled: false
+    property var zoomPresetOptions: [
+        { text: "50%", value: 50 },
+        { text: "75%", value: 75 },
+        { text: "100%", value: 100 },
+        { text: "125%", value: 125 },
+        { text: "150%", value: 150 },
+        { text: "200%", value: 200 },
+        { text: "300%", value: 300 },
+        { text: "400%", value: 400 },
+        { text: "Manual", value: 0 }
+    ]
     readonly property int maximumZoomPercent: 450
     readonly property bool hasActiveDocument: activeDocumentIndex >= 0 && activeDocumentIndex < documentModel.count
     signal jumpToPageRequested(int index)
+    signal internalLinkRequested(string uri, int pageIndex)
 
     onVisibleChanged: if (visible) Theme.applyColorScheme()
+    onActiveDocumentIndexChanged: {
+        if (typeof pageSearchField !== "undefined")
+            pageSearchField.text = activeDocumentSearchQuery()
+        Qt.callLater(function() { refreshReadingPanelText(false) })
+    }
+    onActivePageIndexChanged: {
+        if (!reflowModeEnabled)
+            Qt.callLater(function() { refreshReadingPanelText(false) })
+    }
+    onReflowModeEnabledChanged: Qt.callLater(function() { refreshReadingPanelText(false) })
+    onHasActiveDocumentChanged: {
+        if (!hasActiveDocument) {
+            readingPanelText = ""
+            readingPanelTextLoading = false
+            readingToolsMenuVisible = false
+            searchOverlayVisible = false
+            pendingSearchFocusResult = null
+        }
+    }
 
     PdfDocument {
         id: pdfDocument
@@ -37,6 +89,12 @@ ApplicationWindow {
         id: recentSettings
         category: "RecentFiles"
         property string filesJson: "[]"
+    }
+
+    Settings {
+        id: documentViewSettings
+        category: "DocumentViewState"
+        property string statesJson: "{}"
     }
 
     ListModel {
@@ -240,11 +298,103 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+O"; onActivated: fileDialog.open() }
     Shortcut { sequence: "Ctrl+S"; enabled: window.activeDocumentHasRotations(); onActivated: window.saveActiveDocumentRotated() }
     Shortcut { sequence: "Ctrl+Shift+S"; enabled: window.activeDocumentHasRotations(); onActivated: saveRotatedDialog.open() }
+    Shortcut { sequence: "Ctrl+1"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("single") }
+    Shortcut { sequence: "Ctrl+2"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("continuous") }
+    Shortcut { sequence: "Ctrl+3"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("twoPage") }
+    Shortcut { sequence: "Ctrl+4"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("twoPageContinuous") }
+    Shortcut { sequence: "Ctrl+F"; enabled: window.hasActiveDocument; onActivated: window.focusSearchField() }
+    Shortcut { sequence: "F3"; enabled: window.hasActiveDocument && window.activeDocumentSearchResultCount() > 0; onActivated: window.goToNextSearchResult() }
+    Shortcut { sequence: "Shift+F3"; enabled: window.hasActiveDocument && window.activeDocumentSearchResultCount() > 0; onActivated: window.goToPreviousSearchResult() }
+    Shortcut { sequence: "Ctrl+L"; enabled: window.hasActiveDocument; onActivated: window.toggleSearchPanel() }
+    Shortcut { sequence: "Ctrl+Shift+F"; enabled: window.hasActiveDocument && window.activeDocumentSearchQuery().trim().length > 0; onActivated: window.clearSearch() }
+    Shortcut { sequence: "F11"; enabled: window.hasActiveDocument; onActivated: window.toggleReadingFullscreen() }
+    Shortcut { sequence: "F5"; enabled: window.hasActiveDocument; onActivated: window.togglePresentationMode() }
+    Shortcut { sequence: "H"; enabled: window.hasActiveDocument && !window.reflowModeEnabled; onActivated: window.setHandToolEnabled(!window.handToolEnabled) }
+    Shortcut { sequence: "Ctrl+Shift+R"; enabled: window.hasActiveDocument; onActivated: window.toggleReflowMode() }
+    Shortcut { sequence: "Ctrl+Shift+C"; enabled: window.hasActiveDocument; onActivated: window.copyVisibleText() }
+    Shortcut { sequence: "Escape"; enabled: window.readingFullscreenEnabled || window.presentationModeEnabled; onActivated: window.exitImmersiveModes() }
+    Shortcut { sequence: "Right"; enabled: window.hasActiveDocument && (window.readingFullscreenEnabled || window.presentationModeEnabled); onActivated: window.goToNextPage() }
+    Shortcut { sequence: "Left"; enabled: window.hasActiveDocument && (window.readingFullscreenEnabled || window.presentationModeEnabled); onActivated: window.goToPreviousPage() }
+    Shortcut { sequence: "Space"; enabled: window.hasActiveDocument && (window.readingFullscreenEnabled || window.presentationModeEnabled); onActivated: window.goToNextPage() }
+    Shortcut { sequence: "Backspace"; enabled: window.hasActiveDocument && (window.readingFullscreenEnabled || window.presentationModeEnabled); onActivated: window.goToPreviousPage() }
 
     function fileNameFromPath(path) {
         var normalized = String(path || "").replace(/\\/g, "/")
         var index = normalized.lastIndexOf("/")
         return index >= 0 ? normalized.slice(index + 1) : normalized
+    }
+
+    function pathToFileUrl(path) {
+        var normalized = String(path || "").replace(/\\/g, "/")
+        if (normalized.length === 0)
+            return ""
+        if (normalized.indexOf("file:/") === 0)
+            return normalized
+
+        var drivePrefix = ""
+        if (/^[A-Za-z]:\//.test(normalized)) {
+            drivePrefix = normalized.slice(0, 2)
+            normalized = normalized.slice(2)
+        }
+
+        var parts = normalized.split("/")
+        for (var i = 0; i < parts.length; ++i) {
+            if (parts[i].length > 0)
+                parts[i] = encodeURIComponent(parts[i])
+        }
+
+        return drivePrefix.length > 0
+             ? "file:///" + drivePrefix + parts.join("/")
+             : "file:///" + parts.join("/")
+    }
+
+    function readDocumentViewStates() {
+        try {
+            var parsed = JSON.parse(documentViewSettings.statesJson || "{}")
+            return parsed && typeof parsed === "object" ? parsed : {}
+        } catch(e) {
+            return {}
+        }
+    }
+
+    function writeDocumentViewStates(states) {
+        documentViewSettings.statesJson = JSON.stringify(states || {})
+    }
+
+    function defaultDocumentViewState() {
+        return {
+            zoom: 1.0,
+            layoutMode: "continuous",
+            zoomMode: "fitPage"
+        }
+    }
+
+    function savedViewStateFor(path) {
+        var states = readDocumentViewStates()
+        var key = String(path || "")
+        if (!key || !states[key])
+            return defaultDocumentViewState()
+
+        var state = states[key]
+        return {
+            zoom: normalizedZoom(state.zoom),
+            layoutMode: state.layoutMode || "continuous",
+            zoomMode: state.zoomMode || "fitPage"
+        }
+    }
+
+    function persistViewState(path, state) {
+        var key = String(path || "")
+        if (!key)
+            return
+
+        var states = readDocumentViewStates()
+        states[key] = {
+            zoom: normalizedZoom(state.zoom),
+            layoutMode: state.layoutMode || "continuous",
+            zoomMode: state.zoomMode || "fitPage"
+        }
+        writeDocumentViewStates(states)
     }
 
     function loadRecentFiles() {
@@ -345,6 +495,19 @@ ApplicationWindow {
         return hasActiveDocument ? documentModel.get(activeDocumentIndex).title : ""
     }
 
+    function findDocumentIndexByPath(path) {
+        var target = String(path || "")
+        if (!target)
+            return -1
+
+        for (var i = 0; i < documentModel.count; ++i) {
+            if (String(documentModel.get(i).path || "") === target)
+                return i
+        }
+
+        return -1
+    }
+
     function activeDocumentPageCount() {
         return hasActiveDocument ? Math.max(1, documentModel.get(activeDocumentIndex).pageCount || 1) : 0
     }
@@ -393,6 +556,137 @@ ApplicationWindow {
         }
     }
 
+    function activeDocumentOutlineEntries() {
+        if (!hasActiveDocument)
+            return []
+
+        var raw = []
+        try {
+            raw = JSON.parse(documentModel.get(activeDocumentIndex).outlineJson || "[]")
+        } catch(e) {
+            raw = []
+        }
+
+        var flattened = []
+
+        function visit(items, depth) {
+            if (!items || items.length === undefined)
+                return
+
+            for (var i = 0; i < items.length; ++i) {
+                var item = items[i] || {}
+                flattened.push({
+                    title: item.title || ("Bookmark " + String(flattened.length + 1)),
+                    pageIndex: item.pageIndex !== undefined ? item.pageIndex : -1,
+                    uri: item.uri || "",
+                    depth: depth,
+                    isOpen: item.isOpen === undefined ? true : item.isOpen
+                })
+                visit(item.children || [], depth + 1)
+            }
+        }
+
+        visit(raw, 0)
+        return flattened
+    }
+
+    function activeDocumentLinksByPage() {
+        if (!hasActiveDocument)
+            return []
+
+        try {
+            return JSON.parse(documentModel.get(activeDocumentIndex).pageLinksJson || "[]")
+        } catch(e) {
+            return []
+        }
+    }
+
+    function activeDocumentSearchResults() {
+        if (!hasActiveDocument)
+            return []
+
+        try {
+            return JSON.parse(documentModel.get(activeDocumentIndex).searchResultsJson || "[]")
+        } catch(e) {
+            return []
+        }
+    }
+
+    function activeDocumentSearchResultCount() {
+        return activeDocumentSearchResults().length
+    }
+
+    function activeDocumentSearchResultIndex() {
+        if (!hasActiveDocument)
+            return -1
+
+        var value = Number(documentModel.get(activeDocumentIndex).activeSearchResultIndex)
+        return isNaN(value) ? -1 : value
+    }
+
+    function activeDocumentSearchResult(index) {
+        var results = activeDocumentSearchResults()
+        if (index < 0 || index >= results.length)
+            return null
+        return results[index]
+    }
+
+    function activeDocumentSearchQuery() {
+        return hasActiveDocument ? String(documentModel.get(activeDocumentIndex).searchQuery || "") : ""
+    }
+
+    function activeDocumentReflowText() {
+        return hasActiveDocument ? String(documentModel.get(activeDocumentIndex).reflowText || "") : ""
+    }
+
+    function readActiveDocumentPageTextCache() {
+        if (!hasActiveDocument)
+            return {}
+
+        try {
+            var parsed = JSON.parse(documentModel.get(activeDocumentIndex).pageTextCacheJson || "{}")
+            return parsed && typeof parsed === "object" ? parsed : {}
+        } catch(e) {
+            return {}
+        }
+    }
+
+    function writeActiveDocumentPageTextCache(cache) {
+        if (!hasActiveDocument)
+            return
+
+        documentModel.setProperty(activeDocumentIndex, "pageTextCacheJson", JSON.stringify(cache || {}))
+    }
+
+    function activeDocumentHistoryBack() {
+        if (!hasActiveDocument)
+            return []
+
+        try {
+            return JSON.parse(documentModel.get(activeDocumentIndex).historyBackJson || "[]")
+        } catch(e) {
+            return []
+        }
+    }
+
+    function activeDocumentHistoryForward() {
+        if (!hasActiveDocument)
+            return []
+
+        try {
+            return JSON.parse(documentModel.get(activeDocumentIndex).historyForwardJson || "[]")
+        } catch(e) {
+            return []
+        }
+    }
+
+    function trimHistoryEntries(entries) {
+        var copy = entries.slice()
+        while (copy.length > 100)
+            copy.shift()
+        return copy
+    }
+
     function activeDocumentHasRotations() {
         var rotations = activeDocumentPageRotations()
         for (var i = 0; i < rotations.length; ++i) {
@@ -412,7 +706,15 @@ ApplicationWindow {
         documentModel.setProperty(activeDocumentIndex, "layoutMode", layoutMode)
         documentModel.setProperty(activeDocumentIndex, "zoomMode", zoomMode)
         documentModel.setProperty(activeDocumentIndex, "navigationPanelVisible", navigationPanelVisible)
+        documentModel.setProperty(activeDocumentIndex, "sidePanelMode", navigationSidePanelMode)
+        documentModel.setProperty(activeDocumentIndex, "snapToPage", pageSnapEnabled)
+        documentModel.setProperty(activeDocumentIndex, "pageSpacing", pageSpacing)
         documentModel.setProperty(activeDocumentIndex, "activePageIndex", activePageIndex)
+        persistViewState(documentModel.get(activeDocumentIndex).path, {
+            zoom: viewerZoom,
+            layoutMode: layoutMode,
+            zoomMode: zoomMode
+        })
     }
 
     function normalizedZoom(value) {
@@ -446,24 +748,44 @@ ApplicationWindow {
         return Math.max(10, Math.min(maximumZoomPercent, Math.round(percent)))
     }
 
+    function zoomPresetIndex() {
+        var current = effectiveZoomPercent()
+        for (var i = 0; i < zoomPresetOptions.length - 1; ++i) {
+            if (zoomPresetOptions[i].value === current)
+                return i
+        }
+        return zoomPresetOptions.length - 1
+    }
+
     function setActiveDocument(index) {
         if (index < 0 || index >= documentModel.count) {
             activeDocumentIndex = -1
             viewerZoom = 1.0
+            layoutMode = "continuous"
+            zoomMode = "fitPage"
             activePageIndex = 0
+            reflowModeEnabled = false
             return
         }
 
         activeDocumentIndex = index
         var doc = documentModel.get(index)
-        viewerZoom = normalizedZoom(doc.zoom)
-        layoutMode = doc.layoutMode || "continuous"
-        zoomMode = doc.zoomMode || doc.viewMode || "fitPage"
+        var savedState = savedViewStateFor(doc.path)
+        viewerZoom = normalizedZoom(doc.zoom !== undefined ? doc.zoom : savedState.zoom)
+        layoutMode = doc.layoutMode || savedState.layoutMode || "continuous"
+        zoomMode = doc.zoomMode || doc.viewMode || savedState.zoomMode || "fitPage"
         navigationPanelVisible = doc.navigationPanelVisible === undefined ? true : doc.navigationPanelVisible
+        navigationSidePanelMode = doc.sidePanelMode || "thumbnails"
+        pageSnapEnabled = doc.snapToPage === undefined ? false : doc.snapToPage
+        pageSpacing = doc.pageSpacing === undefined ? 18 : doc.pageSpacing
         activePageIndex = doc.activePageIndex || 0
 
         if (pdfDocument.filePath !== doc.path)
             pdfDocument.load(doc.path)
+
+        updateActiveSearchResults()
+        if (reflowModeEnabled && activeDocumentReflowText().length === 0)
+            Qt.callLater(function() { ensureActiveDocumentReflowText(false) })
     }
 
     function closeActiveDocument() {
@@ -495,6 +817,7 @@ ApplicationWindow {
 
             var sources = loadedPageSources()
             var thumbnails = loadedThumbnailSources()
+            var savedState = savedViewStateFor(pdfDocument.filePath)
 
             documentModel.append({
                 path: pdfDocument.filePath,
@@ -503,13 +826,25 @@ ApplicationWindow {
                 pageSourcesJson: JSON.stringify(sources),
                 thumbnailSourcesJson: JSON.stringify(thumbnails),
                 pageSizesJson: pdfDocument.pageSizesJson,
+                outlineJson: pdfDocument.outlineJson,
+                pageLinksJson: pdfDocument.pageLinksJson,
                 pageCount: pdfDocument.pageCount,
-                zoom: 1.0,
-                layoutMode: "continuous",
-                zoomMode: "fitPage",
+                zoom: savedState.zoom,
+                layoutMode: savedState.layoutMode,
+                zoomMode: savedState.zoomMode,
                 navigationPanelVisible: true,
+                sidePanelMode: "thumbnails",
+                snapToPage: false,
+                pageSpacing: 18,
                 activePageIndex: 0,
-                pageRotationsJson: "[]"
+                pageRotationsJson: "[]",
+                searchQuery: "",
+                searchResultsJson: "[]",
+                activeSearchResultIndex: -1,
+                reflowText: "",
+                pageTextCacheJson: "{}",
+                historyBackJson: "[]",
+                historyForwardJson: "[]"
             })
             setActiveDocument(documentModel.count - 1)
             addRecentFile(pdfDocument.filePath, pdfDocument.title)
@@ -577,6 +912,8 @@ ApplicationWindow {
         documentModel.setProperty(index, "pageSourcesJson", JSON.stringify(sources))
         documentModel.setProperty(index, "thumbnailSourcesJson", JSON.stringify(thumbnails))
         documentModel.setProperty(index, "pageSizesJson", pdfDocument.pageSizesJson)
+        documentModel.setProperty(index, "outlineJson", pdfDocument.outlineJson)
+        documentModel.setProperty(index, "pageLinksJson", pdfDocument.pageLinksJson)
         documentModel.setProperty(index, "pageCount", pdfDocument.pageCount)
         documentModel.setProperty(index, "pageRotationsJson", "[]")
         documentModel.setProperty(index, "zoom", zoom)
@@ -628,6 +965,475 @@ ApplicationWindow {
         return rendered
     }
 
+    function updateActiveSearchResults() {
+        if (!hasActiveDocument)
+            return
+
+        var query = activeDocumentSearchQuery().trim()
+        if (query.length === 0) {
+            documentModel.setProperty(activeDocumentIndex, "searchResultsJson", "[]")
+            documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", -1)
+            if (navigationSidePanelMode === "search")
+                navigationSidePanelMode = "thumbnails"
+            syncActiveDocumentState()
+            return
+        }
+
+        var doc = documentModel.get(activeDocumentIndex)
+        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
+            return
+
+        documentModel.setProperty(activeDocumentIndex, "searchResultsJson", pdfDocument.searchDocument(query))
+
+        var count = activeDocumentSearchResultCount()
+        if (count <= 0) {
+            documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", -1)
+            if (navigationSidePanelMode === "search")
+                navigationSidePanelMode = "thumbnails"
+            saveMessage = "No se encontraron coincidencias."
+            syncActiveDocumentState()
+            return
+        }
+
+        var nextIndex = activeDocumentSearchResultIndex()
+        if (nextIndex < 0 || nextIndex >= count)
+            nextIndex = 0
+
+        documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", nextIndex)
+        navigationPanelVisible = true
+        navigationSidePanelMode = "search"
+        saveMessage = count === 1 ? "1 coincidencia." : String(count) + " coincidencias."
+        syncActiveDocumentState()
+
+        Qt.callLater(function() {
+            activateSearchResult(nextIndex, false)
+        })
+    }
+
+    function ensureActiveDocumentBackendLoaded() {
+        if (!hasActiveDocument)
+            return false
+
+        var doc = documentModel.get(activeDocumentIndex)
+        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
+            return false
+
+        return true
+    }
+
+    function ensureActiveDocumentReflowText(forceRefresh) {
+        if (!hasActiveDocument)
+            return ""
+
+        if (!forceRefresh) {
+            var cached = activeDocumentReflowText()
+            if (cached.length > 0)
+                return cached
+        }
+
+        if (!ensureActiveDocumentBackendLoaded())
+            return ""
+
+        reflowLoading = true
+        var extracted = String(pdfDocument.extractDocumentText() || "")
+        reflowLoading = false
+        documentModel.setProperty(activeDocumentIndex, "reflowText", extracted)
+        return extracted
+    }
+
+    function activePageText(forceRefresh) {
+        if (!hasActiveDocument)
+            return ""
+
+        if (!forceRefresh) {
+            var cache = readActiveDocumentPageTextCache()
+            var cached = String(cache[String(activePageIndex)] || "")
+            if (cached.length > 0)
+                return cached
+        }
+
+        if (!ensureActiveDocumentBackendLoaded())
+            return ""
+
+        var extracted = String(pdfDocument.extractPageText(activePageIndex) || "")
+        var nextCache = readActiveDocumentPageTextCache()
+        nextCache[String(activePageIndex)] = extracted
+        writeActiveDocumentPageTextCache(nextCache)
+        return extracted
+    }
+
+    function refreshReadingPanelText(forceRefresh) {
+        if (!hasActiveDocument) {
+            readingPanelText = ""
+            readingPanelTextLoading = false
+            return ""
+        }
+
+        readingPanelTextLoading = true
+        var nextText = reflowModeEnabled
+                     ? ensureActiveDocumentReflowText(forceRefresh)
+                     : activePageText(forceRefresh)
+        readingPanelText = String(nextText || "")
+        readingPanelTextLoading = false
+        return readingPanelText
+    }
+
+    function copyTextToClipboard(text, successMessage, emptyMessage) {
+        var plain = String(text || "").trim()
+        if (plain.length === 0) {
+            saveMessage = emptyMessage || "No hay texto extraible en este PDF."
+            return
+        }
+
+        if (desktopIntegration.setClipboardText(plain))
+            saveMessage = successMessage
+        else
+            saveMessage = "No se pudo copiar el texto."
+    }
+
+    function copyVisibleText() {
+        if (reflowModeEnabled)
+            copyTextToClipboard(ensureActiveDocumentReflowText(false), "Texto del documento copiado.", "Este PDF no tiene texto extraible para reflow.")
+        else if (pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0)
+            copyTextToClipboard(pdfViewer.selectedText, "Texto seleccionado copiado.", "No hay texto seleccionado.")
+        else
+            copyTextToClipboard(activePageText(false), "Texto de la pagina copiado.", "La pagina actual no tiene texto extraible.")
+    }
+
+    function setHandToolEnabled(enabled) {
+        handToolEnabled = !!enabled
+        if (handToolEnabled)
+            reflowModeEnabled = false
+    }
+
+    function toggleReadingFullscreen() {
+        if (!hasActiveDocument)
+            return
+
+        if (presentationModeEnabled)
+            togglePresentationMode()
+
+        readingFullscreenEnabled = !readingFullscreenEnabled
+        if (readingFullscreenEnabled)
+            visibility = Window.FullScreen
+        else if (visibility === Window.FullScreen)
+            visibility = Window.Maximized
+    }
+
+    function exitImmersiveModes() {
+        if (presentationModeEnabled) {
+            togglePresentationMode()
+            return
+        }
+
+        if (readingFullscreenEnabled)
+            toggleReadingFullscreen()
+    }
+
+    function togglePresentationMode() {
+        if (!hasActiveDocument)
+            return
+
+        if (!presentationModeEnabled) {
+            presentationRestoreZoom = viewerZoom
+            presentationRestoreLayoutMode = layoutMode
+            presentationRestoreZoomMode = zoomMode
+            presentationRestoreNavigationPanelVisible = navigationPanelVisible
+            presentationRestoreSidePanelMode = navigationSidePanelMode
+            presentationRestoreHandToolEnabled = handToolEnabled
+            presentationRestoreReflowModeEnabled = reflowModeEnabled
+
+            presentationModeEnabled = true
+            readingFullscreenEnabled = true
+            reflowModeEnabled = false
+            handToolEnabled = false
+            navigationPanelVisible = false
+            layoutMode = "single"
+            zoomMode = "fitPage"
+            viewerZoom = 1.0
+            syncActiveDocumentState()
+            visibility = Window.FullScreen
+            jumpToPageRequested(activePageIndex)
+            return
+        }
+
+        presentationModeEnabled = false
+        readingFullscreenEnabled = false
+        layoutMode = presentationRestoreLayoutMode
+        zoomMode = presentationRestoreZoomMode
+        viewerZoom = normalizedZoom(presentationRestoreZoom)
+        navigationPanelVisible = presentationRestoreNavigationPanelVisible
+        navigationSidePanelMode = presentationRestoreSidePanelMode
+        handToolEnabled = presentationRestoreHandToolEnabled
+        reflowModeEnabled = presentationRestoreReflowModeEnabled
+        syncActiveDocumentState()
+        if (visibility === Window.FullScreen)
+            visibility = Window.Maximized
+        jumpToPageRequested(activePageIndex)
+    }
+
+    function toggleReflowMode() {
+        if (!hasActiveDocument)
+            return
+
+        if (reflowModeEnabled) {
+            reflowModeEnabled = false
+            refreshReadingPanelText(false)
+            return
+        }
+
+        var text = ensureActiveDocumentReflowText(false)
+        if (text.trim().length === 0) {
+            saveMessage = "Este PDF no tiene texto extraible para reflow."
+            return
+        }
+
+        reflowModeEnabled = true
+        handToolEnabled = false
+        refreshReadingPanelText(false)
+    }
+
+    function setSearchQuery(query) {
+        if (!hasActiveDocument)
+            return
+
+        documentModel.setProperty(activeDocumentIndex, "searchQuery", String(query || ""))
+        updateActiveSearchResults()
+    }
+
+    function clearSearch() {
+        if (!hasActiveDocument)
+            return
+
+        documentModel.setProperty(activeDocumentIndex, "searchQuery", "")
+        documentModel.setProperty(activeDocumentIndex, "searchResultsJson", "[]")
+        documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", -1)
+        if (navigationSidePanelMode === "search")
+            navigationSidePanelMode = "thumbnails"
+        saveMessage = ""
+        syncActiveDocumentState()
+
+        if (typeof pageSearchField !== "undefined") {
+            pageSearchField.text = ""
+            pageSearchField.forceActiveFocus()
+        }
+    }
+
+    function closeSearchOverlay(clearQuery) {
+        searchOverlayVisible = false
+        if (clearQuery)
+            clearSearch()
+    }
+
+    function focusSearchField() {
+        if (typeof pageSearchField === "undefined")
+            return
+
+        searchOverlayVisible = true
+        pageSearchField.forceActiveFocus()
+        pageSearchField.selectAll()
+    }
+
+    function activateSearchResult(index, addHistory) {
+        if (!hasActiveDocument)
+            return
+
+        var targetIndex = Number(index)
+        var result = activeDocumentSearchResult(targetIndex)
+        if (!result)
+            return
+
+        documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", targetIndex)
+        navigationPanelVisible = true
+        navigationSidePanelMode = "search"
+        pendingSearchFocusResult = result
+        syncActiveDocumentState()
+        navigateToDocumentPage(Number(result.pageIndex), !!addHistory)
+    }
+
+    function goToNextSearchResult() {
+        var count = activeDocumentSearchResultCount()
+        if (count <= 0)
+            return
+
+        var next = activeDocumentSearchResultIndex() + 1
+        if (next >= count)
+            next = 0
+        activateSearchResult(next, true)
+    }
+
+    function goToPreviousSearchResult() {
+        var count = activeDocumentSearchResultCount()
+        if (count <= 0)
+            return
+
+        var previous = activeDocumentSearchResultIndex() - 1
+        if (previous < 0)
+            previous = count - 1
+        activateSearchResult(previous, true)
+    }
+
+    function toggleSearchPanel() {
+        if (!hasActiveDocument)
+            return
+
+        if (!navigationPanelVisible) {
+            navigationPanelVisible = true
+            navigationSidePanelMode = "search"
+            syncActiveDocumentState()
+            return
+        }
+
+        if (navigationSidePanelMode !== "search") {
+            navigationSidePanelMode = "search"
+            syncActiveDocumentState()
+            return
+        }
+
+        navigationPanelVisible = false
+        syncActiveDocumentState()
+    }
+
+    function setSidePanelMode(mode) {
+        if (mode !== "thumbnails" && mode !== "outline" && mode !== "search")
+            return
+
+        navigationSidePanelMode = mode
+        syncActiveDocumentState()
+    }
+
+    function setPageSnapEnabled(enabled) {
+        pageSnapEnabled = !!enabled
+        syncActiveDocumentState()
+    }
+
+    function setPageSpacing(value) {
+        var spacing = Math.max(0, Math.min(48, Number(value)))
+        if (isNaN(spacing))
+            return
+
+        pageSpacing = Math.round(spacing)
+        syncActiveDocumentState()
+    }
+
+    function navigateToDocumentPage(index, addHistory) {
+        if (!hasActiveDocument)
+            return
+
+        var target = Math.max(0, Math.min(Number(index), activeDocumentPageCount() - 1))
+        if (isNaN(target))
+            return
+
+        if (addHistory && target !== activePageIndex) {
+            var back = activeDocumentHistoryBack()
+            back.push(activePageIndex)
+            documentModel.setProperty(activeDocumentIndex, "historyBackJson", JSON.stringify(trimHistoryEntries(back)))
+            documentModel.setProperty(activeDocumentIndex, "historyForwardJson", "[]")
+        }
+
+        activePageIndex = target
+        syncActiveDocumentState()
+        Qt.callLater(function() {
+            jumpToPageRequested(activePageIndex)
+        })
+    }
+
+    function goBackInDocument() {
+        if (!hasActiveDocument)
+            return
+
+        var back = activeDocumentHistoryBack()
+        if (back.length === 0)
+            return
+
+        var forward = activeDocumentHistoryForward()
+        forward.push(activePageIndex)
+        var target = back.pop()
+        documentModel.setProperty(activeDocumentIndex, "historyBackJson", JSON.stringify(trimHistoryEntries(back)))
+        documentModel.setProperty(activeDocumentIndex, "historyForwardJson", JSON.stringify(trimHistoryEntries(forward)))
+        activePageIndex = Math.max(0, Math.min(target, activeDocumentPageCount() - 1))
+        syncActiveDocumentState()
+        Qt.callLater(function() {
+            jumpToPageRequested(activePageIndex)
+        })
+    }
+
+    function goForwardInDocument() {
+        if (!hasActiveDocument)
+            return
+
+        var forward = activeDocumentHistoryForward()
+        if (forward.length === 0)
+            return
+
+        var back = activeDocumentHistoryBack()
+        back.push(activePageIndex)
+        var target = forward.pop()
+        documentModel.setProperty(activeDocumentIndex, "historyBackJson", JSON.stringify(trimHistoryEntries(back)))
+        documentModel.setProperty(activeDocumentIndex, "historyForwardJson", JSON.stringify(trimHistoryEntries(forward)))
+        activePageIndex = Math.max(0, Math.min(target, activeDocumentPageCount() - 1))
+        syncActiveDocumentState()
+        Qt.callLater(function() {
+            jumpToPageRequested(activePageIndex)
+        })
+    }
+
+    function activateLinkTarget(uri, pageIndex) {
+        var targetUri = String(uri || "")
+        var targetPage = Number(pageIndex)
+
+        if (targetPage >= 0) {
+            navigateToDocumentPage(targetPage, true)
+            return
+        }
+
+        if (targetUri.length === 0)
+            return
+
+        if (targetUri.indexOf(":") >= 0) {
+            Qt.openUrlExternally(targetUri)
+            return
+        }
+
+        var doc = documentModel.get(activeDocumentIndex)
+        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
+            return
+
+        var resolvedPage = pdfDocument.resolveLinkPage(targetUri)
+        if (resolvedPage >= 0)
+            navigateToDocumentPage(resolvedPage, true)
+    }
+
+    function moveDocument(from, to) {
+        var count = documentModel.count
+        if (count <= 1 || from < 0 || from >= count || to < 0 || to > count)
+            return
+
+        var insertIndex = Math.max(0, Math.min(Number(to), count))
+        if (!isFinite(insertIndex))
+            return
+
+        if (insertIndex > from)
+            insertIndex -= 1
+
+        if (insertIndex === from)
+            return
+
+        var activePath = hasActiveDocument ? String(documentModel.get(activeDocumentIndex).path || "") : ""
+        documentModel.move(from, insertIndex, 1)
+
+        var nextActiveIndex = findDocumentIndexByPath(activePath)
+        if (nextActiveIndex < 0)
+            nextActiveIndex = Math.max(0, Math.min(insertIndex, documentModel.count - 1))
+
+        if (nextActiveIndex >= 0 && nextActiveIndex < documentModel.count) {
+            activeDocumentIndex = nextActiveIndex
+
+            if (pdfDocument.filePath !== activePath)
+                setActiveDocument(nextActiveIndex)
+        }
+    }
+
     function toggleNavigationPanel() {
         navigationPanelVisible = !navigationPanelVisible
         syncActiveDocumentState()
@@ -665,13 +1471,7 @@ ApplicationWindow {
     }
 
     function setActivePage(index) {
-        var page = Number(index)
-        if (isNaN(page))
-            return
-
-        activePageIndex = Math.max(0, Math.min(page, activeDocumentPageCount() - 1))
-        syncActiveDocumentState()
-        jumpToPageRequested(activePageIndex)
+        navigateToDocumentPage(index, true)
     }
 
     function reportActivePage(index) {
@@ -679,7 +1479,11 @@ ApplicationWindow {
         if (isNaN(page))
             return
 
-        activePageIndex = Math.max(0, Math.min(page, activeDocumentPageCount() - 1))
+        var target = Math.max(0, Math.min(page, activeDocumentPageCount() - 1))
+        if (target === activePageIndex)
+            return
+
+        activePageIndex = target
         syncActiveDocumentState()
     }
 
@@ -755,6 +1559,8 @@ ApplicationWindow {
         var page = Math.max(0, Math.min(activePageIndex, doc.pageCount - 1))
         rotations[page] = (rotations[page] + delta + 360) % 360
         documentModel.setProperty(activeDocumentIndex, "pageRotationsJson", JSON.stringify(rotations))
+        renderActivePage(page, pdfViewer ? pdfViewer.renderScale : 4.0)
+        renderActiveThumbnail(page)
         saveMessage = ""
     }
 
@@ -765,6 +1571,7 @@ ApplicationWindow {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 56
+            visible: !window.readingFullscreenEnabled && !window.presentationModeEnabled
             color: Theme.surface
 
             Rectangle {
@@ -948,7 +1755,7 @@ ApplicationWindow {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 38
-            visible: documentModel.count > 0
+            visible: documentModel.count > 0 && !window.readingFullscreenEnabled && !window.presentationModeEnabled
             color: Theme.surface
 
             Rectangle {
@@ -967,109 +1774,170 @@ ApplicationWindow {
                 }
                 spacing: 4
 
-                Repeater {
-                    model: documentModel
+                Flickable {
+                    id: tabsFlickable
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    contentWidth: tabsRow.width
+                    contentHeight: height
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
 
-                    Rectangle {
-                        id: documentTab
-                        required property int index
-                        required property string title
+                    Row {
+                        id: tabsRow
+                        spacing: 4
+                        height: tabsFlickable.height
 
-                        Layout.preferredWidth: Math.min(240, Math.max(150, tabTitle.implicitWidth + 48))
-                        Layout.fillHeight: true
-                        color: window.activeDocumentIndex === index ? Theme.background : Theme.surfaceAlt
-                        border.color: window.activeDocumentIndex === index ? Theme.accent : Theme.border
-                        border.width: window.activeDocumentIndex === index ? 2 : 1
-                        radius: Theme.radius
+                        Repeater {
+                            model: documentModel
 
-                        RowLayout {
-                            anchors {
-                                fill: parent
-                                leftMargin: 10
-                                rightMargin: 6
+                            Rectangle {
+                                id: documentTab
+                                required property int index
+                                required property string title
+                                property real lastDragCenterX: 0
+
+                                objectName: "documentTab"
+                                width: Math.min(240, Math.max(150, tabTitle.implicitWidth + 48))
+                                height: tabsFlickable.height
+                                color: window.activeDocumentIndex === index ? Theme.background : Theme.surfaceAlt
+                                border.color: window.activeDocumentIndex === index ? Theme.accent : Theme.border
+                                border.width: window.activeDocumentIndex === index ? 2 : 1
+                                radius: Theme.radius
+                                z: tabDragHandler.active ? 10 : 1
+                                transform: Translate {
+                                    x: tabDragHandler.active ? tabDragHandler.translation.x : 0
+                                }
+
+                                RowLayout {
+                                    anchors {
+                                        fill: parent
+                                        leftMargin: 10
+                                        rightMargin: 6
+                                    }
+                                    spacing: 6
+
+                                    Text {
+                                        id: tabTitle
+                                        text: documentTab.title
+                                        color: Theme.text
+                                        font.pixelSize: 12
+                                        elide: Text.ElideRight
+                                        Layout.fillWidth: true
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+
+                                    Button {
+                                        id: closeTabButton
+                                        text: "×"
+                                        Layout.preferredWidth: 24
+                                        Layout.preferredHeight: 24
+                                        onClicked: {
+                                            window.setActiveDocument(documentTab.index)
+                                            window.closeActiveDocument()
+                                        }
+                                        ToolTip.visible: hovered
+                                        ToolTip.text: "Cerrar"
+
+                                        contentItem: Text {
+                                            text: closeTabButton.text
+                                            color: Theme.secondaryText
+                                            font.pixelSize: 14
+                                            horizontalAlignment: Text.AlignHCenter
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        background: Rectangle {
+                                            color: closeTabButton.hovered ? Theme.hover : "transparent"
+                                            radius: Theme.radius
+                                        }
+                                    }
+                                }
+
+                                TapHandler {
+                                    acceptedButtons: Qt.LeftButton
+                                    onTapped: window.setActiveDocument(documentTab.index)
+                                }
+
+                                DragHandler {
+                                    id: tabDragHandler
+                                    target: null
+                                    xAxis.enabled: true
+                                    yAxis.enabled: false
+                                    onActiveChanged: {
+                                        if (active) {
+                                            documentTab.lastDragCenterX = documentTab.x + documentTab.width / 2
+                                        } else {
+                                            documentTab.lastDragCenterX = 0
+                                        }
+                                    }
+                                    onTranslationChanged: {
+                                        var dragDistance = Math.abs(tabDragHandler.translation.x)
+                                        if (dragDistance < 18)
+                                            return
+
+                                        var centerX = documentTab.x + tabDragHandler.translation.x + documentTab.width / 2
+                                        if (Math.abs(centerX - documentTab.lastDragCenterX) < 6)
+                                            return
+
+                                        var targetIndex = documentTab.index
+                                        for (var i = 0; i < tabsRow.children.length; ++i) {
+                                            var child = tabsRow.children[i]
+                                            if (!child || child === documentTab || child.objectName !== "documentTab" || child.width === undefined)
+                                                continue
+
+                                            var childCenter = child.x + child.width / 2
+                                            if (centerX < childCenter) {
+                                                targetIndex = child.index
+                                                break
+                                            }
+
+                                            targetIndex = child.index + 1
+                                        }
+
+                                        documentTab.lastDragCenterX = centerX
+                                        window.moveDocument(documentTab.index, targetIndex)
+                                    }
+                                }
                             }
-                            spacing: 6
+                        }
 
-                            Text {
-                                id: tabTitle
-                                text: documentTab.title
+                        Button {
+                            id: newTabButton
+                            width: 34
+                            height: tabsFlickable.height
+                            text: "+"
+                            onClicked: fileDialog.open()
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Abrir PDF"
+
+                            contentItem: Text {
+                                text: newTabButton.text
                                 color: Theme.text
-                                font.pixelSize: 12
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
+                                font.pixelSize: 18
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
 
-                            Button {
-                                id: closeTabButton
-                                text: "×"
-                                Layout.preferredWidth: 24
-                                Layout.preferredHeight: 24
-                                onClicked: {
-                                    window.setActiveDocument(documentTab.index)
-                                    window.closeActiveDocument()
-                                }
-                                ToolTip.visible: hovered
-                                ToolTip.text: "Cerrar"
-
-                                contentItem: Text {
-                                    text: closeTabButton.text
-                                    color: Theme.secondaryText
-                                    font.pixelSize: 14
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-
-                                background: Rectangle {
-                                    color: closeTabButton.hovered ? Theme.hover : "transparent"
-                                    radius: Theme.radius
-                                }
+                            background: Rectangle {
+                                color: newTabButton.down ? Theme.tabActive
+                                      : newTabButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: newTabButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: newTabButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
                             }
                         }
-
-                        TapHandler {
-                            acceptedButtons: Qt.LeftButton
-                            onTapped: window.setActiveDocument(documentTab.index)
-                        }
                     }
                 }
-
-                Button {
-                    id: newTabButton
-                    text: "+"
-                    Layout.preferredWidth: 34
-                    Layout.fillHeight: true
-                    onClicked: fileDialog.open()
-                    ToolTip.visible: hovered
-                    ToolTip.text: "Abrir PDF"
-
-                    contentItem: Text {
-                        text: newTabButton.text
-                        color: Theme.text
-                        font.pixelSize: 18
-                        font.weight: Font.DemiBold
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    background: Rectangle {
-                        color: newTabButton.down ? Theme.tabActive
-                              : newTabButton.hovered ? Theme.hover
-                              : Theme.surfaceAlt
-                        border.color: newTabButton.activeFocus ? Theme.accent : Theme.border
-                        border.width: newTabButton.activeFocus ? 2 : 1
-                        radius: Theme.radius
-                    }
-                }
-
-                Item { Layout.fillWidth: true }
             }
         }
 
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 88
-            visible: window.hasActiveDocument
+            visible: window.hasActiveDocument && !window.readingFullscreenEnabled && !window.presentationModeEnabled
             color: Theme.background
 
             Rectangle {
@@ -1095,22 +1963,66 @@ ApplicationWindow {
                         }
                         spacing: 4
 
-                        Rectangle {
-                            Layout.preferredWidth: 38
-                            Layout.preferredHeight: 28
+                        Row {
                             Layout.alignment: Qt.AlignBottom
-                            color: Theme.background
-                            border.color: Theme.border
-                            radius: Theme.radius
+                            spacing: 4
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: "◉"
-                                color: Theme.text
-                                font.pixelSize: 15
-                                font.weight: Font.DemiBold
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
+                            Button {
+                                id: viewTabButton
+                                text: "Vista"
+                                width: 58
+                                height: 28
+                                onClicked: window.readingToolsMenuVisible = false
+
+                                contentItem: Text {
+                                    text: viewTabButton.text
+                                    color: !window.readingToolsMenuVisible ? Theme.accentText : Theme.text
+                                    font.pixelSize: 11
+                                    font.weight: Font.DemiBold
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                                background: Rectangle {
+                                    color: !window.readingToolsMenuVisible ? Theme.accent
+                                          : viewTabButton.down ? Theme.tabActive
+                                          : viewTabButton.hovered ? Theme.hover
+                                          : Theme.background
+                                    border.color: viewTabButton.activeFocus ? Theme.accent : Theme.border
+                                    border.width: viewTabButton.activeFocus ? 2 : 1
+                                    radius: Theme.radius
+                                }
+                            }
+
+                            Button {
+                                id: readingToolsButton
+                                text: "Lectura"
+                                width: 72
+                                height: 28
+                                onClicked: {
+                                    window.readingToolsMenuVisible = !window.readingToolsMenuVisible
+                                }
+                                ToolTip.visible: hovered
+                                ToolTip.text: "Mostrar opciones de lectura"
+
+                                contentItem: Text {
+                                    text: readingToolsButton.text
+                                    color: window.readingToolsMenuVisible ? Theme.accentText : Theme.text
+                                    font.pixelSize: 11
+                                    font.weight: Font.DemiBold
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                                background: Rectangle {
+                                    color: window.readingToolsMenuVisible ? Theme.accent
+                                          : readingToolsButton.down ? Theme.tabActive
+                                          : readingToolsButton.hovered ? Theme.hover
+                                          : Theme.background
+                                    border.color: readingToolsButton.activeFocus ? Theme.accent : Theme.border
+                                    border.width: readingToolsButton.activeFocus ? 2 : 1
+                                    radius: Theme.radius
+                                }
                             }
                         }
 
@@ -1124,11 +2036,11 @@ ApplicationWindow {
                     color: Theme.background
 
                     RowLayout {
+                        visible: !window.readingToolsMenuVisible
                         anchors {
-                            left: parent.left
-                            top: parent.top
-                            bottom: parent.bottom
+                            fill: parent
                             leftMargin: 12
+                            rightMargin: 12
                             topMargin: 8
                             bottomMargin: 8
                         }
@@ -1422,6 +2334,429 @@ ApplicationWindow {
                                 opacity: saveRotatedAsButton.enabled ? 1.0 : 0.55
                             }
                         }
+
+                        Rectangle {
+                            Layout.preferredWidth: 1
+                            Layout.fillHeight: true
+                            color: Theme.border
+                        }
+
+                        Button {
+                            id: searchViewButton
+                            text: ""
+                            Layout.preferredWidth: 34
+                            Layout.preferredHeight: 30
+                            onClicked: window.focusSearchField()
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Buscar en documento (Ctrl+F)"
+
+                            contentItem: Canvas {
+                                id: searchViewIcon
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                property color strokeColor: Theme.text
+                                function repaintIfReady() {
+                                    if (available && visible && width > 0 && height > 0)
+                                        requestPaint()
+                                }
+
+                                onStrokeColorChanged: requestPaint()
+                                onAvailableChanged: repaintIfReady()
+                                onVisibleChanged: repaintIfReady()
+                                onWidthChanged: repaintIfReady()
+                                onHeightChanged: repaintIfReady()
+                                Component.onCompleted: repaintIfReady()
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.lineCap = "round"
+                                    ctx.lineJoin = "round"
+                                    ctx.strokeStyle = strokeColor
+                                    ctx.lineWidth = 1.7
+
+                                    ctx.beginPath()
+                                    ctx.arc(7.5, 7.5, 4.2, 0, Math.PI * 2)
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(10.8, 10.8)
+                                    ctx.lineTo(15, 15)
+                                    ctx.stroke()
+                                }
+                            }
+
+                            background: Rectangle {
+                                color: searchViewButton.down ? Theme.tabActive
+                                      : searchViewButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: searchViewButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: searchViewButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Item { Layout.fillWidth: true }
+                    }
+
+                    RowLayout {
+                        visible: window.readingToolsMenuVisible
+                        anchors {
+                            fill: parent
+                            leftMargin: 12
+                            rightMargin: 12
+                            topMargin: 8
+                            bottomMargin: 8
+                        }
+                        spacing: 8
+
+                        Button {
+                            id: copyTextButton
+                            text: "Txt"
+                            Layout.preferredWidth: 38
+                            Layout.preferredHeight: 30
+                            onClicked: window.copyVisibleText()
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Copia texto seleccionado o, si no hay seleccion, el texto visible del PDF."
+
+                            contentItem: Canvas {
+                                id: copyTextIcon
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                property color strokeColor: copyTextButton.enabled ? Theme.text : Theme.secondaryText
+                                function repaintIfReady() {
+                                    if (available && visible && width > 0 && height > 0)
+                                        requestPaint()
+                                }
+
+                                onStrokeColorChanged: requestPaint()
+                                onAvailableChanged: repaintIfReady()
+                                onVisibleChanged: repaintIfReady()
+                                onWidthChanged: repaintIfReady()
+                                onHeightChanged: repaintIfReady()
+                                Component.onCompleted: repaintIfReady()
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.lineCap = "round"
+                                    ctx.lineJoin = "round"
+                                    ctx.strokeStyle = strokeColor
+                                    ctx.lineWidth = 1.5
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(5, 4)
+                                    ctx.lineTo(12, 4)
+                                    ctx.lineTo(15, 7)
+                                    ctx.lineTo(15, 15)
+                                    ctx.lineTo(5, 15)
+                                    ctx.closePath()
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(3, 2.5)
+                                    ctx.lineTo(10, 2.5)
+                                    ctx.lineTo(10, 4.5)
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(7, 8)
+                                    ctx.lineTo(12, 8)
+                                    ctx.moveTo(7, 10.5)
+                                    ctx.lineTo(12, 10.5)
+                                    ctx.moveTo(7, 13)
+                                    ctx.lineTo(10.5, 13)
+                                    ctx.stroke()
+                                }
+                            }
+
+                            background: Rectangle {
+                                color: copyTextButton.down ? Theme.tabActive
+                                      : copyTextButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: copyTextButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: copyTextButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Button {
+                            id: reflowToggleButton
+                            text: "Reflow"
+                            Layout.preferredWidth: 38
+                            Layout.preferredHeight: 30
+                            onClicked: window.toggleReflowMode()
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Recompone el texto en lectura continua para leer mejor en pantalla."
+
+                            contentItem: Canvas {
+                                id: reflowIcon
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                property color strokeColor: window.reflowModeEnabled ? Theme.accentText : Theme.text
+                                function repaintIfReady() {
+                                    if (available && visible && width > 0 && height > 0)
+                                        requestPaint()
+                                }
+
+                                onStrokeColorChanged: requestPaint()
+                                onAvailableChanged: repaintIfReady()
+                                onVisibleChanged: repaintIfReady()
+                                onWidthChanged: repaintIfReady()
+                                onHeightChanged: repaintIfReady()
+                                Component.onCompleted: repaintIfReady()
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.lineCap = "round"
+                                    ctx.lineJoin = "round"
+                                    ctx.strokeStyle = strokeColor
+                                    ctx.lineWidth = 1.7
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(3, 5)
+                                    ctx.lineTo(13, 5)
+                                    ctx.moveTo(3, 9)
+                                    ctx.lineTo(10, 9)
+                                    ctx.moveTo(3, 13)
+                                    ctx.lineTo(13, 13)
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(12, 7)
+                                    ctx.lineTo(15, 9)
+                                    ctx.lineTo(12, 11)
+                                    ctx.stroke()
+                                }
+                            }
+
+                            background: Rectangle {
+                                color: window.reflowModeEnabled ? Theme.accent
+                                      : reflowToggleButton.down ? Theme.tabActive
+                                      : reflowToggleButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: reflowToggleButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: reflowToggleButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Button {
+                            id: handToolButton
+                            text: "Mano"
+                            enabled: !window.reflowModeEnabled
+                            Layout.preferredWidth: 38
+                            Layout.preferredHeight: 30
+                            onClicked: window.setHandToolEnabled(!window.handToolEnabled)
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Activa arrastre manual del PDF y mantiene cursor de mano para mover paginas."
+
+                            contentItem: Canvas {
+                                id: handToolIcon
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                property color strokeColor: handToolButton.enabled
+                                                            ? (window.handToolEnabled ? Theme.accentText : Theme.text)
+                                                            : Theme.secondaryText
+                                function repaintIfReady() {
+                                    if (available && visible && width > 0 && height > 0)
+                                        requestPaint()
+                                }
+
+                                onStrokeColorChanged: requestPaint()
+                                onAvailableChanged: repaintIfReady()
+                                onVisibleChanged: repaintIfReady()
+                                onWidthChanged: repaintIfReady()
+                                onHeightChanged: repaintIfReady()
+                                Component.onCompleted: repaintIfReady()
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.lineCap = "round"
+                                    ctx.lineJoin = "round"
+                                    ctx.strokeStyle = strokeColor
+                                    ctx.lineWidth = 1.5
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(6, 15)
+                                    ctx.lineTo(6, 6)
+                                    ctx.moveTo(9, 15)
+                                    ctx.lineTo(9, 4.5)
+                                    ctx.moveTo(12, 15)
+                                    ctx.lineTo(12, 5)
+                                    ctx.moveTo(15, 14)
+                                    ctx.lineTo(15, 7)
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(4, 10)
+                                    ctx.lineTo(4, 15)
+                                    ctx.quadraticCurveTo(4.5, 16.5, 6.2, 16.5)
+                                    ctx.lineTo(13.8, 16.5)
+                                    ctx.quadraticCurveTo(16.2, 16.5, 16.2, 14)
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(6, 11.5)
+                                    ctx.lineTo(2.8, 9.8)
+                                    ctx.lineTo(2.2, 12.3)
+                                    ctx.lineTo(4, 13.8)
+                                    ctx.stroke()
+                                }
+                            }
+
+                            background: Rectangle {
+                                color: window.handToolEnabled ? Theme.accent
+                                      : handToolButton.down ? Theme.tabActive
+                                      : handToolButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: handToolButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: handToolButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                                opacity: handToolButton.enabled ? 1.0 : 0.55
+                            }
+                        }
+
+                        Button {
+                            id: readingFullscreenButton
+                            text: "Leer"
+                            Layout.preferredWidth: 38
+                            Layout.preferredHeight: 30
+                            onClicked: window.toggleReadingFullscreen()
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Abre modo lectura sin distracciones para concentrarte en el documento."
+
+                            contentItem: Canvas {
+                                id: readingFullscreenIcon
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                property color strokeColor: window.readingFullscreenEnabled ? Theme.accentText : Theme.text
+                                function repaintIfReady() {
+                                    if (available && visible && width > 0 && height > 0)
+                                        requestPaint()
+                                }
+
+                                onStrokeColorChanged: requestPaint()
+                                onAvailableChanged: repaintIfReady()
+                                onVisibleChanged: repaintIfReady()
+                                onWidthChanged: repaintIfReady()
+                                onHeightChanged: repaintIfReady()
+                                Component.onCompleted: repaintIfReady()
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.lineCap = "round"
+                                    ctx.lineJoin = "round"
+                                    ctx.strokeStyle = strokeColor
+                                    ctx.lineWidth = 1.5
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(3, 4)
+                                    ctx.quadraticCurveTo(5.5, 3, 8, 4.2)
+                                    ctx.lineTo(8, 14.5)
+                                    ctx.quadraticCurveTo(5.5, 13.3, 3, 14.3)
+                                    ctx.closePath()
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(15, 4)
+                                    ctx.quadraticCurveTo(12.5, 3, 10, 4.2)
+                                    ctx.lineTo(10, 14.5)
+                                    ctx.quadraticCurveTo(12.5, 13.3, 15, 14.3)
+                                    ctx.closePath()
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(9, 4)
+                                    ctx.lineTo(9, 14.5)
+                                    ctx.stroke()
+                                }
+                            }
+
+                            background: Rectangle {
+                                color: window.readingFullscreenEnabled ? Theme.accent
+                                      : readingFullscreenButton.down ? Theme.tabActive
+                                      : readingFullscreenButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: readingFullscreenButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: readingFullscreenButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Button {
+                            id: presentationButton
+                            text: "Show"
+                            Layout.preferredWidth: 38
+                            Layout.preferredHeight: 30
+                            onClicked: window.togglePresentationMode()
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Activa modo presentacion para enseñar el PDF con interfaz minima."
+
+                            contentItem: Canvas {
+                                id: presentationIcon
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                property color strokeColor: window.presentationModeEnabled ? Theme.accentText : Theme.text
+                                function repaintIfReady() {
+                                    if (available && visible && width > 0 && height > 0)
+                                        requestPaint()
+                                }
+
+                                onStrokeColorChanged: requestPaint()
+                                onAvailableChanged: repaintIfReady()
+                                onVisibleChanged: repaintIfReady()
+                                onWidthChanged: repaintIfReady()
+                                onHeightChanged: repaintIfReady()
+                                Component.onCompleted: repaintIfReady()
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.lineCap = "round"
+                                    ctx.lineJoin = "round"
+                                    ctx.strokeStyle = strokeColor
+                                    ctx.lineWidth = 1.5
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(3, 4)
+                                    ctx.lineTo(15, 4)
+                                    ctx.lineTo(15, 12)
+                                    ctx.lineTo(3, 12)
+                                    ctx.closePath()
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(9, 12)
+                                    ctx.lineTo(9, 15.5)
+                                    ctx.moveTo(6.5, 15.5)
+                                    ctx.lineTo(11.5, 15.5)
+                                    ctx.stroke()
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(7, 6.8)
+                                    ctx.lineTo(11, 8)
+                                    ctx.lineTo(7, 9.2)
+                                    ctx.closePath()
+                                    ctx.stroke()
+                                }
+                            }
+
+                            background: Rectangle {
+                                color: window.presentationModeEnabled ? Theme.accent
+                                      : presentationButton.down ? Theme.tabActive
+                                      : presentationButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: presentationButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: presentationButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Item { Layout.fillWidth: true }
                     }
                 }
             }
@@ -1432,31 +2767,336 @@ ApplicationWindow {
             Layout.fillHeight: true
             clip: true
 
-            PdfViewer {
-                id: pdfViewer
+            RowLayout {
                 anchors.fill: parent
-                visible: window.hasActiveDocument
-                pageSources: window.activeDocumentPageSources()
-                thumbnailSources: window.activeDocumentThumbnailSources()
-                pageCount: window.activeDocumentPageCount()
-                pageSizesJson: window.activeDocumentPageSizesJson()
-                pageRotations: window.activeDocumentPageRotations()
-                currentPageIndex: window.activePageIndex
-                zoom: window.viewerZoom
-                layoutMode: window.layoutMode
-                zoomMode: window.zoomMode
-                sidePanelVisible: window.navigationPanelVisible
-                zoomInAction: window.zoomIn
-                zoomOutAction: window.zoomOut
-                renderPageAction: window.renderActivePage
-                renderThumbnailAction: window.renderActiveThumbnail
-                currentPageChangedAction: window.reportActivePage
+                spacing: 0
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    PdfViewer {
+                        id: pdfViewer
+                        anchors.fill: parent
+                        visible: window.hasActiveDocument && !window.reflowModeEnabled
+                        pageSources: window.activeDocumentPageSources()
+                        thumbnailSources: window.activeDocumentThumbnailSources()
+                        outlineEntries: window.activeDocumentOutlineEntries()
+                        pageLinks: window.activeDocumentLinksByPage()
+                        searchQuery: window.activeDocumentSearchQuery()
+                        searchResults: window.activeDocumentSearchResults()
+                        activeSearchResultIndex: window.activeDocumentSearchResultIndex()
+                        pageCount: window.activeDocumentPageCount()
+                        pageSizesJson: window.activeDocumentPageSizesJson()
+                        pageRotations: window.activeDocumentPageRotations()
+                        currentPageIndex: window.activePageIndex
+                        zoom: window.viewerZoom
+                        layoutMode: window.layoutMode
+                        zoomMode: window.zoomMode
+                        sidePanelVisible: window.navigationPanelVisible && !window.readingFullscreenEnabled && !window.presentationModeEnabled
+                        sidePanelMode: window.navigationSidePanelMode
+                        presentationMode: window.presentationModeEnabled
+                        handToolEnabled: window.handToolEnabled
+                        snapToPage: window.pageSnapEnabled
+                        pageSpacing: window.pageSpacing
+                        zoomInAction: window.zoomIn
+                        zoomOutAction: window.zoomOut
+                        renderPageAction: window.renderActivePage
+                        renderThumbnailAction: window.renderActiveThumbnail
+                        currentPageChangedAction: window.reportActivePage
+                        sidePanelModeChangedAction: window.setSidePanelMode
+                        outlineActivatedAction: window.activateLinkTarget
+                        linkActivatedAction: window.activateLinkTarget
+                        searchResultActivatedAction: function(index) { window.activateSearchResult(index, true) }
+                        selectionDocumentSource: window.pathToFileUrl(window.hasActiveDocument ? documentModel.get(window.activeDocumentIndex).path : "")
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        visible: window.hasActiveDocument && window.reflowModeEnabled
+                        color: window.presentationModeEnabled ? "#050608" : Theme.background
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: window.presentationModeEnabled || window.readingFullscreenEnabled ? 24 : 20
+                            spacing: 14
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+
+                                Label {
+                                    text: window.activeDocumentTitle() + " - Reflow"
+                                    color: Theme.text
+                                    font.pixelSize: window.presentationModeEnabled ? 18 : 15
+                                    font.weight: Font.DemiBold
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
+
+                                Button {
+                                    text: "Copiar"
+                                    onClicked: window.copyVisibleText()
+                                }
+
+                                Button {
+                                    text: "PDF"
+                                    onClicked: window.toggleReflowMode()
+                                }
+                            }
+
+                            ScrollView {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                clip: true
+
+                                TextArea {
+                                    id: reflowTextArea
+                                    width: Math.max(parent ? parent.width : 0, 520)
+                                    readOnly: true
+                                    selectByMouse: true
+                                    wrapMode: TextEdit.Wrap
+                                    text: window.readingPanelTextLoading ? "Extrayendo texto..."
+                                          : window.readingPanelText.trim().length > 0 ? window.readingPanelText
+                                          : "Este PDF no tiene texto extraible para reflow."
+                                    color: Theme.text
+                                    font.pixelSize: window.presentationModeEnabled ? 22 : 16
+                                    leftPadding: 24
+                                    rightPadding: 24
+                                    topPadding: 24
+                                    bottomPadding: 24
+                                    background: Rectangle {
+                                        color: Theme.surface
+                                        radius: Theme.radiusLg
+                                        border.color: Theme.border
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             Connections {
                 target: window
                 function onJumpToPageRequested(index) {
-                    pdfViewer.jumpToPage(index)
+                    pdfViewer.navigateToPage(index)
+                    if (window.pendingSearchFocusResult) {
+                        var result = window.pendingSearchFocusResult
+                        window.pendingSearchFocusResult = null
+                        Qt.callLater(function() {
+                            pdfViewer.focusSearchResult(result)
+                        })
+                    }
+                }
+            }
+
+            Rectangle {
+                id: searchOverlay
+                visible: window.hasActiveDocument && !window.reflowModeEnabled && window.searchOverlayVisible
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    topMargin: 14
+                    rightMargin: 20
+                }
+                width: Math.min(parent.width - 40, 392)
+                height: 48
+                radius: 12
+                color: Theme.isDark ? "#181A24" : "#F7F8FC"
+                border.color: Theme.isDark ? "#2D3146" : "#D7DDED"
+                border.width: 1
+                z: 25
+
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 6
+                    readonly property int controlsWidth: 1 + 40 + 28 + 28 + 28
+                    readonly property int totalSpacing: spacing * 5
+
+                    TextField {
+                        id: pageSearchField
+                        width: Math.max(120, parent.width - parent.controlsWidth - parent.totalSpacing)
+                        height: 32
+                        text: window.activeDocumentSearchQuery()
+                        placeholderText: "Buscar en documento"
+                        selectByMouse: true
+                        color: Theme.text
+                        font.pixelSize: 12
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: "transparent"
+                        }
+                        onTextEdited: window.setSearchQuery(text)
+                        onAccepted: {
+                            if (window.activeDocumentSearchResultCount() > 0)
+                                window.goToNextSearchResult()
+                            else
+                                window.setSearchQuery(text)
+                        }
+                        Keys.onEscapePressed: {
+                            if (text.trim().length > 0)
+                                window.clearSearch()
+                            else
+                                window.closeSearchOverlay(false)
+                        }
+                    }
+
+                    Rectangle {
+                        width: 1
+                        height: 24
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: Theme.border
+                    }
+
+                    Label {
+                        width: 40
+                        height: 32
+                        text: window.activeDocumentSearchQuery().trim().length > 0
+                              ? (window.activeDocumentSearchResultCount() > 0
+                                 ? String(Math.max(1, window.activeDocumentSearchResultIndex() + 1)) + "/" + String(window.activeDocumentSearchResultCount())
+                                 : "0/0")
+                              : ""
+                        color: Theme.secondaryText
+                        font.pixelSize: 11
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    Button {
+                        id: searchPrevOverlayButton
+                        width: 28
+                        height: 32
+                        enabled: window.activeDocumentSearchResultCount() > 0
+                        onClicked: window.goToPreviousSearchResult()
+                        ToolTip.visible: hovered
+                        ToolTip.text: "Resultado anterior (Shift+F3)"
+                        contentItem: Canvas {
+                            anchors.centerIn: parent
+                            width: 12
+                            height: 12
+                            property color strokeColor: searchPrevOverlayButton.enabled ? Theme.text : Theme.secondaryText
+
+                            onStrokeColorChanged: requestPaint()
+                            Component.onCompleted: requestPaint()
+                            onPaint: {
+                                var ctx = getContext("2d")
+                                ctx.clearRect(0, 0, width, height)
+                                ctx.lineCap = "round"
+                                ctx.lineJoin = "round"
+                                ctx.strokeStyle = strokeColor
+                                ctx.lineWidth = 1.7
+
+                                ctx.beginPath()
+                                ctx.moveTo(2, 8)
+                                ctx.lineTo(6, 4)
+                                ctx.lineTo(10, 8)
+                                ctx.stroke()
+                            }
+                        }
+                        background: Rectangle {
+                            color: searchPrevOverlayButton.hovered ? Theme.hover : "transparent"
+                            radius: 8
+                        }
+                    }
+
+                    Button {
+                        id: searchNextOverlayButton
+                        width: 28
+                        height: 32
+                        enabled: window.activeDocumentSearchResultCount() > 0
+                        onClicked: window.goToNextSearchResult()
+                        ToolTip.visible: hovered
+                        ToolTip.text: "Siguiente resultado (F3)"
+                        contentItem: Canvas {
+                            anchors.centerIn: parent
+                            width: 12
+                            height: 12
+                            property color strokeColor: searchNextOverlayButton.enabled ? Theme.text : Theme.secondaryText
+
+                            onStrokeColorChanged: requestPaint()
+                            Component.onCompleted: requestPaint()
+                            onPaint: {
+                                var ctx = getContext("2d")
+                                ctx.clearRect(0, 0, width, height)
+                                ctx.lineCap = "round"
+                                ctx.lineJoin = "round"
+                                ctx.strokeStyle = strokeColor
+                                ctx.lineWidth = 1.7
+
+                                ctx.beginPath()
+                                ctx.moveTo(2, 4)
+                                ctx.lineTo(6, 8)
+                                ctx.lineTo(10, 4)
+                                ctx.stroke()
+                            }
+                        }
+                        background: Rectangle {
+                            color: searchNextOverlayButton.hovered ? Theme.hover : "transparent"
+                            radius: 8
+                        }
+                    }
+
+                    Button {
+                        id: searchCloseOverlayButton
+                        text: "×"
+                        width: 28
+                        height: 32
+                        onClicked: window.closeSearchOverlay(true)
+                        ToolTip.visible: hovered
+                        ToolTip.text: "Cerrar busqueda"
+                        contentItem: Text {
+                            text: searchCloseOverlayButton.text
+                            color: Theme.text
+                            font.pixelSize: 15
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: searchCloseOverlayButton.hovered ? Theme.hover : "transparent"
+                            radius: 8
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    margins: 14
+                }
+                visible: window.hasActiveDocument && (window.readingFullscreenEnabled || window.presentationModeEnabled)
+                radius: Theme.radius
+                color: Theme.surface
+                border.color: Theme.border
+                z: 20
+
+                Row {
+                    anchors.margins: 6
+                    anchors.fill: parent
+                    spacing: 6
+
+                    Button {
+                        text: window.reflowModeEnabled ? "PDF" : "Reflow"
+                        onClicked: window.toggleReflowMode()
+                    }
+
+                    Button {
+                        text: "Copiar"
+                        onClicked: window.copyVisibleText()
+                    }
+
+                    Button {
+                        text: window.presentationModeEnabled ? "Salir show" : "Show"
+                        onClicked: window.togglePresentationMode()
+                    }
+
+                    Button {
+                        text: "Salir"
+                        onClicked: window.exitImmersiveModes()
+                    }
                 }
             }
 
@@ -1712,13 +3352,15 @@ ApplicationWindow {
         Rectangle {
             id: statusBar
             Layout.fillWidth: true
-            Layout.preferredHeight: 34
+            Layout.preferredHeight: Math.max(34, statusBarContent.implicitHeight + 10)
             visible: window.hasActiveDocument
             color: Theme.surface
             readonly property color controlFill: Theme.isDark ? "#1B1D31" : "#FCFCFE"
             readonly property color controlHover: Theme.isDark ? "#252945" : "#EFF3FB"
             readonly property color controlActive: Theme.isDark ? "#2F3557" : "#E3EAF8"
             readonly property color controlBorder: Theme.isDark ? "#41496F" : "#CCD5E8"
+            readonly property bool compact: width < 1120
+            readonly property bool narrow: width < 840
 
             Rectangle {
                 anchors { top: parent.top; left: parent.left; right: parent.right }
@@ -1726,32 +3368,222 @@ ApplicationWindow {
                 color: Theme.border
             }
 
-            RowLayout {
+            Flow {
+                id: statusBarContent
                 anchors {
                     fill: parent
                     leftMargin: 10
                     rightMargin: 10
+                    topMargin: 5
+                    bottomMargin: 5
                 }
                 spacing: 8
+                flow: Flow.LeftToRight
 
                 Label {
+                    width: statusBar.narrow ? 150 : statusBar.compact ? 220 : 260
+                    height: 24
                     text: pdfDocument.errorMessage.length > 0 ? pdfDocument.errorMessage
                           : saveMessage.length > 0 ? saveMessage
                           : "PDF"
                     color: pdfDocument.errorMessage.length > 0 ? Theme.danger : Theme.secondaryText
                     font.pixelSize: 11
-                    Layout.preferredWidth: 260
                     elide: Text.ElideRight
+                    verticalAlignment: Text.AlignVCenter
                 }
 
-                Item { Layout.fillWidth: true }
+                Row {
+                    spacing: 6
+                    height: 24
 
-                Button {
+                    Button {
+                        id: historyBackButton
+                        text: "↶"
+                        enabled: window.activeDocumentHistoryBack().length > 0
+                        width: 24
+                        height: 24
+                        onClicked: window.goBackInDocument()
+                        ToolTip.visible: hovered
+                        ToolTip.text: "Atras"
+                        contentItem: Text {
+                            text: historyBackButton.text
+                            color: historyBackButton.enabled ? Theme.text : Theme.secondaryText
+                            font.pixelSize: 13
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: historyBackButton.down ? statusBar.controlActive
+                                  : historyBackButton.hovered ? statusBar.controlHover
+                                  : statusBar.controlFill
+                            radius: Theme.radius
+                            border.color: historyBackButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                            border.width: historyBackButton.activeFocus ? 2 : 1
+                            opacity: historyBackButton.enabled ? 1.0 : 0.55
+                        }
+                    }
+
+                    Button {
+                        id: historyForwardButton
+                        text: "↷"
+                        enabled: window.activeDocumentHistoryForward().length > 0
+                        width: 24
+                        height: 24
+                        onClicked: window.goForwardInDocument()
+                        ToolTip.visible: hovered
+                        ToolTip.text: "Adelante"
+                        contentItem: Text {
+                            text: historyForwardButton.text
+                            color: historyForwardButton.enabled ? Theme.text : Theme.secondaryText
+                            font.pixelSize: 13
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: historyForwardButton.down ? statusBar.controlActive
+                                  : historyForwardButton.hovered ? statusBar.controlHover
+                                  : statusBar.controlFill
+                            radius: Theme.radius
+                            border.color: historyForwardButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                            border.width: historyForwardButton.activeFocus ? 2 : 1
+                            opacity: historyForwardButton.enabled ? 1.0 : 0.55
+                        }
+                    }
+
+                    Button {
+                        id: thumbnailsModeButton
+                        text: "Mini"
+                        width: 42
+                        height: 24
+                        onClicked: window.setSidePanelMode("thumbnails")
+                        ToolTip.visible: hovered
+                        ToolTip.text: "Miniaturas"
+                        contentItem: Text {
+                            text: thumbnailsModeButton.text
+                            color: Theme.text
+                            font.pixelSize: 10
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: window.navigationSidePanelMode === "thumbnails" ? statusBar.controlActive
+                                  : thumbnailsModeButton.hovered ? statusBar.controlHover
+                                  : statusBar.controlFill
+                            radius: Theme.radius
+                            border.color: thumbnailsModeButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                            border.width: thumbnailsModeButton.activeFocus ? 2 : 1
+                        }
+                    }
+
+                    Button {
+                        id: outlineModeButton
+                        text: "Indice"
+                        width: 52
+                        height: 24
+                        onClicked: window.setSidePanelMode("outline")
+                        ToolTip.visible: hovered
+                        ToolTip.text: "Bookmarks / indice"
+                        contentItem: Text {
+                            text: outlineModeButton.text
+                            color: Theme.text
+                            font.pixelSize: 10
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: window.navigationSidePanelMode === "outline" ? statusBar.controlActive
+                                  : outlineModeButton.hovered ? statusBar.controlHover
+                                  : statusBar.controlFill
+                            radius: Theme.radius
+                            border.color: outlineModeButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                            border.width: outlineModeButton.activeFocus ? 2 : 1
+                        }
+                    }
+
+                    Button {
+                        id: snapToggleButton
+                        text: window.pageSnapEnabled ? "Snap" : "Libre"
+                        width: 48
+                        height: 24
+                        onClicked: window.setPageSnapEnabled(!window.pageSnapEnabled)
+                        ToolTip.visible: hovered
+                        ToolTip.text: "Snapping entre paginas"
+                        contentItem: Text {
+                            text: snapToggleButton.text
+                            color: Theme.text
+                            font.pixelSize: 10
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: window.pageSnapEnabled ? statusBar.controlActive
+                                  : snapToggleButton.hovered ? statusBar.controlHover
+                                  : statusBar.controlFill
+                            radius: Theme.radius
+                            border.color: snapToggleButton.activeFocus ? Theme.accent : statusBar.controlBorder
+                            border.width: snapToggleButton.activeFocus ? 2 : 1
+                        }
+                    }
+
+                    ComboBox {
+                        id: spacingBox
+                        width: 66
+                        height: 24
+                        model: [
+                            { text: "0px", value: 0 },
+                            { text: "8px", value: 8 },
+                            { text: "18px", value: 18 },
+                            { text: "28px", value: 28 },
+                            { text: "40px", value: 40 }
+                        ]
+                        textRole: "text"
+                        valueRole: "value"
+                        currentIndex: window.pageSpacing <= 0 ? 0
+                                     : window.pageSpacing <= 8 ? 1
+                                     : window.pageSpacing <= 18 ? 2
+                                     : window.pageSpacing <= 28 ? 3 : 4
+                        font.pixelSize: 11
+                        onActivated: window.setPageSpacing(currentValue)
+
+                        contentItem: Text {
+                            leftPadding: 10
+                            rightPadding: 22
+                            text: spacingBox.displayText
+                            color: Theme.text
+                            font.pixelSize: 11
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        indicator: Text {
+                            x: spacingBox.width - width - 8
+                            y: (spacingBox.height - height) / 2
+                            text: "⌄"
+                            color: Theme.secondaryText
+                            font.pixelSize: 13
+                        }
+
+                        background: Rectangle {
+                            color: spacingBox.pressed ? statusBar.controlActive
+                                  : spacingBox.hovered ? statusBar.controlHover
+                                  : statusBar.controlFill
+                            radius: Theme.radius
+                            border.color: spacingBox.activeFocus ? Theme.accent : statusBar.controlBorder
+                            border.width: spacingBox.activeFocus ? 2 : 1
+                        }
+                    }
+
+                }
+
+                Row {
+                    spacing: 6
+                    height: 24
+
+                    Button {
                     id: firstPageButton
                     text: "|‹"
                     enabled: window.activePageIndex > 0
-                    Layout.preferredWidth: 30
-                    Layout.preferredHeight: 24
+                    width: 30
+                    height: 24
                     onClicked: window.goToFirstPage()
                     ToolTip.visible: hovered
                     ToolTip.text: "Primera pagina"
@@ -1778,8 +3610,8 @@ ApplicationWindow {
                     id: previousPageButton
                     text: "‹"
                     enabled: window.activePageIndex > 0
-                    Layout.preferredWidth: 26
-                    Layout.preferredHeight: 24
+                    width: 26
+                    height: 24
                     onClicked: window.goToPreviousPage()
                     ToolTip.visible: hovered
                     ToolTip.text: "Pagina anterior"
@@ -1808,8 +3640,8 @@ ApplicationWindow {
                     validator: IntValidator { bottom: 1; top: Math.max(1, window.activeDocumentPageCount()) }
                     selectByMouse: true
                     horizontalAlignment: Text.AlignHCenter
-                    Layout.preferredWidth: 48
-                    Layout.preferredHeight: 24
+                    width: 48
+                    height: 24
                     color: Theme.text
                     font.pixelSize: 11
                     onAccepted: window.setActivePage(parseInt(text) - 1)
@@ -1826,15 +3658,17 @@ ApplicationWindow {
                     text: "/ " + window.activeDocumentPageCount()
                     color: Theme.secondaryText
                     font.pixelSize: 11
-                    Layout.preferredWidth: 42
+                    width: 42
+                    height: 24
+                    verticalAlignment: Text.AlignVCenter
                 }
 
                 Button {
                     id: nextPageButton
                     text: "›"
                     enabled: window.activePageIndex < window.activeDocumentPageCount() - 1
-                    Layout.preferredWidth: 26
-                    Layout.preferredHeight: 24
+                    width: 26
+                    height: 24
                     onClicked: window.goToNextPage()
                     ToolTip.visible: hovered
                     ToolTip.text: "Pagina siguiente"
@@ -1861,8 +3695,8 @@ ApplicationWindow {
                     id: lastPageButton
                     text: "›|"
                     enabled: window.activePageIndex < window.activeDocumentPageCount() - 1
-                    Layout.preferredWidth: 30
-                    Layout.preferredHeight: 24
+                    width: 30
+                    height: 24
                     onClicked: window.goToLastPage()
                     ToolTip.visible: hovered
                     ToolTip.text: "Ultima pagina"
@@ -1885,13 +3719,19 @@ ApplicationWindow {
                     }
                 }
 
-                Rectangle {
-                    Layout.preferredWidth: 1
-                    Layout.preferredHeight: 20
-                    color: Theme.border
                 }
 
-                ComboBox {
+                Row {
+                    spacing: 6
+                    height: 24
+
+                    Rectangle {
+                        width: 1
+                        height: 20
+                        color: Theme.border
+                    }
+
+                    ComboBox {
                     id: layoutModeBox
                     model: [
                         { text: "Pagina", value: "single" },
@@ -1902,8 +3742,8 @@ ApplicationWindow {
                     textRole: "text"
                     valueRole: "value"
                     currentIndex: window.layoutModeIndex()
-                    Layout.preferredWidth: 136
-                    Layout.preferredHeight: 24
+                    width: statusBar.narrow ? 118 : 136
+                    height: 24
                     font.pixelSize: 11
                     onActivated: window.setLayoutMode(currentValue)
                     ToolTip.visible: hovered
@@ -1988,7 +3828,7 @@ ApplicationWindow {
                     }
                 }
 
-                ComboBox {
+                    ComboBox {
                     id: zoomModeBox
                     model: [
                         { text: "Ancho", value: "fitWidth" },
@@ -1999,8 +3839,8 @@ ApplicationWindow {
                     textRole: "text"
                     valueRole: "value"
                     currentIndex: window.zoomModeIndex()
-                    Layout.preferredWidth: 92
-                    Layout.preferredHeight: 24
+                    width: 92
+                    height: 24
                     font.pixelSize: 11
                     onActivated: window.setZoomMode(currentValue)
                     ToolTip.visible: hovered
@@ -2085,10 +3925,106 @@ ApplicationWindow {
                     }
                 }
 
-                Rectangle {
-                    Layout.preferredWidth: 1
-                    Layout.preferredHeight: 20
-                    color: Theme.border
+                    Rectangle {
+                        width: 1
+                        height: 20
+                        color: Theme.border
+                    }
+
+                    ComboBox {
+                    id: zoomPresetBox
+                    model: window.zoomPresetOptions
+                    textRole: "text"
+                    valueRole: "value"
+                    currentIndex: window.zoomPresetIndex()
+                    width: 84
+                    height: 24
+                    font.pixelSize: 11
+                    onActivated: {
+                        if (currentValue > 0)
+                            window.setZoomPercent(currentValue)
+                    }
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Presets de zoom"
+
+                    contentItem: Text {
+                        leftPadding: 10
+                        rightPadding: 24
+                        text: zoomPresetBox.displayText
+                        color: Theme.text
+                        font.pixelSize: 11
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    indicator: Text {
+                        x: zoomPresetBox.width - width - 9
+                        y: (zoomPresetBox.height - height) / 2
+                        text: "⌄"
+                        color: Theme.secondaryText
+                        font.pixelSize: 14
+                    }
+
+                    background: Rectangle {
+                        color: zoomPresetBox.pressed ? statusBar.controlActive
+                              : zoomPresetBox.hovered ? statusBar.controlHover
+                              : statusBar.controlFill
+                        border.color: zoomPresetBox.activeFocus ? Theme.accent : statusBar.controlBorder
+                        border.width: zoomPresetBox.activeFocus ? 2 : 1
+                        radius: Theme.radius
+                    }
+
+                    delegate: ItemDelegate {
+                        id: zoomPresetDelegate
+                        required property int index
+                        required property var modelData
+
+                        width: zoomPresetBox.width
+                        height: 28
+                        text: modelData.text
+                        highlighted: zoomPresetBox.highlightedIndex === index
+                        enabled: modelData.value > 0
+
+                        contentItem: Text {
+                            text: zoomPresetDelegate.text
+                            color: zoomPresetDelegate.enabled ? Theme.text : Theme.secondaryText
+                            font.pixelSize: 11
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            radius: Theme.radius
+                            color: zoomPresetDelegate.highlighted ? statusBar.controlActive
+                                  : zoomPresetDelegate.hovered ? statusBar.controlHover
+                                  : "transparent"
+                            border.color: zoomPresetDelegate.index === zoomPresetBox.currentIndex ? Theme.accent : "transparent"
+                        }
+                    }
+
+                    popup: Popup {
+                        y: zoomPresetBox.height + 4
+                        width: zoomPresetBox.width
+                        height: Math.min(220, zoomPresetList.contentHeight + 8)
+                        padding: 4
+                        topInset: -2
+                        bottomInset: -4
+
+                        contentItem: ListView {
+                            id: zoomPresetList
+                            clip: true
+                            implicitHeight: contentHeight
+                            model: zoomPresetBox.popup.visible ? zoomPresetBox.delegateModel : null
+                            currentIndex: zoomPresetBox.highlightedIndex
+                        }
+
+                        background: Rectangle {
+                            color: Theme.surface
+                            border.color: statusBar.controlBorder
+                            border.width: 1
+                            radius: Theme.radiusLg
+                        }
+                    }
                 }
 
                 TextField {
@@ -2096,8 +4032,8 @@ ApplicationWindow {
                     text: window.effectiveZoomPercent() + "%"
                     selectByMouse: true
                     horizontalAlignment: Text.AlignHCenter
-                    Layout.preferredWidth: 54
-                    Layout.preferredHeight: 24
+                    width: 54
+                    height: 24
                     color: Theme.text
                     font.pixelSize: 11
                     onAccepted: window.setZoomPercent(text.replace("%", ""))
@@ -2110,12 +4046,18 @@ ApplicationWindow {
                     }
                 }
 
-                Button {
+                }
+
+                Row {
+                    spacing: 6
+                    height: 24
+
+                    Button {
                     id: statusZoomOutButton
                     text: "−"
                     enabled: window.effectiveZoomPercent() > 10
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
+                    width: 24
+                    height: 24
                     onClicked: window.zoomOut()
                     ToolTip.visible: hovered
                     ToolTip.text: "Reducir zoom"
@@ -2144,8 +4086,8 @@ ApplicationWindow {
                     to: window.maximumZoomPercent
                     stepSize: 5
                     value: window.effectiveZoomPercent()
-                    Layout.preferredWidth: 132
-                    Layout.preferredHeight: 24
+                    width: statusBar.narrow ? 96 : statusBar.compact ? 118 : 132
+                    height: 24
                     onMoved: window.setZoomPercent(value)
                     ToolTip.visible: hovered
                     ToolTip.text: "Zoom"
@@ -2182,8 +4124,8 @@ ApplicationWindow {
                     id: statusZoomInButton
                     text: "+"
                     enabled: window.effectiveZoomPercent() < window.maximumZoomPercent
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
+                    width: 24
+                    height: 24
                     onClicked: window.zoomIn()
                     ToolTip.visible: hovered
                     ToolTip.text: "Aumentar zoom"
@@ -2204,6 +4146,7 @@ ApplicationWindow {
                         border.width: statusZoomInButton.activeFocus ? 2 : 1
                         opacity: statusZoomInButton.enabled ? 1.0 : 0.55
                     }
+                }
                 }
             }
         }

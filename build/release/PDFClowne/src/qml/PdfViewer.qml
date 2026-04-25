@@ -1,5 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Pdf
+import QtQuick.Shapes
 import PDFClowne
 
 Item {
@@ -13,6 +15,11 @@ Item {
     property string pageSizesJson: "[]"
     property bool sidePanelVisible: true
     property string sidePanelMode: "thumbnails"
+    property var outlineEntries: []
+    property var pageLinks: []
+    property string searchQuery: ""
+    property var searchResults: []
+    property int activeSearchResultIndex: -1
     property var cachedPageSources: []
     property var cachedThumbnailSources: []
     readonly property var visiblePageSources: normalizedPageSources()
@@ -20,10 +27,15 @@ Item {
     readonly property var pageRows: buildPageRows()
     property var pageRotations: []
     property int currentPageIndex: 0
+    property string selectedText: ""
     property real zoom: 1.0
     property string layoutMode: "continuous"
     property string zoomMode: "fitPage"
     property bool separateCoverPage: true
+    property bool presentationMode: false
+    property bool handToolEnabled: false
+    property bool snapToPage: false
+    property real pageSpacing: 18
     property real renderScale: 4.0
     property real currentBaseScale: 1.0
     readonly property real currentZoomPercent: currentBaseScale * renderScale * zoom * 100
@@ -32,8 +44,17 @@ Item {
     property var renderPageAction: null
     property var renderThumbnailAction: null
     property var currentPageChangedAction: null
+    property var sidePanelModeChangedAction: null
+    property var outlineActivatedAction: null
+    property var linkActivatedAction: null
+    property var searchResultActivatedAction: null
+    property url selectionDocumentSource: ""
+    readonly property bool searchPanelAvailable: searchQuery.trim().length > 0 || searchResults.length > 0 || sidePanelMode === "search"
 
-    onCurrentPageIndexChanged: navigateToPage(currentPageIndex)
+    onCurrentPageIndexChanged: {
+        selectedText = ""
+        navigateToPage(currentPageIndex)
+    }
     onZoomChanged: updateCurrentBaseScale()
     onLayoutModeChanged: relayoutToCurrentPage()
     onZoomModeChanged: relayoutToCurrentPage()
@@ -52,9 +73,14 @@ Item {
         syncThumbnailCache()
     }
 
+    PdfDocument {
+        id: selectionDocument
+        source: root.selectionDocumentSource
+    }
+
     Rectangle {
         anchors.fill: parent
-        color: Theme.isDark ? "#12121F" : "#D8D9E8"
+        color: root.presentationMode ? "#050608" : Theme.isDark ? "#12121F" : "#D8D9E8"
     }
 
     Rectangle {
@@ -64,11 +90,137 @@ Item {
             bottom: parent.bottom
             left: parent.left
         }
-        width: root.sidePanelVisible ? 154 : 0
+        width: root.sidePanelVisible ? 232 : 0
         visible: root.sidePanelVisible
         clip: true
         color: Theme.surface
         border.color: Theme.border
+
+        Column {
+            anchors.fill: parent
+            spacing: 0
+
+            Rectangle {
+                width: parent.width
+                height: 38
+                color: Theme.surfaceAlt
+                border.color: Theme.border
+
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: Math.max(112, parent.width - 12)
+                    height: 30
+                    radius: Theme.radius
+                    color: Theme.background
+                    border.color: Theme.border
+
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 3
+                        spacing: 4
+                        readonly property int segmentCount: root.searchPanelAvailable ? 3 : 2
+                        readonly property real segmentWidth: Math.floor((width - spacing * (segmentCount - 1)) / segmentCount)
+
+                        Rectangle {
+                            id: thumbnailsModeButton
+                            width: parent.segmentWidth
+                            height: parent.height
+                            radius: Theme.radius
+                            color: root.sidePanelMode === "thumbnails" ? Theme.accent : Theme.surface
+                            border.color: root.sidePanelMode === "thumbnails" ? Qt.darker(Theme.accent, 1.08) : Theme.border
+                            border.width: root.sidePanelMode === "thumbnails" ? 2 : 1
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Miniaturas"
+                                color: root.sidePanelMode === "thumbnails" ? Theme.accentText : Theme.text
+                                font.pixelSize: 10
+                                font.weight: root.sidePanelMode === "thumbnails" ? Font.DemiBold : Font.Medium
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    if (root.sidePanelModeChangedAction)
+                                        root.sidePanelModeChangedAction("thumbnails")
+                                    else
+                                        root.sidePanelMode = "thumbnails"
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: parent.segmentWidth
+                            height: parent.height
+                            radius: Theme.radius
+                            color: root.sidePanelMode === "outline" ? Theme.accent : Theme.surface
+                            border.color: root.sidePanelMode === "outline" ? Qt.darker(Theme.accent, 1.08) : Theme.border
+                            border.width: root.sidePanelMode === "outline" ? 2 : 1
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Indice"
+                                color: root.sidePanelMode === "outline" ? Theme.accentText : Theme.text
+                                font.pixelSize: 10
+                                font.weight: root.sidePanelMode === "outline" ? Font.DemiBold : Font.Medium
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    if (root.sidePanelModeChangedAction)
+                                        root.sidePanelModeChangedAction("outline")
+                                    else
+                                        root.sidePanelMode = "outline"
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            visible: root.searchPanelAvailable
+                            width: parent.segmentWidth
+                            height: parent.height
+                            radius: Theme.radius
+                            color: root.sidePanelMode === "search" ? Theme.accent : Theme.surface
+                            border.color: root.sidePanelMode === "search" ? Qt.darker(Theme.accent, 1.08) : Theme.border
+                            border.width: root.sidePanelMode === "search" ? 2 : 1
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Buscar"
+                                color: root.sidePanelMode === "search" ? Theme.accentText : Theme.text
+                                font.pixelSize: 10
+                                font.weight: root.sidePanelMode === "search" ? Font.DemiBold : Font.Medium
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    if (root.sidePanelModeChangedAction)
+                                        root.sidePanelModeChangedAction("search")
+                                    else
+                                        root.sidePanelMode = "search"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Loader {
+                width: parent.width
+                height: parent.height - 38
+                sourceComponent: root.sidePanelMode === "outline"
+                               ? outlinePanelComponent
+                               : root.sidePanelMode === "search"
+                                 ? searchPanelComponent
+                                 : thumbnailPanelComponent
+            }
+        }
+    }
+
+    Component {
+        id: thumbnailPanelComponent
 
         ListView {
             id: thumbnailList
@@ -88,6 +240,7 @@ Item {
                 color: root.currentPageIndex === index ? Theme.tabActive
                                                        : thumbnailMouse.containsMouse ? Theme.hover : "transparent"
                 border.color: root.currentPageIndex === index ? Theme.accent : Theme.border
+                border.width: root.currentPageIndex === index ? 2 : 1
 
                 Image {
                     id: thumbnailImage
@@ -114,8 +267,9 @@ Item {
                         bottomMargin: 6
                     }
                     text: String(thumbnailFrame.index + 1)
-                    color: Theme.secondaryText
+                    color: root.currentPageIndex === index ? Theme.text : Theme.secondaryText
                     font.pixelSize: 11
+                    font.weight: root.currentPageIndex === index ? Font.DemiBold : Font.Normal
                     horizontalAlignment: Text.AlignHCenter
                 }
 
@@ -136,6 +290,179 @@ Item {
         }
     }
 
+    Component {
+        id: outlinePanelComponent
+
+        ListView {
+            id: outlineList
+            anchors.fill: parent
+            anchors.margins: 8
+            spacing: 4
+            clip: true
+            model: root.outlineEntries
+
+            delegate: Rectangle {
+                id: outlineEntry
+                required property var modelData
+
+                width: outlineList.width
+                height: 30
+                radius: Theme.radius
+                color: outlineMouse.containsMouse ? Theme.hover : "transparent"
+                border.color: modelData.pageIndex === root.currentPageIndex ? Theme.accent : "transparent"
+
+                Text {
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        verticalCenter: parent.verticalCenter
+                        leftMargin: 10 + (modelData.depth || 0) * 14
+                        rightMargin: 10
+                    }
+                    text: modelData.title || "Bookmark"
+                    color: Theme.text
+                    font.pixelSize: 11
+                    elide: Text.ElideRight
+                }
+
+                MouseArea {
+                    id: outlineMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: {
+                        if (root.outlineActivatedAction)
+                            root.outlineActivatedAction(modelData.uri || "", modelData.pageIndex)
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: searchPanelComponent
+
+        Item {
+            anchors.fill: parent
+
+            Column {
+                anchors.fill: parent
+                anchors.margins: 8
+                spacing: 8
+
+                Rectangle {
+                    width: parent.width
+                    height: 44
+                    radius: Theme.radius
+                    color: Theme.surfaceAlt
+                    border.color: Theme.border
+
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        spacing: 2
+
+                        Text {
+                            text: root.searchQuery.trim().length > 0 ? "\"" + root.searchQuery + "\"" : "Busqueda"
+                            color: Theme.text
+                            font.pixelSize: 11
+                            font.weight: Font.DemiBold
+                            elide: Text.ElideRight
+                        }
+
+                        Text {
+                            text: root.searchResults.length > 0
+                                  ? String(root.searchResults.length) + (root.searchResults.length === 1 ? " resultado" : " resultados")
+                                  : "Sin coincidencias"
+                            color: Theme.secondaryText
+                            font.pixelSize: 10
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
+
+                Rectangle {
+                    visible: root.searchResults.length === 0
+                    width: parent.width
+                    height: 72
+                    radius: Theme.radius
+                    color: "transparent"
+                    border.color: Theme.border
+                    border.width: 1
+
+                    Text {
+                        anchors.centerIn: parent
+                        width: parent.width - 20
+                        text: root.searchQuery.trim().length > 0
+                              ? "No se encontraron coincidencias en este documento."
+                              : "Escribe en el buscador para ver resultados aqui."
+                        color: Theme.secondaryText
+                        font.pixelSize: 11
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                ListView {
+                    visible: root.searchResults.length > 0
+                    width: parent.width
+                    height: parent.height - 52
+                    clip: true
+                    spacing: 6
+                    model: root.searchResults
+
+                    delegate: Rectangle {
+                        id: searchResultCard
+                        required property int index
+                        required property var modelData
+
+                        width: ListView.view.width
+                        height: snippetText.implicitHeight + 34
+                        radius: Theme.radius
+                        color: index === root.activeSearchResultIndex ? Theme.tabActive
+                              : searchResultMouse.containsMouse ? Theme.hover
+                              : Theme.surface
+                        border.color: index === root.activeSearchResultIndex ? Theme.accent : Theme.border
+                        border.width: index === root.activeSearchResultIndex ? 2 : 1
+
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 5
+
+                            Text {
+                                text: "Pagina " + String((modelData.pageLabel || 0))
+                                color: index === root.activeSearchResultIndex ? Theme.accent : Theme.secondaryText
+                                font.pixelSize: 10
+                                font.weight: Font.DemiBold
+                            }
+
+                            Text {
+                                id: snippetText
+                                width: parent.width
+                                text: modelData.snippet || "Coincidencia"
+                                color: Theme.text
+                                font.pixelSize: 11
+                                wrapMode: Text.WordWrap
+                                maximumLineCount: 3
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        MouseArea {
+                            id: searchResultMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                if (root.searchResultActivatedAction)
+                                    root.searchResultActivatedAction(index)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Flickable {
         id: viewport
         anchors {
@@ -149,12 +476,53 @@ Item {
         contentHeight: Math.max(height, pagesColumn.height + 56)
         boundsBehavior: Flickable.StopAtBounds
         onContentYChanged: root.updateCurrentPage()
-        onMovementEnded: root.ensureViewportPages()
+        onMovementEnded: {
+            root.updateCurrentPage()
+            if (root.snapToPage && root.isContinuousLayout())
+                root.jumpToPage(root.currentPageIndex)
+            else
+                root.ensureViewportPages()
+        }
         onWidthChanged: Qt.callLater(root.updateCurrentBaseScale)
         onHeightChanged: Qt.callLater(root.updateCurrentBaseScale)
         Component.onCompleted: {
             root.relayoutToCurrentPage()
             root.ensureViewportPages()
+        }
+
+        MouseArea {
+            id: panToolArea
+            anchors.fill: parent
+            z: root.handToolEnabled ? 100 : 0
+            enabled: root.handToolEnabled
+            acceptedButtons: Qt.LeftButton
+            hoverEnabled: true
+            cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+            propagateComposedEvents: false
+
+            property real pressX: 0
+            property real pressY: 0
+            property real startContentX: 0
+            property real startContentY: 0
+
+            onPressed: function(mouse) {
+                pressX = mouse.x
+                pressY = mouse.y
+                startContentX = viewport.contentX
+                startContentY = viewport.contentY
+                mouse.accepted = true
+            }
+
+            onPositionChanged: function(mouse) {
+                if (!pressed)
+                    return
+
+                var nextX = startContentX - (mouse.x - pressX)
+                var nextY = startContentY - (mouse.y - pressY)
+                viewport.contentX = Math.max(0, Math.min(nextX, Math.max(0, viewport.contentWidth - viewport.width)))
+                viewport.contentY = Math.max(0, Math.min(nextY, Math.max(0, viewport.contentHeight - viewport.height)))
+                mouse.accepted = true
+            }
         }
 
         WheelHandler {
@@ -174,7 +542,7 @@ Item {
             y: 28
             width: Math.max(1, childrenRect.width)
             height: Math.max(1, childrenRect.height)
-            spacing: root.isContinuousLayout() ? 18 : 28
+            spacing: root.isContinuousLayout() ? root.pageSpacing : Math.max(24, root.pageSpacing + 10)
 
             Repeater {
                 model: root.pageRows
@@ -183,7 +551,7 @@ Item {
                     id: pageRow
                     required property var modelData
 
-                    spacing: 18
+                    spacing: root.pageSpacing
 
                     Repeater {
                         model: pageRow.modelData.pages
@@ -212,29 +580,87 @@ Item {
                                                                   ? Math.min(pageAvailableWidth / rotatedWidth, availableHeight / rotatedHeight)
                                                                   : 1.0
                             readonly property real baseScale: root.baseScaleFor(pageFrame)
+                            readonly property var pagePaperItem: pagePaper
 
                             width: Math.max(1, rotatedWidth * baseScale * root.zoom)
                             height: Math.max(1, rotatedHeight * baseScale * root.zoom)
                             onBaseScaleChanged: if (pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
 
-                            Image {
-                                id: pageImage
+                            Item {
+                                id: pagePaper
                                 anchors.centerIn: parent
-                                width: Math.max(1, implicitWidth * pageFrame.baseScale * root.zoom)
-                                height: Math.max(1, implicitHeight * pageFrame.baseScale * root.zoom)
-                                source: pageFrame.pageSource
-                                fillMode: Image.PreserveAspectFit
-                                cache: false
-                                smooth: true
-                                mipmap: true
+                                width: Math.max(1, pageFrame.sourceWidth * pageFrame.baseScale * root.zoom)
+                                height: Math.max(1, pageFrame.sourceHeight * pageFrame.baseScale * root.zoom)
                                 rotation: pageFrame.pageRotation
                                 transformOrigin: Item.Center
-                                onImplicitWidthChanged: if (pageFrame.pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
-                                onImplicitHeightChanged: if (pageFrame.pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
+                                readonly property real pageScale: pageFrame.pageSize.width > 0
+                                                                  ? width / pageFrame.pageSize.width
+                                                                  : 1.0
+
+                                Image {
+                                    id: pageImage
+                                    anchors.fill: parent
+                                    source: pageFrame.pageSource
+                                    fillMode: Image.PreserveAspectFit
+                                    cache: false
+                                    smooth: true
+                                    mipmap: true
+                                    onImplicitWidthChanged: if (pageFrame.pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
+                                    onImplicitHeightChanged: if (pageFrame.pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
+                                }
+
+                                Shape {
+                                    anchors.fill: parent
+                                    visible: pageImage.status === Image.Ready
+
+                                    ShapePath {
+                                        strokeWidth: -1
+                                        fillColor: Theme.isDark ? "#66E6C35A" : "#88F7D95A"
+                                        scale: Qt.size(pagePaper.pageScale, pagePaper.pageScale)
+
+                                        PathMultiline {
+                                            paths: selection.geometry
+                                        }
+                                    }
+                                }
+
+                                DragHandler {
+                                    id: textSelectionDrag
+                                    enabled: !root.handToolEnabled && selectionDocument.status === PdfDocument.Ready
+                                    acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
+                                    target: null
+                                }
+
+                                TapHandler {
+                                    id: selectionTapHandler
+                                    enabled: !root.handToolEnabled
+                                    acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus | PointerDevice.TouchScreen
+                                    onTapped: {
+                                        selection.clear()
+                                        selection.forceActiveFocus()
+                                        root.selectedText = ""
+                                    }
+                                }
+
+                                PdfSelection {
+                                    id: selection
+                                    anchors.fill: parent
+                                    document: selectionDocument
+                                    page: pageFrame.pageIndex
+                                    renderScale: pagePaper.pageScale
+                                    from: textSelectionDrag.centroid.pressPosition
+                                    to: textSelectionDrag.centroid.position
+                                    hold: !textSelectionDrag.active && !selectionTapHandler.pressed
+                                    focus: true
+                                    onTextChanged: {
+                                        if (text.length > 0 || pageFrame.pageIndex === root.currentPageIndex)
+                                            root.selectedText = text
+                                    }
+                                }
                             }
 
                             Rectangle {
-                                anchors.fill: pageImage
+                                anchors.fill: pagePaper
                                 visible: pageImage.source.toString().length === 0
                                 color: Theme.isDark ? "#202033" : "#F5F6FB"
                                 border.color: Theme.border
@@ -244,6 +670,63 @@ Item {
                                     text: "Cargando " + String(pageFrame.pageIndex + 1)
                                     color: Theme.secondaryText
                                     font.pixelSize: 12
+                                }
+                            }
+
+                            Repeater {
+                                model: root.linksForPage(pageFrame.pageIndex)
+
+                                Rectangle {
+                                    required property var modelData
+                                    readonly property var mappedRect: root.mapPageRect(modelData.rect || {}, pageFrame.pageSize, pagePaper, pageFrame.pageRotation)
+                                    x: mappedRect.x
+                                    y: mappedRect.y
+                                    width: Math.max(8, mappedRect.width)
+                                    height: Math.max(8, mappedRect.height)
+                                    color: "transparent"
+                                    border.color: linkMouse.containsMouse ? Theme.accent : "transparent"
+                                    border.width: linkMouse.containsMouse ? 1 : 0
+                                    visible: pageImage.status === Image.Ready
+
+                                    MouseArea {
+                                        id: linkMouse
+                                        anchors.fill: parent
+                                        enabled: !root.handToolEnabled
+                                        hoverEnabled: true
+                                        cursorShape: root.handToolEnabled ? Qt.OpenHandCursor : Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (root.linkActivatedAction)
+                                                root.linkActivatedAction(modelData.uri || "", modelData.pageIndex)
+                                        }
+                                    }
+                                }
+                            }
+
+                            Repeater {
+                                model: root.searchHighlightsForPage(pageFrame.pageIndex)
+
+                                Rectangle {
+                                    required property var modelData
+                                    readonly property var mappedRect: root.mapPageRect(modelData, pageFrame.pageSize, pagePaper, pageFrame.pageRotation)
+                                    x: mappedRect.x
+                                    y: mappedRect.y
+                                    width: Math.max(modelData.active ? 12 : 6, mappedRect.width)
+                                    height: Math.max(modelData.active ? 12 : 6, mappedRect.height)
+                                    color: modelData.active
+                                           ? (Theme.isDark ? "#C7FFD54F" : "#D7FFD54F")
+                                           : (Theme.isDark ? "#66E6C35A" : "#88F7D95A")
+                                    border.color: modelData.active ? "#FFB300" : Theme.accent
+                                    border.width: modelData.active ? 3 : 1
+                                    radius: modelData.active ? 4 : 2
+                                    visible: pageImage.status === Image.Ready
+                                    opacity: modelData.active ? 1.0 : 0.88
+
+                                    SequentialAnimation on opacity {
+                                        running: modelData.active && parent.visible
+                                        loops: Animation.Infinite
+                                        NumberAnimation { from: 1.0; to: 0.72; duration: 520; easing.type: Easing.InOutQuad }
+                                        NumberAnimation { from: 0.72; to: 1.0; duration: 520; easing.type: Easing.InOutQuad }
+                                    }
                                 }
                             }
 
@@ -356,6 +839,76 @@ Item {
         if (index >= 0 && index < visiblePageSources.length)
             return visiblePageSources[index] || ""
         return ""
+    }
+
+    function linksForPage(index) {
+        if (pageLinks && index >= 0 && index < pageLinks.length)
+            return pageLinks[index] || []
+        return []
+    }
+
+    function searchHighlightsForPage(index) {
+        var highlights = []
+        if (!searchResults || searchResults.length === undefined)
+            return highlights
+
+        for (var i = 0; i < searchResults.length; ++i) {
+            var item = searchResults[i] || {}
+            if (Number(item.pageIndex) !== index)
+                continue
+
+            var rect = item.rect || item
+            rect.active = i === activeSearchResultIndex
+            highlights.push(rect)
+        }
+
+        return highlights
+    }
+
+    function mapPageRect(rect, pageSize, imageItem, rotation) {
+        var rectX = Number(rect.x || 0)
+        var rectY = Number(rect.y || 0)
+        var rectWidth = Number(rect.width || 0)
+        var rectHeight = Number(rect.height || 0)
+        var pageWidth = Math.max(1, Number(pageSize.width || 1))
+        var pageHeight = Math.max(1, Number(pageSize.height || 1))
+        var imageWidth = Math.max(1, Number(imageItem.width || 1))
+        var imageHeight = Math.max(1, Number(imageItem.height || 1))
+        var normalizedRotation = ((Number(rotation) % 360) + 360) % 360
+
+        if (normalizedRotation === 90) {
+            return {
+                x: imageItem.x + imageWidth - ((rectY + rectHeight) / pageHeight) * imageWidth,
+                y: imageItem.y + (rectX / pageWidth) * imageHeight,
+                width: (rectHeight / pageHeight) * imageWidth,
+                height: (rectWidth / pageWidth) * imageHeight
+            }
+        }
+
+        if (normalizedRotation === 180) {
+            return {
+                x: imageItem.x + imageWidth - ((rectX + rectWidth) / pageWidth) * imageWidth,
+                y: imageItem.y + imageHeight - ((rectY + rectHeight) / pageHeight) * imageHeight,
+                width: (rectWidth / pageWidth) * imageWidth,
+                height: (rectHeight / pageHeight) * imageHeight
+            }
+        }
+
+        if (normalizedRotation === 270) {
+            return {
+                x: imageItem.x + (rectY / pageHeight) * imageWidth,
+                y: imageItem.y + imageHeight - ((rectX + rectWidth) / pageWidth) * imageHeight,
+                width: (rectHeight / pageHeight) * imageWidth,
+                height: (rectWidth / pageWidth) * imageHeight
+            }
+        }
+
+        return {
+            x: imageItem.x + (rectX / pageWidth) * imageWidth,
+            y: imageItem.y + (rectY / pageHeight) * imageHeight,
+            width: (rectWidth / pageWidth) * imageWidth,
+            height: (rectHeight / pageHeight) * imageHeight
+        }
     }
 
     function thumbnailSourceForPage(index) {
@@ -516,6 +1069,49 @@ Item {
             updateCurrentPage()
             updateCurrentBaseScale()
             ensureViewportPages()
+        })
+    }
+
+    function focusSearchResult(result) {
+        if (!result || result.pageIndex === undefined)
+            return
+
+        var targetPage = Math.max(0, Math.min(Number(result.pageIndex), visiblePageSources.length - 1))
+        var targetRect = result.rect || {}
+
+        Qt.callLater(function() {
+            var found = false
+
+            forEachPageItem(function(item) {
+                if (found || item.pageIndex !== targetPage)
+                    return
+
+                found = true
+                var paper = item.pagePaperItem
+                if (!paper) {
+                    jumpToPage(targetPage)
+                    return
+                }
+
+                var mappedRect = mapPageRect(targetRect, item.pageSize, paper, item.pageRotation)
+                var absoluteX = pagesColumn.x + item.parent.x + item.x + mappedRect.x + mappedRect.width / 2
+                var absoluteY = pagesColumn.y + item.parent.y + item.y + mappedRect.y + mappedRect.height / 2
+
+                var maxX = Math.max(0, viewport.contentWidth - viewport.width)
+                var maxY = Math.max(0, viewport.contentHeight - viewport.height)
+
+                viewport.contentX = Math.max(0, Math.min(absoluteX - viewport.width / 2, maxX))
+                viewport.contentY = Math.max(0, Math.min(absoluteY - viewport.height / 2, maxY))
+                updateCurrentPage()
+                ensureViewportPages()
+            })
+
+            if (!found) {
+                jumpToPage(targetPage)
+                Qt.callLater(function() {
+                    focusSearchResult(result)
+                })
+            }
         })
     }
 

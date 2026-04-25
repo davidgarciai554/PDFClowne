@@ -1,129 +1,96 @@
 # ninja log v7
-55	90	7987197072294390	.qt/PDFClowne_qml.txt	626affc7e48c3a07
-55	90	7987197072294390	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
+62	104	7988443918605670	.qt/PDFClowne_qml.txt	626affc7e48c3a07
+62	104	7988443918605670	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
 68	113	7985710591700173	.qt/PDFClowne_res.txt	5b618c3120faac7b
 68	113	7985710591700173	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_res.txt	5b618c3120faac7b
-60	404	7987197075405131	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-60	404	7987197075405131	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-411	680	7987190218643021	PDFClowne_autogen/timestamp	2b710e7710bd6ed8
-411	680	7987190218643021	PDFClowne_autogen/mocs_compilation.cpp	2b710e7710bd6ed8
-411	680	7987190218643021	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/timestamp	2b710e7710bd6ed8
-411	680	7987190218643021	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/mocs_compilation.cpp	2b710e7710bd6ed8
-680	712	7987190219302982	meta_types/PDFClowne_json_file_list.txt	3ecb883f80e84b14
-680	712	7987190219302982	meta_types/PDFClowne_json_file_list.txt.timestamp	3ecb883f80e84b14
-680	712	7987190219302982	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/PDFClowne_json_file_list.txt	3ecb883f80e84b14
-680	712	7987190219302982	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/PDFClowne_json_file_list.txt.timestamp	3ecb883f80e84b14
+71	488	7988443922446620	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+71	488	7988443922446620	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+464	760	7988431618141682	PDFClowne_autogen/timestamp	2b710e7710bd6ed8
+464	760	7988431618141682	PDFClowne_autogen/mocs_compilation.cpp	2b710e7710bd6ed8
+464	760	7988431618141682	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/timestamp	2b710e7710bd6ed8
+464	760	7988431618141682	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/mocs_compilation.cpp	2b710e7710bd6ed8
+761	799	7988431618860772	meta_types/PDFClowne_json_file_list.txt	3ecb883f80e84b14
+761	799	7988431618860772	meta_types/PDFClowne_json_file_list.txt.timestamp	3ecb883f80e84b14
+761	799	7988431618860772	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/PDFClowne_json_file_list.txt	3ecb883f80e84b14
+761	799	7988431618860772	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/PDFClowne_json_file_list.txt.timestamp	3ecb883f80e84b14
 557	595	7985710596488477	.qt/rcc/qrc_qmake_PDFClowne.cpp	acdb3b9c38ecbdba
 557	595	7985710596488477	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_qmake_PDFClowne.cpp	acdb3b9c38ecbdba
-409	450	7987197075868220	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-409	450	7987197075868220	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-712	758	7987190219764397	meta_types/qt6pdfclowne_release_metatypes.json.gen	5d96a426716a4c37
-712	758	7987190219764397	meta_types/qt6pdfclowne_release_metatypes.json	5d96a426716a4c37
-712	758	7987190219764397	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/qt6pdfclowne_release_metatypes.json.gen	5d96a426716a4c37
-712	758	7987190219764397	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/qt6pdfclowne_release_metatypes.json	5d96a426716a4c37
+493	539	7988443922970896	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+493	539	7988443922970896	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+799	845	7988431619317165	meta_types/qt6pdfclowne_release_metatypes.json.gen	5d96a426716a4c37
+799	845	7988431619317165	meta_types/qt6pdfclowne_release_metatypes.json	5d96a426716a4c37
+799	845	7988431619317165	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/qt6pdfclowne_release_metatypes.json.gen	5d96a426716a4c37
+799	845	7988431619317165	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/qt6pdfclowne_release_metatypes.json	5d96a426716a4c37
 509	583	7985718279399991	.rcc/qmlcache/PDFClowne_qmlcache_loader.cpp	d73bf07ad04722ab
 509	583	7985718279399991	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_qmlcache_loader.cpp	d73bf07ad04722ab
 576	706	7985710597600109	PDFClowne_autogen/3YJK5W5UP7/qrc_resources.cpp	a1183b7d127fc97f
 576	706	7985710597600109	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/3YJK5W5UP7/qrc_resources.cpp	a1183b7d127fc97f
-758	888	7987190220323560	pdfclowne_qmltyperegistrations.cpp	4b733c945615581c
-758	888	7987190220323560	PDFClowne/PDFClowne.qmltypes	4b733c945615581c
-758	888	7987190220323560	D:/Aplicaciones/PDFClowne 2/build/release/pdfclowne_qmltyperegistrations.cpp	4b733c945615581c
-758	888	7987190220323560	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne/PDFClowne.qmltypes	4b733c945615581c
-404	599	7987197077320705	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-404	599	7987197077320705	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-404	599	7987197077320705	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-404	599	7987197077320705	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-894	1028	7987190222402941	.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp	235d5d39a42404c5
-894	1028	7987190222402941	.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp.aotstats	235d5d39a42404c5
-894	1028	7987190222402941	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp	235d5d39a42404c5
-894	1028	7987190222402941	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp.aotstats	235d5d39a42404c5
+845	983	7988431619920838	pdfclowne_qmltyperegistrations.cpp	4b733c945615581c
+845	983	7988431619920838	PDFClowne/PDFClowne.qmltypes	4b733c945615581c
+845	983	7988431619920838	D:/Aplicaciones/PDFClowne 2/build/release/pdfclowne_qmltyperegistrations.cpp	4b733c945615581c
+845	983	7988431619920838	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne/PDFClowne.qmltypes	4b733c945615581c
+488	713	7988443924655267	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
+488	713	7988443924655267	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
+488	713	7988443924655267	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
+488	713	7988443924655267	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
+988	1153	7988431622338458	.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp	235d5d39a42404c5
+988	1153	7988431622338458	.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp.aotstats	235d5d39a42404c5
+988	1153	7988431622338458	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp	235d5d39a42404c5
+988	1153	7988431622338458	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp.aotstats	235d5d39a42404c5
 756	920	7985710599713197	.rcc/qmlcache/PDFClowne_src/qml/main_qml.cpp	4bc83762fd9810bd
 756	920	7985710599713197	.rcc/qmlcache/PDFClowne_src/qml/main_qml.cpp.aotstats	4bc83762fd9810bd
 756	920	7985710599713197	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/main_qml.cpp	4bc83762fd9810bd
 756	920	7985710599713197	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/main_qml.cpp.aotstats	4bc83762fd9810bd
 932	1003	7985710599952714	CMakeFiles/PDFClowne.dir/resources/app.rc.res	8718c5adff40deea
 941	1014	7985710600038297	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_qmake_PDFClowne.cpp.obj	25ac292d34bed7b9
-603	648	7987197077473862	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
+717	954	7988443924820864	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
 969	1303	7985710600313462	CMakeFiles/PDFClowne.dir/PDFClowne_autogen/3YJK5W5UP7/qrc_resources.cpp.obj	424462edafe8ade5
-1078	2153	7987190223003477	CMakeFiles/PDFClowne.dir/PDFClowne_autogen/mocs_compilation.cpp.obj	4b7bc600c51c0aa7
-1091	2382	7987190223134088	CMakeFiles/PDFClowne.dir/pdfclowne_qmltyperegistrations.cpp.obj	ab38cfc20ebc1757
-599	2154	7987197077432103	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.obj	dd944f918ffe10dd
-1101	2474	7987190223227136	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp.obj	8ad2e2788219626c
+1344	2422	7988431624335805	CMakeFiles/PDFClowne.dir/PDFClowne_autogen/mocs_compilation.cpp.obj	4b7bc600c51c0aa7
+1356	2637	7988431624462929	CMakeFiles/PDFClowne.dir/pdfclowne_qmltyperegistrations.cpp.obj	ab38cfc20ebc1757
+713	2585	7988443924772838	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.obj	dd944f918ffe10dd
+1364	2746	7988431624548880	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp.obj	8ad2e2788219626c
 950	2721	7985710600123817	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/main_qml.cpp.obj	27122ba1f4b20f98
-1087	2786	7987190223083534	CMakeFiles/PDFClowne.dir/src/backend/PdfDocument.cpp.obj	55a8f404284c1e23
+1351	3035	7988431624422924	CMakeFiles/PDFClowne.dir/src/backend/PdfDocument.cpp.obj	55a8f404284c1e23
 583	2143	7985718279671014	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_qmlcache_loader.cpp.obj	158fd6d0d3c8e583
-1083	2895	7987190223043528	CMakeFiles/PDFClowne.dir/src/main.cpp.obj	2c3dbaeba93974f9
-2154	22819	7987197092986428	PDFClowne.exe	4460fda57ad58193
+1348	3109	7988431624383030	CMakeFiles/PDFClowne.dir/src/main.cpp.obj	2c3dbaeba93974f9
+2585	22114	7988443943488350	PDFClowne.exe	4460fda57ad58193
 125	2125	7987163483368354	build.ninja	14e361a7c77a2f92
 125	2125	7987163483368354	D:/Aplicaciones/PDFClowne 2/build/release/cmake_install.cmake	14e361a7c77a2f92
-1827	2921	7987163502047324	CMakeFiles/PDFClowne.dir/src/backend/DesktopIntegration.cpp.obj	a3d15543ae109dae
-61	100	7987199277234339	.qt/PDFClowne_qml.txt	626affc7e48c3a07
-61	100	7987199277234339	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
-68	439	7987199280584397	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-68	439	7987199280584397	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-439	536	7987199280674443	PDFClowne_autogen/timestamp	2b710e7710bd6ed8
-439	536	7987199280674443	PDFClowne_autogen/mocs_compilation.cpp	2b710e7710bd6ed8
-439	536	7987199280674443	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/timestamp	2b710e7710bd6ed8
-439	536	7987199280674443	D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/mocs_compilation.cpp	2b710e7710bd6ed8
-537	573	7987199281975821	meta_types/PDFClowne_json_file_list.txt	3ecb883f80e84b14
-537	573	7987199281975821	meta_types/PDFClowne_json_file_list.txt.timestamp	3ecb883f80e84b14
-537	573	7987199281975821	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/PDFClowne_json_file_list.txt	3ecb883f80e84b14
-537	573	7987199281975821	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/PDFClowne_json_file_list.txt.timestamp	3ecb883f80e84b14
-542	585	7987199282093427	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-542	585	7987199282093427	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-573	618	7987199282018337	meta_types/qt6pdfclowne_release_metatypes.json.gen	5d96a426716a4c37
-573	618	7987199282018337	meta_types/qt6pdfclowne_release_metatypes.json	5d96a426716a4c37
-573	618	7987199282018337	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/qt6pdfclowne_release_metatypes.json.gen	5d96a426716a4c37
-573	618	7987199282018337	D:/Aplicaciones/PDFClowne 2/build/release/meta_types/qt6pdfclowne_release_metatypes.json	5d96a426716a4c37
-618	799	7987199284161736	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-618	799	7987199284161736	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-618	799	7987199284161736	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-618	799	7987199284161736	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-55	92	7987199951763945	.qt/PDFClowne_qml.txt	626affc7e48c3a07
-55	92	7987199951763945	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
-61	423	7987199955070885	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-61	423	7987199955070885	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-428	476	7987199955546091	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-428	476	7987199955546091	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-423	582	7987199956630317	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-423	582	7987199956630317	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-423	582	7987199956630317	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-423	582	7987199956630317	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-590	634	7987199956800545	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
-583	2115	7987199956735481	CMakeFiles/PDFClowne.dir/src/backend/PdfDocument.cpp.obj	55a8f404284c1e23
-586	2137	7987199956770479	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.obj	dd944f918ffe10dd
-2138	22633	7987199972287548	PDFClowne.exe	4460fda57ad58193
-74	135	7987204222086934	.qt/PDFClowne_qml.txt	626affc7e48c3a07
-74	135	7987204222086934	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
-85	498	7987204225687619	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-85	498	7987204225687619	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-498	546	7987204226180249	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-498	546	7987204226180249	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-59	110	7987204494763585	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
-110	26203	7987204495267061	PDFClowne.exe	4460fda57ad58193
-65	131	7987217138890212	.qt/PDFClowne_qml.txt	626affc7e48c3a07
-65	131	7987217138890212	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
-72	489	7987217142474172	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-72	489	7987217142474172	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-494	543	7987217143035881	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-494	543	7987217143035881	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-489	697	7987217144480399	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-489	697	7987217144480399	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-489	697	7987217144480399	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-489	697	7987217144480399	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-703	992	7987217144671614	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
-698	2443	7987217144625096	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.obj	dd944f918ffe10dd
-2444	23972	7987217162091207	PDFClowne.exe	4460fda57ad58193
-59	91	7987218204342159	.qt/PDFClowne_qml.txt	626affc7e48c3a07
-59	91	7987218204342159	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
-65	425	7987218207637407	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-65	425	7987218207637407	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
-431	476	7987218208165528	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-431	476	7987218208165528	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
-426	596	7987218209327446	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-426	596	7987218209327446	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-426	596	7987218209327446	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
-426	596	7987218209327446	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
-600	646	7987218209474668	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
-596	2112	7987218209444676	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.obj	dd944f918ffe10dd
-2112	21268	7987218224597803	PDFClowne.exe	4460fda57ad58193
+74	1395	7987355915980469	CMakeFiles/PDFClowne.dir/src/backend/DesktopIntegration.cpp.obj	a3d15543ae109dae
+59	102	7988446063053351	.qt/PDFClowne_qml.txt	626affc7e48c3a07
+59	102	7988446063053351	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
+66	517	7988446067202117	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+66	517	7988446067202117	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+517	567	7988446067716852	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+517	567	7988446067716852	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+567	616	7988446067758066	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
+617	19900	7988446068273188	PDFClowne.exe	4460fda57ad58193
+53	86	7988449601713928	.qt/PDFClowne_qml.txt	626affc7e48c3a07
+53	86	7988449601713928	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
+59	464	7988449605457195	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+59	464	7988449605457195	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+464	515	7988449605998903	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+464	515	7988449605998903	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+515	569	7988449606048907	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
+55	21679	7988449651572298	PDFClowne.exe	4460fda57ad58193
+50	94	7988451825504046	.qt/PDFClowne_qml.txt	626affc7e48c3a07
+50	94	7988451825504046	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
+57	406	7988451828593653	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+57	406	7988451828593653	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+406	454	7988451829088007	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+406	454	7988451829088007	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+454	512	7988451829149368	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
+512	20240	7988451829726708	PDFClowne.exe	4460fda57ad58193
+56	90	7988453851128848	.qt/PDFClowne_qml.txt	626affc7e48c3a07
+56	90	7988453851128848	D:/Aplicaciones/PDFClowne 2/build/release/.qt/PDFClowne_qml.txt	626affc7e48c3a07
+61	457	7988453854738269	.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+61	457	7988453854738269	D:/Aplicaciones/PDFClowne 2/build/release/.qt/qml_imports/PDFClowne_build.cmake	f92f48426d52c22c
+463	521	7988453855407256	.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+463	521	7988453855407256	D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp	2ac9924c16f90eb3
+457	716	7988453857218509	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
+457	716	7988453857218509	.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
+457	716	7988453857218509	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp	9db94ef169504c02
+457	716	7988453857218509	D:/Aplicaciones/PDFClowne 2/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats	9db94ef169504c02
+721	785	7988453857472466	CMakeFiles/PDFClowne.dir/build/release/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp.obj	41c6d99f25a49274
+717	2566	7988453857432469	CMakeFiles/PDFClowne.dir/build/release/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.obj	dd944f918ffe10dd
+2566	23380	7988453875928401	PDFClowne.exe	4460fda57ad58193

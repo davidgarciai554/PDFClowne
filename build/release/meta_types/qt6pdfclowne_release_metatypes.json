@@ -10,6 +10,18 @@
                         "index": 0,
                         "name": "openDefaultAppsSettings",
                         "returnType": "bool"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "text",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 1,
+                        "name": "setClipboardText",
+                        "returnType": "bool"
                     }
                 ],
                 "object": true,
@@ -107,6 +119,34 @@
                         "designable": true,
                         "final": false,
                         "index": 5,
+                        "name": "outlineJson",
+                        "notify": "outlineJsonChanged",
+                        "read": "outlineJson",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 6,
+                        "name": "pageLinksJson",
+                        "notify": "pageLinksJsonChanged",
+                        "read": "pageLinksJson",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 7,
                         "name": "pageCount",
                         "notify": "pageCountChanged",
                         "read": "pageCount",
@@ -120,7 +160,7 @@
                         "constant": false,
                         "designable": true,
                         "final": false,
-                        "index": 6,
+                        "index": 8,
                         "name": "title",
                         "notify": "titleChanged",
                         "read": "title",
@@ -134,7 +174,7 @@
                         "constant": false,
                         "designable": true,
                         "final": false,
-                        "index": 7,
+                        "index": 9,
                         "name": "isLoaded",
                         "notify": "isLoadedChanged",
                         "read": "isLoaded",
@@ -148,7 +188,7 @@
                         "constant": false,
                         "designable": true,
                         "final": false,
-                        "index": 8,
+                        "index": 10,
                         "name": "errorMessage",
                         "notify": "errorMessageChanged",
                         "read": "errorMessage",
@@ -212,24 +252,36 @@
                     {
                         "access": "public",
                         "index": 7,
-                        "name": "pageCountChanged",
+                        "name": "outlineJsonChanged",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 8,
-                        "name": "titleChanged",
+                        "name": "pageLinksJsonChanged",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 9,
-                        "name": "isLoadedChanged",
+                        "name": "pageCountChanged",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 10,
+                        "name": "titleChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 11,
+                        "name": "isLoadedChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 12,
                         "name": "errorMessageChanged",
                         "returnType": "void"
                     }
@@ -243,7 +295,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 11,
+                        "index": 13,
                         "name": "load",
                         "returnType": "bool"
                     },
@@ -259,7 +311,7 @@
                                 "type": "qreal"
                             }
                         ],
-                        "index": 12,
+                        "index": 14,
                         "name": "renderPage",
                         "returnType": "QString"
                     },
@@ -271,7 +323,7 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 13,
+                        "index": 15,
                         "isCloned": true,
                         "name": "renderPage",
                         "returnType": "QString"
@@ -284,9 +336,67 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 14,
+                        "index": 16,
                         "name": "renderThumbnail",
                         "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 17,
+                        "name": "searchPage",
+                        "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 18,
+                        "name": "searchDocument",
+                        "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 19,
+                        "name": "extractPageText",
+                        "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "index": 20,
+                        "name": "extractDocumentText",
+                        "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "uri",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 21,
+                        "name": "resolveLinkPage",
+                        "returnType": "int"
                     },
                     {
                         "access": "public",
@@ -304,13 +414,13 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 15,
+                        "index": 22,
                         "name": "saveRotatedCopy",
                         "returnType": "bool"
                     },
                     {
                         "access": "public",
-                        "index": 16,
+                        "index": 23,
                         "name": "clear",
                         "returnType": "void"
                     }

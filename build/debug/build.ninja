@@ -196,7 +196,7 @@ build PDFClowne.exe: CXX_EXECUTABLE_LINKER__PDFClowne_Debug CMakeFiles\PDFClowne
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:windows
   LINK_LIBRARIES = C:\Qt\6.8.3\msvc2022_64\lib\Qt6Quickd.lib  D:\Aplicaciones\mupdf\platform\win32\x64\Release\libmupdf.lib  D:\Aplicaciones\mupdf\platform\win32\x64\Release\libthirdparty.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6QmlMetad.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6QmlWorkerScriptd.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6QmlModelsd.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6Qmld.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6Networkd.lib  ws2_32.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6OpenGLd.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6Guid.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6Cored.lib  mpr.lib  userenv.lib  C:\Qt\6.8.3\msvc2022_64\lib\Qt6EntryPointd.lib  shell32.lib  d3d11.lib  dxgi.lib  dxguid.lib  d3d12.lib  user32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   OBJECT_DIR = CMakeFiles\PDFClowne.dir
-  POST_BUILD = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\windeployqt.exe --qmldir "D:/Aplicaciones/PDFClowne 2/src/qml" --no-translations "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne.exe""
+  POST_BUILD = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\windeployqt.exe --qmldir "D:/Aplicaciones/PDFClowne 2/src/qml" --no-translations "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne.exe""
   PRE_LINK = cd .
   TARGET_COMPILE_PDB = CMakeFiles\PDFClowne.dir\
   TARGET_FILE = PDFClowne.exe
@@ -287,7 +287,7 @@ build PDFClowne_qmlimportscan: phony CMakeFiles\PDFClowne_qmlimportscan .qt\qml_
 # Utility command for edit_cache
 
 build CMakeFiles\edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake-gui.exe" -S"D:\Aplicaciones\PDFClowne 2" -B"D:\Aplicaciones\PDFClowne 2\build\debug""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake-gui.exe" -S"D:\Aplicaciones\PDFClowne 2" -B"D:\Aplicaciones\PDFClowne 2\build\debug""
   DESC = Running CMake cache editor...
   pool = console
   restat = 1
@@ -299,7 +299,7 @@ build edit_cache: phony CMakeFiles\edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" --regenerate-during-build -S"D:\Aplicaciones\PDFClowne 2" -B"D:\Aplicaciones\PDFClowne 2\build\debug""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" --regenerate-during-build -S"D:\Aplicaciones\PDFClowne 2" -B"D:\Aplicaciones\PDFClowne 2\build\debug""
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -323,7 +323,7 @@ build PDFClowne_autogen: phony CMakeFiles\PDFClowne_autogen PDFClowne_autogen\ti
 # Custom command for meta_types\qt6pdfclowne_debug_metatypes.json.gen
 
 build meta_types\qt6pdfclowne_debug_metatypes.json.gen meta_types\qt6pdfclowne_debug_metatypes.json | ${cmake_ninja_workdir}meta_types\qt6pdfclowne_debug_metatypes.json.gen ${cmake_ninja_workdir}meta_types\qt6pdfclowne_debug_metatypes.json: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\moc.exe meta_types\PDFClowne_json_file_list.txt || PDFClowne_autogen PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\moc.exe -o "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/qt6pdfclowne_debug_metatypes.json.gen" --collect-json "@D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/PDFClowne_json_file_list.txt" && "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/qt6pdfclowne_debug_metatypes.json.gen" "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/qt6pdfclowne_debug_metatypes.json""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\moc.exe -o "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/qt6pdfclowne_debug_metatypes.json.gen" --collect-json "@D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/PDFClowne_json_file_list.txt" && "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/qt6pdfclowne_debug_metatypes.json.gen" "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/qt6pdfclowne_debug_metatypes.json""
   DESC = Running moc --collect-json for target PDFClowne
   restat = 1
 
@@ -332,7 +332,7 @@ build meta_types\qt6pdfclowne_debug_metatypes.json.gen meta_types\qt6pdfclowne_d
 # Custom command for pdfclowne_qmltyperegistrations.cpp
 
 build pdfclowne_qmltyperegistrations.cpp PDFClowne\PDFClowne.qmltypes | ${cmake_ninja_workdir}pdfclowne_qmltyperegistrations.cpp ${cmake_ninja_workdir}PDFClowne\PDFClowne.qmltypes: CUSTOM_COMMAND qmltypes\PDFClowne_foreign_types.txt meta_types\qt6pdfclowne_debug_metatypes.json C$:\Qt\6.8.3\msvc2022_64\bin\qmltyperegistrar.exe C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6core_metatypes.json C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6qml_metatypes.json C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6network_metatypes.json C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6gui_metatypes.json C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6quick_metatypes.json C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6qmlmeta_metatypes.json C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6qmlmodels_metatypes.json C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6qmlworkerscript_metatypes.json C$:\Qt\6.8.3\msvc2022_64\metatypes\qt6opengl_metatypes.json
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmltyperegistrar.exe "--generate-qmltypes=D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne/PDFClowne.qmltypes" --import-name=PDFClowne --major-version=1 --minor-version=0 "@D:/Aplicaciones/PDFClowne 2/build/debug/qmltypes/PDFClowne_foreign_types.txt" -o "D:/Aplicaciones/PDFClowne 2/build/debug/pdfclowne_qmltyperegistrations.cpp" "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/qt6pdfclowne_debug_metatypes.json" && "C:\Program Files\CMake\bin\cmake.exe" -E make_directory "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/qmltypes" && "C:\Program Files\CMake\bin\cmake.exe" -E touch "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/qmltypes/PDFClowne.qmltypes""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmltyperegistrar.exe "--generate-qmltypes=D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne/PDFClowne.qmltypes" --import-name=PDFClowne --major-version=1 --minor-version=0 "@D:/Aplicaciones/PDFClowne 2/build/debug/qmltypes/PDFClowne_foreign_types.txt" -o "D:/Aplicaciones/PDFClowne 2/build/debug/pdfclowne_qmltyperegistrations.cpp" "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/qt6pdfclowne_debug_metatypes.json" && "C:\Program Files\CMake\bin\cmake.exe" -E make_directory "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/qmltypes" && "C:\Program Files\CMake\bin\cmake.exe" -E touch "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/qmltypes/PDFClowne.qmltypes""
   DESC = Automatic QML type registration for target PDFClowne
   restat = 1
 
@@ -341,7 +341,7 @@ build pdfclowne_qmltyperegistrations.cpp PDFClowne\PDFClowne.qmltypes | ${cmake_
 # Custom command for .qt\rcc\qrc_qmake_PDFClowne.cpp
 
 build .qt\rcc\qrc_qmake_PDFClowne.cpp | ${cmake_ninja_workdir}.qt\rcc\qrc_qmake_PDFClowne.cpp: CUSTOM_COMMAND PDFClowne\qmldir .qt\rcc\qmake_PDFClowne.qrc C$:\Qt\6.8.3\msvc2022_64\bin\rcc.exe || PDFClowne_autogen PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\rcc.exe --output "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qrc_qmake_PDFClowne.cpp" --name qmake_PDFClowne "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qmake_PDFClowne.qrc" --no-zstd"
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\rcc.exe --output "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qrc_qmake_PDFClowne.cpp" --name qmake_PDFClowne "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qmake_PDFClowne.qrc" --no-zstd"
   DESC = Running rcc for resource qmake_PDFClowne
   restat = 1
 
@@ -350,7 +350,7 @@ build .qt\rcc\qrc_qmake_PDFClowne.cpp | ${cmake_ninja_workdir}.qt\rcc\qrc_qmake_
 # Custom command for .rcc\qmlcache\PDFClowne_qmlcache_loader.cpp
 
 build .rcc\qmlcache\PDFClowne_qmlcache_loader.cpp | ${cmake_ninja_workdir}.rcc\qmlcache\PDFClowne_qmlcache_loader.cpp: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\qmlcachegen.exe .rcc\qmlcache\PDFClowne_qml_loader_file_list.rsp .qt\rcc\qmake_PDFClowne.qrc .qt\rcc\PDFClowne_raw_qml_0.qrc || PDFClowne_autogen PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlcachegen.exe --resource-name qmlcache_PDFClowne -o "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_qmlcache_loader.cpp" "@D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_qml_loader_file_list.rsp""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlcachegen.exe --resource-name qmlcache_PDFClowne -o "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_qmlcache_loader.cpp" "@D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_qml_loader_file_list.rsp""
   DESC = Generating .rcc/qmlcache/PDFClowne_qmlcache_loader.cpp
   restat = 1
 
@@ -359,7 +359,7 @@ build .rcc\qmlcache\PDFClowne_qmlcache_loader.cpp | ${cmake_ninja_workdir}.rcc\q
 # Custom command for .rcc\qmlcache\PDFClowne_src\qml\PdfViewer_qml.cpp
 
 build .rcc\qmlcache\PDFClowne_src\qml\PdfViewer_qml.cpp .rcc\qmlcache\PDFClowne_src\qml\PdfViewer_qml.cpp.aotstats | ${cmake_ninja_workdir}.rcc\qmlcache\PDFClowne_src\qml\PdfViewer_qml.cpp ${cmake_ninja_workdir}.rcc\qmlcache\PDFClowne_src\qml\PdfViewer_qml.cpp.aotstats: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\qmlcachegen.exe D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml .qt\rcc\qmake_PDFClowne.qrc .qt\rcc\PDFClowne_raw_qml_0.qrc PDFClowne\PDFClowne.qmltypes PDFClowne\qmldir
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E make_directory "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_src/qml" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlcachegen.exe --bare --resource-path /qt/qml/PDFClowne/src/qml/PdfViewer.qml -I "D:/Aplicaciones/PDFClowne 2/build/debug" -I C:/Qt/6.8.3/msvc2022_64/qml -i "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne/qmldir" --resource "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qmake_PDFClowne.qrc" --resource "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/PDFClowne_raw_qml_0.qrc" --dump-aot-stats --module-id=PDFClowne(PDFClowne) -o "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp" "D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E make_directory "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_src/qml" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlcachegen.exe --bare --resource-path /qt/qml/PDFClowne/src/qml/PdfViewer.qml -I "D:/Aplicaciones/PDFClowne 2/build/debug" -I C:/Qt/6.8.3/msvc2022_64/qml -i "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne/qmldir" --resource "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qmake_PDFClowne.qrc" --resource "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/PDFClowne_raw_qml_0.qrc" --dump-aot-stats --module-id=PDFClowne(PDFClowne) -o "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp" "D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml""
   DESC = Generating .rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp, .rcc/qmlcache/PDFClowne_src/qml/PdfViewer_qml.cpp.aotstats
   restat = 1
 
@@ -368,7 +368,7 @@ build .rcc\qmlcache\PDFClowne_src\qml\PdfViewer_qml.cpp .rcc\qmlcache\PDFClowne_
 # Custom command for .rcc\qmlcache\PDFClowne_src\qml\Theme_qml.cpp
 
 build .rcc\qmlcache\PDFClowne_src\qml\Theme_qml.cpp .rcc\qmlcache\PDFClowne_src\qml\Theme_qml.cpp.aotstats | ${cmake_ninja_workdir}.rcc\qmlcache\PDFClowne_src\qml\Theme_qml.cpp ${cmake_ninja_workdir}.rcc\qmlcache\PDFClowne_src\qml\Theme_qml.cpp.aotstats: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\qmlcachegen.exe D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml .qt\rcc\qmake_PDFClowne.qrc .qt\rcc\PDFClowne_raw_qml_0.qrc PDFClowne\PDFClowne.qmltypes PDFClowne\qmldir
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E make_directory "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_src/qml" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlcachegen.exe --bare --resource-path /qt/qml/PDFClowne/src/qml/Theme.qml -I "D:/Aplicaciones/PDFClowne 2/build/debug" -I C:/Qt/6.8.3/msvc2022_64/qml -i "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne/qmldir" --resource "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qmake_PDFClowne.qrc" --resource "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/PDFClowne_raw_qml_0.qrc" --dump-aot-stats --module-id=PDFClowne(PDFClowne) -o "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp" "D:/Aplicaciones/PDFClowne 2/src/qml/Theme.qml""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E make_directory "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_src/qml" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlcachegen.exe --bare --resource-path /qt/qml/PDFClowne/src/qml/Theme.qml -I "D:/Aplicaciones/PDFClowne 2/build/debug" -I C:/Qt/6.8.3/msvc2022_64/qml -i "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne/qmldir" --resource "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qmake_PDFClowne.qrc" --resource "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/PDFClowne_raw_qml_0.qrc" --dump-aot-stats --module-id=PDFClowne(PDFClowne) -o "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp" "D:/Aplicaciones/PDFClowne 2/src/qml/Theme.qml""
   DESC = Generating .rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp, .rcc/qmlcache/PDFClowne_src/qml/Theme_qml.cpp.aotstats
   restat = 1
 
@@ -377,7 +377,7 @@ build .rcc\qmlcache\PDFClowne_src\qml\Theme_qml.cpp .rcc\qmlcache\PDFClowne_src\
 # Custom command for .qt\rcc\qrc_PDFClowne_raw_qml_0.cpp
 
 build .qt\rcc\qrc_PDFClowne_raw_qml_0.cpp | ${cmake_ninja_workdir}.qt\rcc\qrc_PDFClowne_raw_qml_0.cpp: CUSTOM_COMMAND D$:\Aplicaciones\PDFClowne$ 2\src\qml\main.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml D$:\Aplicaciones\PDFClowne$ 2\resources\resources.qrc .qt\rcc\PDFClowne_raw_qml_0.qrc C$:\Qt\6.8.3\msvc2022_64\bin\rcc.exe || PDFClowne_autogen PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\rcc.exe --output "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp" --name PDFClowne_raw_qml_0 "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/PDFClowne_raw_qml_0.qrc" --no-zstd"
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\rcc.exe --output "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp" --name PDFClowne_raw_qml_0 "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/PDFClowne_raw_qml_0.qrc" --no-zstd"
   DESC = Running rcc for resource PDFClowne_raw_qml_0
   restat = 1
 
@@ -386,7 +386,7 @@ build .qt\rcc\qrc_PDFClowne_raw_qml_0.cpp | ${cmake_ninja_workdir}.qt\rcc\qrc_PD
 # Custom command for PDFClowne_autogen\timestamp
 
 build PDFClowne_autogen\timestamp PDFClowne_autogen\mocs_compilation.cpp | ${cmake_ninja_workdir}PDFClowne_autogen\timestamp ${cmake_ninja_workdir}PDFClowne_autogen\mocs_compilation.cpp: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\moc.exe || PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E cmake_autogen "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/AutogenInfo.json" Debug && "C:\Program Files\CMake\bin\cmake.exe" -E touch "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/timestamp" && "C:\Program Files\CMake\bin\cmake.exe" -E cmake_transform_depfile Ninja gccdepfile "D:/Aplicaciones/PDFClowne 2" "D:/Aplicaciones/PDFClowne 2" "D:/Aplicaciones/PDFClowne 2/build/debug" "D:/Aplicaciones/PDFClowne 2/build/debug" "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/deps" "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/d/fe9b02836626c90166c5523327da0f7e217c5db22dd6502403c8b4fb00bf15b1.d""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E cmake_autogen "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/AutogenInfo.json" Debug && "C:\Program Files\CMake\bin\cmake.exe" -E touch "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/timestamp" && "C:\Program Files\CMake\bin\cmake.exe" -E cmake_transform_depfile Ninja gccdepfile "D:/Aplicaciones/PDFClowne 2" "D:/Aplicaciones/PDFClowne 2" "D:/Aplicaciones/PDFClowne 2/build/debug" "D:/Aplicaciones/PDFClowne 2/build/debug" "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/deps" "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/d/fe9b02836626c90166c5523327da0f7e217c5db22dd6502403c8b4fb00bf15b1.d""
   DESC = Automatic MOC and UIC for target PDFClowne
   depfile = CMakeFiles\d\fe9b02836626c90166c5523327da0f7e217c5db22dd6502403c8b4fb00bf15b1.d
   deps = gcc
@@ -397,7 +397,7 @@ build PDFClowne_autogen\timestamp PDFClowne_autogen\mocs_compilation.cpp | ${cma
 # Custom command for PDFClowne_autogen\3YJK5W5UP7\qrc_resources.cpp
 
 build PDFClowne_autogen\3YJK5W5UP7\qrc_resources.cpp | ${cmake_ninja_workdir}PDFClowne_autogen\3YJK5W5UP7\qrc_resources.cpp: CUSTOM_COMMAND D$:\Aplicaciones\PDFClowne$ 2\resources\resources.qrc CMakeFiles\PDFClowne_autogen.dir\AutoRcc_resources_3YJK5W5UP7_Info.json D$:\Aplicaciones\PDFClowne$ 2\resources\qtquickcontrols2.conf D$:\Aplicaciones\PDFClowne$ 2\resources\PdfClowne.ico D$:\Aplicaciones\PDFClowne$ 2\resources\PdfClowne.svg C$:\Qt\6.8.3\msvc2022_64\bin\rcc.exe C$:\Qt\6.8.3\msvc2022_64\bin\rcc.exe || PDFClowne_autogen PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E cmake_autorcc "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/AutoRcc_resources_3YJK5W5UP7_Info.json" Debug"
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E cmake_autorcc "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/AutoRcc_resources_3YJK5W5UP7_Info.json" Debug"
   DESC = Automatic RCC for resources/resources.qrc
   restat = 1
 
@@ -406,7 +406,7 @@ build PDFClowne_autogen\3YJK5W5UP7\qrc_resources.cpp | ${cmake_ninja_workdir}PDF
 # Custom command for meta_types\PDFClowne_json_file_list.txt
 
 build meta_types\PDFClowne_json_file_list.txt meta_types\PDFClowne_json_file_list.txt.timestamp | ${cmake_ninja_workdir}meta_types\PDFClowne_json_file_list.txt ${cmake_ninja_workdir}meta_types\PDFClowne_json_file_list.txt.timestamp: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\cmake_automoc_parser.exe PDFClowne_autogen\timestamp || PDFClowne_autogen PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\cmake_automoc_parser.exe --cmake-autogen-cache-file "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/ParseCache.txt" --cmake-autogen-info-file "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/AutogenInfo.json" --output-file-path "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/PDFClowne_json_file_list.txt" --timestamp-file-path "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/PDFClowne_json_file_list.txt.timestamp" --cmake-autogen-include-dir-path "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/include""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\cmake_automoc_parser.exe --cmake-autogen-cache-file "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/ParseCache.txt" --cmake-autogen-info-file "D:/Aplicaciones/PDFClowne 2/build/debug/CMakeFiles/PDFClowne_autogen.dir/AutogenInfo.json" --output-file-path "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/PDFClowne_json_file_list.txt" --timestamp-file-path "D:/Aplicaciones/PDFClowne 2/build/debug/meta_types/PDFClowne_json_file_list.txt.timestamp" --cmake-autogen-include-dir-path "D:/Aplicaciones/PDFClowne 2/build/debug/PDFClowne_autogen/include""
   DESC = Running AUTOMOC file extraction for target PDFClowne
   restat = 1
 
@@ -421,21 +421,21 @@ build CMakeFiles\PDFClowne_qmltyperegistration | ${cmake_ninja_workdir}CMakeFile
 # Custom command for CMakeFiles\PDFClowne_qmllint
 
 build CMakeFiles\PDFClowne_qmllint | ${cmake_ninja_workdir}CMakeFiles\PDFClowne_qmllint: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\qmllint.exe D$:\Aplicaciones\PDFClowne$ 2\src\qml\main.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml .rcc\qmllint\PDFClowne.rsp || PDFClowne_qmltyperegistration all_qmltyperegistrations
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmllint.exe "@D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmllint/PDFClowne.rsp""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmllint.exe "@D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmllint/PDFClowne.rsp""
 
 
 #############################################
 # Custom command for CMakeFiles\PDFClowne_qmllint_json
 
 build CMakeFiles\PDFClowne_qmllint_json | ${cmake_ninja_workdir}CMakeFiles\PDFClowne_qmllint_json: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\qmllint.exe D$:\Aplicaciones\PDFClowne$ 2\src\qml\main.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml .rcc\qmllint\PDFClowne_json.rsp || PDFClowne_qmltyperegistration all_qmltyperegistrations
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmllint.exe "@D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmllint/PDFClowne_json.rsp""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmllint.exe "@D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmllint/PDFClowne_json.rsp""
 
 
 #############################################
 # Custom command for CMakeFiles\PDFClowne_qmllint_module
 
 build CMakeFiles\PDFClowne_qmllint_module | ${cmake_ninja_workdir}CMakeFiles\PDFClowne_qmllint_module: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\qmllint.exe D$:\Aplicaciones\PDFClowne$ 2\src\qml\main.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml .rcc\qmllint\PDFClowne_module.rsp || PDFClowne_qmltyperegistration all_qmltyperegistrations
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmllint.exe "@D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmllint/PDFClowne_module.rsp""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmllint.exe "@D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmllint/PDFClowne_module.rsp""
 
 
 #############################################
@@ -448,7 +448,7 @@ build CMakeFiles\PDFClowne_copy_qml | ${cmake_ninja_workdir}CMakeFiles\PDFClowne
 # Custom command for .qt\PDFClowne_qml.txt
 
 build .qt\PDFClowne_qml.txt | ${cmake_ninja_workdir}.qt\PDFClowne_qml.txt: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\lib\cmake\Qt6Qml\Qt6QmlCopyFiles.cmake D$:\Aplicaciones\PDFClowne$ 2\src\qml\main.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" "-DFILES_INFO_PATH=D:/Aplicaciones/PDFClowne 2/build/debug/.qt/PDFClowne_qml.cmake" -P C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6Qml/Qt6QmlCopyFiles.cmake"
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" "-DFILES_INFO_PATH=D:/Aplicaciones/PDFClowne 2/build/debug/.qt/PDFClowne_qml.cmake" -P C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6Qml/Qt6QmlCopyFiles.cmake"
   DESC = Copying PDFClowne qml sources into build dir
   restat = 1
 
@@ -463,7 +463,7 @@ build CMakeFiles\PDFClowne_copy_res | ${cmake_ninja_workdir}CMakeFiles\PDFClowne
 # Custom command for .qt\PDFClowne_res.txt
 
 build .qt\PDFClowne_res.txt | ${cmake_ninja_workdir}.qt\PDFClowne_res.txt: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\lib\cmake\Qt6Qml\Qt6QmlCopyFiles.cmake D$:\Aplicaciones\PDFClowne$ 2\resources\resources.qrc
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" "-DFILES_INFO_PATH=D:/Aplicaciones/PDFClowne 2/build/debug/.qt/PDFClowne_res.cmake" -P C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6Qml/Qt6QmlCopyFiles.cmake"
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" "-DFILES_INFO_PATH=D:/Aplicaciones/PDFClowne 2/build/debug/.qt/PDFClowne_res.cmake" -P C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6Qml/Qt6QmlCopyFiles.cmake"
   DESC = Copying PDFClowne qml resources into build dir
   restat = 1
 
@@ -478,7 +478,7 @@ build CMakeFiles\module_PDFClowne_aotstats_target | ${cmake_ninja_workdir}CMakeF
 # Custom command for .rcc\qmlcache\module_PDFClowne.aotstats
 
 build .rcc\qmlcache\module_PDFClowne.aotstats | ${cmake_ninja_workdir}.rcc\qmlcache\module_PDFClowne.aotstats: CUSTOM_COMMAND .rcc\qmlcache\PDFClowne_src\qml\PdfViewer_qml.cpp.aotstats .rcc\qmlcache\PDFClowne_src\qml\Theme_qml.cpp.aotstats .rcc\qmlcache\module_PDFClowne.aotstatslist || PDFClowne_qmltyperegistration
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlaotstats.exe aggregate "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/module_PDFClowne.aotstatslist" "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/module_PDFClowne.aotstats""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlaotstats.exe aggregate "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/module_PDFClowne.aotstatslist" "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/module_PDFClowne.aotstats""
   DESC = Generating .rcc/qmlcache/module_PDFClowne.aotstats
   restat = 1
 
@@ -487,14 +487,14 @@ build .rcc\qmlcache\module_PDFClowne.aotstats | ${cmake_ninja_workdir}.rcc\qmlca
 # Custom command for CMakeFiles\all_aotstats
 
 build CMakeFiles\all_aotstats | ${cmake_ninja_workdir}CMakeFiles\all_aotstats: CUSTOM_COMMAND .rcc\qmlcache\all_aotstats.txt || PDFClowne_qmltyperegistration module_PDFClowne_aotstats_target
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E cat "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.txt""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" -E cat "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.txt""
 
 
 #############################################
 # Custom command for .rcc\qmlcache\all_aotstats.aotstats
 
 build .rcc\qmlcache\all_aotstats.aotstats .rcc\qmlcache\all_aotstats.txt | ${cmake_ninja_workdir}.rcc\qmlcache\all_aotstats.aotstats ${cmake_ninja_workdir}.rcc\qmlcache\all_aotstats.txt: CUSTOM_COMMAND .rcc\qmlcache\module_PDFClowne.aotstats || PDFClowne_qmltyperegistration module_PDFClowne_aotstats_target
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlaotstats.exe aggregate "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.aotstatslist" "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.aotstats" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlaotstats.exe format "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.aotstats" "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.txt""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlaotstats.exe aggregate "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.aotstatslist" "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.aotstats" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlaotstats.exe format "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.aotstats" "D:/Aplicaciones/PDFClowne 2/build/debug/.rcc/qmlcache/all_aotstats.txt""
   DESC = Generating .rcc/qmlcache/all_aotstats.aotstats, .rcc/qmlcache/all_aotstats.txt
   restat = 1
 
@@ -509,7 +509,7 @@ build CMakeFiles\PDFClowne_qmlimportscan | ${cmake_ninja_workdir}CMakeFiles\PDFC
 # Custom command for .qt\qml_imports\PDFClowne_build.cmake
 
 build .qt\qml_imports\PDFClowne_build.cmake | ${cmake_ninja_workdir}.qt\qml_imports\PDFClowne_build.cmake: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\bin\qmlimportscanner.exe .qt\rcc\qmake_PDFClowne.qrc .qt\rcc\PDFClowne_raw_qml_0.qrc D$:\Aplicaciones\PDFClowne$ 2\src\qml\main.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml
-  COMMAND = cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlimportscanner.exe "@D:/Aplicaciones/PDFClowne 2/build/debug/.qt/qml_imports/PDFClowne_build.rsp""
+  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2" && "D:\Aplicaciones\PDFClowne 2\build\debug\.qt\bin\qt_setup_tool_path.bat" C:/Qt/6.8.3/msvc2022_64/bin/qmlimportscanner.exe "@D:/Aplicaciones/PDFClowne 2/build/debug/.qt/qml_imports/PDFClowne_build.rsp""
   DESC = Running qmlimportscanner for PDFClowne
   restat = 1
 
