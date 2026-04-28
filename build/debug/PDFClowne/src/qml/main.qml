@@ -35,7 +35,19 @@ ApplicationWindow {
     property bool readingPanelTextLoading: false
     property bool readingToolsMenuVisible: false
     property bool searchOverlayVisible: false
+    property bool openInProgress: false
+    property string pendingOpenSource: ""
+    property string pendingOpenFileName: ""
+    readonly property int pageRenderWindowRadius: 8
+    readonly property int pageRenderPruneDelayMs: 240
+    readonly property int largeJumpThresholdPages: 5
+    readonly property real largeJumpPreviewScale: 1.0
+    readonly property int heavyPdfPageThreshold: 120
+    readonly property real heavyPdfSizeThresholdBytes: 25 * 1024 * 1024
+    readonly property real progressivePreviewScale: 0.7
     property var pendingSearchFocusResult: null
+    property int searchRequestSerial: 0
+    property int renderSessionSerial: 0
     readonly property bool immersiveModeActive: readingFullscreenEnabled || presentationModeEnabled
     property real presentationRestoreZoom: 1.0
     property string presentationRestoreLayoutMode: "continuous"
@@ -67,12 +79,14 @@ ApplicationWindow {
         Qt.callLater(function() { refreshReadingPanelText(false) })
     }
     onActivePageIndexChanged: {
+        renderWindowMaintenanceTimer.restart()
         if (!reflowModeEnabled)
             Qt.callLater(function() { refreshReadingPanelText(false) })
     }
     onReflowModeEnabledChanged: Qt.callLater(function() { refreshReadingPanelText(false) })
     onHasActiveDocumentChanged: {
         if (!hasActiveDocument) {
+            renderWindowMaintenanceTimer.stop()
             readingPanelText = ""
             readingPanelTextLoading = false
             readingToolsMenuVisible = false
@@ -95,6 +109,27 @@ ApplicationWindow {
         id: documentViewSettings
         category: "DocumentViewState"
         property string statesJson: "{}"
+    }
+
+    Timer {
+        id: searchDebounceTimer
+        interval: 180
+        repeat: false
+        onTriggered: window.performSearchRequest()
+    }
+
+    Timer {
+        id: openPdfTimer
+        interval: 0
+        repeat: false
+        onTriggered: window.finishOpenPdf()
+    }
+
+    Timer {
+        id: renderWindowMaintenanceTimer
+        interval: window.pageRenderPruneDelayMs
+        repeat: false
+        onTriggered: window.maintainActiveDocumentRenderWindow(true)
     }
 
     ListModel {
@@ -512,6 +547,208 @@ ApplicationWindow {
         return hasActiveDocument ? Math.max(1, documentModel.get(activeDocumentIndex).pageCount || 1) : 0
     }
 
+    function activeDocumentUsesProgressiveRendering() {
+        if (!hasActiveDocument)
+            return false
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var fileSize = Number(doc.fileSizeBytes || 0)
+        var pages = Number(doc.pageCount || 0)
+        return fileSize >= heavyPdfSizeThresholdBytes || pages >= heavyPdfPageThreshold
+    }
+
+    function formatBytes(bytes) {
+        var value = Number(bytes || 0)
+        if (!isFinite(value) || value <= 0)
+            return "0 B"
+        if (value >= 1024 * 1024)
+            return (value / (1024 * 1024)).toFixed(value >= 100 * 1024 * 1024 ? 0 : 1) + " MB"
+        if (value >= 1024)
+            return Math.round(value / 1024) + " KB"
+        return Math.round(value) + " B"
+    }
+
+    function activeDocumentFirstPageVisibleMs() {
+        return hasActiveDocument ? Number(documentModel.get(activeDocumentIndex).firstPageVisibleMs || -1) : -1
+    }
+
+    function activeDocumentRenderCacheBytes() {
+        return hasActiveDocument ? Number(documentModel.get(activeDocumentIndex).renderCacheBytes || 0) : 0
+    }
+
+    function activeDocumentProcessMemoryBytes() {
+        return hasActiveDocument ? Number(documentModel.get(activeDocumentIndex).processMemoryBytes || 0) : 0
+    }
+
+    function activeDocumentPeakProcessMemoryBytes() {
+        return hasActiveDocument ? Number(documentModel.get(activeDocumentIndex).peakProcessMemoryBytes || 0) : 0
+    }
+
+    function activeDocumentPendingRenderCount() {
+        return hasActiveDocument ? Number(documentModel.get(activeDocumentIndex).pendingRenderCount || 0) : 0
+    }
+
+    function activeDocumentHasRenderedCurrentPage() {
+        if (!hasActiveDocument)
+            return false
+
+        var sources = activeDocumentPageSources()
+        if (!sources || sources.length <= 0)
+            return false
+
+        var pageIndex = Math.max(0, Math.min(activePageIndex, sources.length - 1))
+        return String(sources[pageIndex] || "").length > 0
+    }
+
+    function shouldShowDocumentLoadingOverlay() {
+        if (openInProgress)
+            return true
+        if (!hasActiveDocument || reflowModeEnabled)
+            return false
+        if (pdfViewer && (pdfViewer.largeJumpMode || pdfViewer.pageTransitionActive))
+            return true
+        if (activeDocumentHasRenderedCurrentPage())
+            return false
+        return activeDocumentPageCount() > 0
+    }
+
+    function documentViewerOpacity() {
+        if (!hasActiveDocument || reflowModeEnabled)
+            return 1
+        if (!shouldShowDocumentLoadingOverlay())
+            return 1
+        if (pdfViewer && pdfViewer.pageTransitionHasPreview)
+            return 1
+        return activeDocumentHasRenderedCurrentPage() ? 1 : 0
+    }
+
+    function currentSelectionDocumentSource() {
+        if (!hasActiveDocument || shouldShowDocumentLoadingOverlay())
+            return ""
+        return pathToFileUrl(documentModel.get(activeDocumentIndex).path)
+    }
+
+    function loadingOverlayTitle() {
+        if (openInProgress)
+            return pendingOpenFileName.length > 0 ? "Abriendo " + pendingOpenFileName : "Abriendo PDF"
+        if (hasActiveDocument)
+            return "Preparando " + activeDocumentTitle()
+        return "Abriendo PDF"
+    }
+
+    function loadingOverlaySubtitle() {
+        if (openInProgress)
+            return "Analizando paginas y preparando la primera vista..."
+        if (pdfViewer && pdfViewer.largeJumpMode)
+            return "Mostrando una vista previa rapida mientras terminamos de afinar la pagina..."
+        if (pdfViewer && pdfViewer.pageTransitionActive)
+            return "Cargando la pagina seleccionada y dejando preparada la navegacion cercana..."
+
+        var pending = activeDocumentPendingRenderCount()
+        if (pending > 0)
+            return pending > 1
+                ? "Renderizando las primeras paginas para que el visor entre suave."
+                : "Renderizando la primera pagina..."
+
+        return "Cargando el documento..."
+    }
+
+    function isLargePageJump(targetPage) {
+        if (!hasActiveDocument)
+            return false
+
+        var target = Number(targetPage)
+        if (!isFinite(target))
+            return false
+
+        return Math.abs(target - activePageIndex) > largeJumpThresholdPages
+    }
+
+    function prunePageSourceWindow(sources, centerPage, radius) {
+        var kept = []
+        var minimumPage = Math.max(0, Number(centerPage) - Math.max(0, Number(radius)))
+        var maximumPage = Math.max(minimumPage, Number(centerPage) + Math.max(0, Number(radius)))
+
+        for (var i = 0; i < sources.length; ++i) {
+            if (i >= minimumPage && i <= maximumPage)
+                kept.push(sources[i] || "")
+            else
+                kept.push("")
+        }
+
+        return kept
+    }
+
+    function shouldDelayRenderWindowPrune() {
+        if (!pdfViewer)
+            return false
+
+        return pdfViewer.largeJumpMode || pdfViewer.pageTransitionActive || pdfViewer.viewportInteracting
+    }
+
+    function maintainActiveDocumentRenderWindow(allowPrune) {
+        if (!hasActiveDocument)
+            return
+
+        if (allowPrune === false || shouldDelayRenderWindowPrune()) {
+            renderWindowMaintenanceTimer.restart()
+            return
+        }
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var sources = activeDocumentPageSources()
+        if (!sources || sources.length <= 0)
+            return
+
+        var pruned = prunePageSourceWindow(sources, activePageIndex, pageRenderWindowRadius)
+        var changed = false
+        for (var i = 0; i < sources.length; ++i) {
+            if (String(sources[i] || "") !== String(pruned[i] || "")) {
+                changed = true
+                break
+            }
+        }
+
+        if (changed)
+            documentModel.setProperty(activeDocumentIndex, "pageSourcesJson", JSON.stringify(pruned))
+
+        documentRenderController.prunePageCache(doc.path,
+                                                activePageIndex,
+                                                pageRenderWindowRadius,
+                                                Number(doc.renderSessionId || 0))
+    }
+
+    function activeDocumentPerformanceText() {
+        if (!hasActiveDocument)
+            return ""
+
+        var parts = []
+        var firstPageMs = activeDocumentFirstPageVisibleMs()
+        if (firstPageMs >= 0)
+            parts.push("Primera pagina " + String(firstPageMs) + " ms")
+
+        parts.push("Cache " + formatBytes(activeDocumentRenderCacheBytes()))
+        parts.push("RAM " + formatBytes(activeDocumentProcessMemoryBytes()))
+
+        var pending = activeDocumentPendingRenderCount()
+        if (pending > 0)
+            parts.push("Cola " + String(pending))
+
+        return parts.join(" · ")
+    }
+
+    function updateDocumentRenderMetrics(index, firstPageVisibleMs, cacheBytes, processBytes, peakBytes, pendingCount) {
+        if (index < 0 || index >= documentModel.count)
+            return
+
+        if (firstPageVisibleMs >= 0)
+            documentModel.setProperty(index, "firstPageVisibleMs", firstPageVisibleMs)
+        documentModel.setProperty(index, "renderCacheBytes", cacheBytes)
+        documentModel.setProperty(index, "processMemoryBytes", processBytes)
+        documentModel.setProperty(index, "peakProcessMemoryBytes", peakBytes)
+        documentModel.setProperty(index, "pendingRenderCount", pendingCount)
+    }
+
     function activeDocumentPageSources() {
         if (!hasActiveDocument)
             return []
@@ -629,6 +866,12 @@ ApplicationWindow {
         if (index < 0 || index >= results.length)
             return null
         return results[index]
+    }
+
+    function activeDocumentSearchPending() {
+        if (!hasActiveDocument)
+            return false
+        return !!documentModel.get(activeDocumentIndex).searchInProgress
     }
 
     function activeDocumentSearchQuery() {
@@ -792,6 +1035,10 @@ ApplicationWindow {
         if (!hasActiveDocument)
             return
 
+        var closingDoc = documentModel.get(activeDocumentIndex)
+        if (closingDoc && closingDoc.path)
+            documentRenderController.releaseDocument(closingDoc.path, closingDoc.renderSessionId || 0)
+
         documentModel.remove(activeDocumentIndex)
         if (documentModel.count === 0) {
             setActiveDocument(-1)
@@ -803,7 +1050,25 @@ ApplicationWindow {
     }
 
     function openPdf(source) {
-        if (pdfDocument.load(source)) {
+        if (String(source || "").trim().length === 0)
+            return
+
+        pendingOpenSource = source
+        pendingOpenFileName = fileNameFromPath(source)
+        openInProgress = true
+        saveMessage = ""
+        openPdfErrorDialog.close()
+        openPdfTimer.start()
+    }
+
+    function finishOpenPdf() {
+        var source = pendingOpenSource
+        pendingOpenSource = ""
+        var opened = pdfDocument.load(source)
+        openInProgress = false
+        pendingOpenFileName = ""
+
+        if (opened) {
             saveMessage = ""
             window.visibility = Window.Maximized
 
@@ -829,6 +1094,7 @@ ApplicationWindow {
                 outlineJson: pdfDocument.outlineJson,
                 pageLinksJson: pdfDocument.pageLinksJson,
                 pageCount: pdfDocument.pageCount,
+                fileSizeBytes: pdfDocument.fileSizeBytes,
                 zoom: savedState.zoom,
                 layoutMode: savedState.layoutMode,
                 zoomMode: savedState.zoomMode,
@@ -841,11 +1107,20 @@ ApplicationWindow {
                 searchQuery: "",
                 searchResultsJson: "[]",
                 activeSearchResultIndex: -1,
+                searchRequestId: 0,
+                searchInProgress: false,
                 reflowText: "",
                 pageTextCacheJson: "{}",
                 historyBackJson: "[]",
-                historyForwardJson: "[]"
+                historyForwardJson: "[]",
+                renderSessionId: ++renderSessionSerial,
+                firstPageVisibleMs: -1,
+                renderCacheBytes: 0,
+                processMemoryBytes: 0,
+                peakProcessMemoryBytes: 0,
+                pendingRenderCount: 0
             })
+            documentRenderController.markDocumentOpened(pdfDocument.filePath, renderSessionSerial)
             setActiveDocument(documentModel.count - 1)
             addRecentFile(pdfDocument.filePath, pdfDocument.title)
         } else {
@@ -897,6 +1172,7 @@ ApplicationWindow {
 
         var index = activeDocumentIndex
         var path = documentModel.get(index).path
+        var oldSessionId = Number(documentModel.get(index).renderSessionId || 0)
         var page = activePageIndex
         var zoom = viewerZoom
         var layout = layoutMode
@@ -907,6 +1183,7 @@ ApplicationWindow {
 
         var sources = loadedPageSources()
         var thumbnails = loadedThumbnailSources()
+        var sessionId = ++renderSessionSerial
         documentModel.setProperty(index, "title", pdfDocument.title)
         documentModel.setProperty(index, "previewSource", pdfDocument.previewSource)
         documentModel.setProperty(index, "pageSourcesJson", JSON.stringify(sources))
@@ -915,54 +1192,39 @@ ApplicationWindow {
         documentModel.setProperty(index, "outlineJson", pdfDocument.outlineJson)
         documentModel.setProperty(index, "pageLinksJson", pdfDocument.pageLinksJson)
         documentModel.setProperty(index, "pageCount", pdfDocument.pageCount)
+        documentModel.setProperty(index, "fileSizeBytes", pdfDocument.fileSizeBytes)
         documentModel.setProperty(index, "pageRotationsJson", "[]")
         documentModel.setProperty(index, "zoom", zoom)
         documentModel.setProperty(index, "layoutMode", layout)
         documentModel.setProperty(index, "zoomMode", zoomModeValue)
         documentModel.setProperty(index, "activePageIndex", Math.min(page, Math.max(0, pdfDocument.pageCount - 1)))
+        documentModel.setProperty(index, "renderSessionId", sessionId)
+        documentModel.setProperty(index, "firstPageVisibleMs", -1)
+        documentModel.setProperty(index, "renderCacheBytes", 0)
+        documentModel.setProperty(index, "processMemoryBytes", 0)
+        documentModel.setProperty(index, "peakProcessMemoryBytes", 0)
+        documentModel.setProperty(index, "pendingRenderCount", 0)
+        documentRenderController.releaseDocument(path, oldSessionId)
+        documentRenderController.markDocumentOpened(path, sessionId)
         setActiveDocument(index)
         jumpToPageRequested(activePageIndex)
         return true
     }
 
-    function renderActivePage(pageIndex, scale) {
+    function requestActivePageRender(pageIndex, scale) {
         if (!hasActiveDocument)
-            return ""
+            return
 
         var doc = documentModel.get(activeDocumentIndex)
-        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
-            return ""
-
-        var rendered = pdfDocument.renderPage(pageIndex, scale)
-        if (!rendered || rendered.length === 0)
-            return ""
-
-        var sources = activeDocumentPageSources()
-        while (sources.length < doc.pageCount)
-            sources.push("")
-        sources[pageIndex] = rendered
-        documentModel.setProperty(activeDocumentIndex, "pageSourcesJson", JSON.stringify(sources))
-        return rendered
+        documentRenderController.requestPageRender(doc.path, pageIndex, scale, doc.renderSessionId || 0)
     }
 
-    function renderActiveThumbnail(pageIndex) {
+    function requestActiveThumbnailRender(pageIndex) {
         if (!hasActiveDocument)
-            return ""
+            return
 
         var doc = documentModel.get(activeDocumentIndex)
-        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
-            return ""
-
-        var rendered = pdfDocument.renderThumbnail(pageIndex)
-        if (!rendered || rendered.length === 0)
-            return ""
-
-        var sources = activeDocumentThumbnailSources()
-        while (sources.length < doc.pageCount)
-            sources.push("")
-        sources[pageIndex] = rendered
-        documentModel.setProperty(activeDocumentIndex, "thumbnailSourcesJson", JSON.stringify(sources))
-        return rendered
+        documentRenderController.requestThumbnailRender(doc.path, pageIndex, doc.renderSessionId || 0)
     }
 
     function updateActiveSearchResults() {
@@ -971,43 +1233,39 @@ ApplicationWindow {
 
         var query = activeDocumentSearchQuery().trim()
         if (query.length === 0) {
+            searchDebounceTimer.stop()
             documentModel.setProperty(activeDocumentIndex, "searchResultsJson", "[]")
             documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", -1)
+            documentModel.setProperty(activeDocumentIndex, "searchInProgress", false)
             if (navigationSidePanelMode === "search")
                 navigationSidePanelMode = "thumbnails"
+            saveMessage = ""
             syncActiveDocumentState()
+            return
+        }
+
+        documentModel.setProperty(activeDocumentIndex, "searchInProgress", true)
+        saveMessage = "Buscando..."
+        syncActiveDocumentState()
+        searchDebounceTimer.restart()
+    }
+
+    function performSearchRequest() {
+        if (!hasActiveDocument)
+            return
+
+        var query = activeDocumentSearchQuery().trim()
+        if (query.length === 0) {
+            documentModel.setProperty(activeDocumentIndex, "searchInProgress", false)
+            saveMessage = ""
             return
         }
 
         var doc = documentModel.get(activeDocumentIndex)
-        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
-            return
-
-        documentModel.setProperty(activeDocumentIndex, "searchResultsJson", pdfDocument.searchDocument(query))
-
-        var count = activeDocumentSearchResultCount()
-        if (count <= 0) {
-            documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", -1)
-            if (navigationSidePanelMode === "search")
-                navigationSidePanelMode = "thumbnails"
-            saveMessage = "No se encontraron coincidencias."
-            syncActiveDocumentState()
-            return
-        }
-
-        var nextIndex = activeDocumentSearchResultIndex()
-        if (nextIndex < 0 || nextIndex >= count)
-            nextIndex = 0
-
-        documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", nextIndex)
-        navigationPanelVisible = true
-        navigationSidePanelMode = "search"
-        saveMessage = count === 1 ? "1 coincidencia." : String(count) + " coincidencias."
-        syncActiveDocumentState()
-
-        Qt.callLater(function() {
-            activateSearchResult(nextIndex, false)
-        })
+        var requestId = ++searchRequestSerial
+        documentModel.setProperty(activeDocumentIndex, "searchRequestId", requestId)
+        documentModel.setProperty(activeDocumentIndex, "searchInProgress", true)
+        documentSearchController.searchDocument(doc.path, query, requestId)
     }
 
     function ensureActiveDocumentBackendLoaded() {
@@ -1208,6 +1466,7 @@ ApplicationWindow {
         documentModel.setProperty(activeDocumentIndex, "searchQuery", "")
         documentModel.setProperty(activeDocumentIndex, "searchResultsJson", "[]")
         documentModel.setProperty(activeDocumentIndex, "activeSearchResultIndex", -1)
+        documentModel.setProperty(activeDocumentIndex, "searchInProgress", false)
         if (navigationSidePanelMode === "search")
             navigationSidePanelMode = "thumbnails"
         saveMessage = ""
@@ -1323,6 +1582,7 @@ ApplicationWindow {
         var target = Math.max(0, Math.min(Number(index), activeDocumentPageCount() - 1))
         if (isNaN(target))
             return
+        var shouldUseLargeJumpRoute = isLargePageJump(target)
 
         if (addHistory && target !== activePageIndex) {
             var back = activeDocumentHistoryBack()
@@ -1330,6 +1590,9 @@ ApplicationWindow {
             documentModel.setProperty(activeDocumentIndex, "historyBackJson", JSON.stringify(trimHistoryEntries(back)))
             documentModel.setProperty(activeDocumentIndex, "historyForwardJson", "[]")
         }
+
+        if (shouldUseLargeJumpRoute && pdfViewer)
+            pdfViewer.beginLargeJump(target, largeJumpPreviewScale)
 
         activePageIndex = target
         syncActiveDocumentState()
@@ -1559,8 +1822,8 @@ ApplicationWindow {
         var page = Math.max(0, Math.min(activePageIndex, doc.pageCount - 1))
         rotations[page] = (rotations[page] + delta + 360) % 360
         documentModel.setProperty(activeDocumentIndex, "pageRotationsJson", JSON.stringify(rotations))
-        renderActivePage(page, pdfViewer ? pdfViewer.renderScale : 4.0)
-        renderActiveThumbnail(page)
+        requestActivePageRender(page, pdfViewer ? pdfViewer.renderScale : 2.5)
+        requestActiveThumbnailRender(page)
         saveMessage = ""
     }
 
@@ -2779,6 +3042,10 @@ ApplicationWindow {
                         id: pdfViewer
                         anchors.fill: parent
                         visible: window.hasActiveDocument && !window.reflowModeEnabled
+                        opacity: window.documentViewerOpacity()
+                        Behavior on opacity {
+                            NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        }
                         pageSources: window.activeDocumentPageSources()
                         thumbnailSources: window.activeDocumentThumbnailSources()
                         outlineEntries: window.activeDocumentOutlineEntries()
@@ -2799,16 +3066,18 @@ ApplicationWindow {
                         handToolEnabled: window.handToolEnabled
                         snapToPage: window.pageSnapEnabled
                         pageSpacing: window.pageSpacing
+                        progressiveRenderingEnabled: window.activeDocumentUsesProgressiveRendering()
+                        progressivePreviewScale: window.progressivePreviewScale
                         zoomInAction: window.zoomIn
                         zoomOutAction: window.zoomOut
-                        renderPageAction: window.renderActivePage
-                        renderThumbnailAction: window.renderActiveThumbnail
+                        requestPageRenderAction: window.requestActivePageRender
+                        requestThumbnailRenderAction: window.requestActiveThumbnailRender
                         currentPageChangedAction: window.reportActivePage
                         sidePanelModeChangedAction: window.setSidePanelMode
                         outlineActivatedAction: window.activateLinkTarget
                         linkActivatedAction: window.activateLinkTarget
                         searchResultActivatedAction: function(index) { window.activateSearchResult(index, true) }
-                        selectionDocumentSource: window.pathToFileUrl(window.hasActiveDocument ? documentModel.get(window.activeDocumentIndex).path : "")
+                        selectionDocumentSource: window.currentSelectionDocumentSource()
                     }
 
                     Rectangle {
@@ -2891,6 +3160,128 @@ ApplicationWindow {
                 }
             }
 
+            Connections {
+                target: documentSearchController
+                function onSearchCompleted(filePath, requestId, query, resultsJson, canceled) {
+                    var index = window.findDocumentIndexByPath(filePath)
+                    if (index < 0)
+                        return
+
+                    var doc = documentModel.get(index)
+                    if (Number(doc.searchRequestId || 0) !== Number(requestId))
+                        return
+
+                    documentModel.setProperty(index, "searchInProgress", false)
+
+                    if (canceled)
+                        return
+
+                    if (String(doc.searchQuery || "").trim() !== String(query || "").trim())
+                        return
+
+                    documentModel.setProperty(index, "searchResultsJson", resultsJson)
+
+                    var parsed = []
+                    try {
+                        parsed = JSON.parse(resultsJson || "[]")
+                    } catch(e) {
+                        parsed = []
+                    }
+
+                    if (parsed.length <= 0) {
+                        documentModel.setProperty(index, "activeSearchResultIndex", -1)
+                        if (index === window.activeDocumentIndex) {
+                            if (window.navigationSidePanelMode === "search")
+                                window.navigationSidePanelMode = "thumbnails"
+                            window.saveMessage = "No se encontraron coincidencias."
+                            window.syncActiveDocumentState()
+                        }
+                        return
+                    }
+
+                    var nextIndex = Number(doc.activeSearchResultIndex)
+                    if (isNaN(nextIndex) || nextIndex < 0 || nextIndex >= parsed.length)
+                        nextIndex = 0
+
+                    documentModel.setProperty(index, "activeSearchResultIndex", nextIndex)
+
+                    if (index === window.activeDocumentIndex) {
+                        window.navigationPanelVisible = true
+                        window.navigationSidePanelMode = "search"
+                        window.saveMessage = parsed.length === 1 ? "1 coincidencia." : String(parsed.length) + " coincidencias."
+                        window.syncActiveDocumentState()
+                        Qt.callLater(function() {
+                            window.activateSearchResult(nextIndex, false)
+                        })
+                    }
+                }
+            }
+
+            Rectangle {
+                id: documentLoadingOverlay
+                anchors.fill: parent
+                visible: window.shouldShowDocumentLoadingOverlay()
+                color: Theme.isDark ? "#D010121B" : "#CCF5F7FC"
+                z: 24
+
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: documentLoadingOverlay.visible
+                }
+
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: Math.min(parent.width - 40, 420)
+                    height: 220
+                    radius: 22
+                    color: Theme.surface
+                    border.color: Theme.border
+                    border.width: 1
+
+                    Column {
+                        anchors.centerIn: parent
+                        width: parent.width - 56
+                        spacing: 14
+
+                        BusyIndicator {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            running: documentLoadingOverlay.visible
+                            width: 56
+                            height: 56
+                        }
+
+                        Label {
+                            width: parent.width
+                            text: window.loadingOverlayTitle()
+                            color: Theme.text
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            font.pixelSize: 20
+                            font.weight: Font.DemiBold
+                        }
+
+                        Label {
+                            width: parent.width
+                            text: window.loadingOverlaySubtitle()
+                            color: Theme.secondaryText
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            font.pixelSize: 13
+                        }
+
+                        Label {
+                            visible: window.hasActiveDocument && window.activeDocumentPerformanceText().length > 0
+                            width: parent.width
+                            text: window.activeDocumentPerformanceText()
+                            color: Theme.secondaryText
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            font.pixelSize: 11
+                        }
+                    }
+                }
+            }
+
             Rectangle {
                 id: searchOverlay
                 visible: window.hasActiveDocument && !window.reflowModeEnabled && window.searchOverlayVisible
@@ -2954,7 +3345,9 @@ ApplicationWindow {
                         width: 40
                         height: 32
                         text: window.activeDocumentSearchQuery().trim().length > 0
-                              ? (window.activeDocumentSearchResultCount() > 0
+                              ? (window.activeDocumentSearchPending()
+                                 ? "..."
+                                 : window.activeDocumentSearchResultCount() > 0
                                  ? String(Math.max(1, window.activeDocumentSearchResultIndex() + 1)) + "/" + String(window.activeDocumentSearchResultCount())
                                  : "0/0")
                               : ""
@@ -3347,6 +3740,60 @@ ApplicationWindow {
                     }
                 }
             }
+
+            Connections {
+                target: documentRenderController
+                function onRenderCompleted(filePath, sessionId, pageIndex, thumbnail, scale, source, canceled, fromCache, firstPageVisibleMs, cacheBytes, processMemoryBytes, peakProcessMemoryBytes, pendingCount) {
+                    var index = window.findDocumentIndexByPath(filePath)
+                    if (index < 0)
+                        return
+
+                    var doc = documentModel.get(index)
+                    if (Number(doc.renderSessionId || 0) !== Number(sessionId))
+                        return
+
+                    window.updateDocumentRenderMetrics(index, firstPageVisibleMs, cacheBytes, processMemoryBytes, peakProcessMemoryBytes, pendingCount)
+                    if (canceled || !source || source.length === 0)
+                        return
+
+                    if (thumbnail) {
+                        var thumbs = []
+                        try {
+                            thumbs = JSON.parse(doc.thumbnailSourcesJson || "[]")
+                        } catch(e) {
+                            thumbs = []
+                        }
+                        while (thumbs.length < Number(doc.pageCount || 0))
+                            thumbs.push("")
+                        thumbs[pageIndex] = source
+                        documentModel.setProperty(index, "thumbnailSourcesJson", JSON.stringify(thumbs))
+                        return
+                    }
+
+                    if (index === window.activeDocumentIndex && pdfViewer && pdfViewer.largeJumpMode && pageIndex !== window.activePageIndex)
+                        return
+
+                    var sources = []
+                    try {
+                        sources = JSON.parse(doc.pageSourcesJson || "[]")
+                    } catch(e) {
+                        sources = []
+                    }
+                    while (sources.length < Number(doc.pageCount || 0))
+                        sources.push("")
+                    sources[pageIndex] = source
+                    var centerPage = index === window.activeDocumentIndex
+                        ? window.activePageIndex
+                        : Number(doc.activePageIndex || 0)
+                    documentModel.setProperty(index,
+                                              "pageSourcesJson",
+                                              JSON.stringify(window.prunePageSourceWindow(sources,
+                                                                                          centerPage,
+                                                                                          window.pageRenderWindowRadius)))
+                    if (index === window.activeDocumentIndex && pdfViewer)
+                        pdfViewer.notePageRenderCompleted(pageIndex, scale)
+                }
+            }
         }
 
         Rectangle {
@@ -3387,6 +3834,17 @@ ApplicationWindow {
                           : saveMessage.length > 0 ? saveMessage
                           : "PDF"
                     color: pdfDocument.errorMessage.length > 0 ? Theme.danger : Theme.secondaryText
+                    font.pixelSize: 11
+                    elide: Text.ElideRight
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Label {
+                    visible: window.activeDocumentPerformanceText().length > 0
+                    width: statusBar.narrow ? 190 : statusBar.compact ? 250 : 320
+                    height: 24
+                    text: window.activeDocumentPerformanceText()
+                    color: Theme.secondaryText
                     font.pixelSize: 11
                     elide: Text.ElideRight
                     verticalAlignment: Text.AlignVCenter

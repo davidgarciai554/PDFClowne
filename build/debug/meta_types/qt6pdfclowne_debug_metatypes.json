@@ -40,8 +40,618 @@
     {
         "classes": [
             {
-                "className": "PdfDocument",
+                "className": "DocumentRenderController",
                 "lineNumber": 10,
+                "methods": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 11,
+                        "name": "markDocumentOpened",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "scale",
+                                "type": "qreal"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 12,
+                        "name": "requestPageRender",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 13,
+                        "name": "requestThumbnailRender",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "centerPage",
+                                "type": "int"
+                            },
+                            {
+                                "name": "radius",
+                                "type": "int"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 14,
+                        "name": "prunePageCache",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 15,
+                        "name": "releaseDocument",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 16,
+                        "name": "clear",
+                        "returnType": "void"
+                    }
+                ],
+                "object": true,
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 0,
+                        "name": "busy",
+                        "notify": "busyChanged",
+                        "read": "busy",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 1,
+                        "name": "pendingCount",
+                        "notify": "metricsChanged",
+                        "read": "pendingCount",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 2,
+                        "name": "cacheBytes",
+                        "notify": "metricsChanged",
+                        "read": "cacheBytes",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "qint64",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 3,
+                        "name": "processMemoryBytes",
+                        "notify": "metricsChanged",
+                        "read": "processMemoryBytes",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "qint64",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 4,
+                        "name": "peakProcessMemoryBytes",
+                        "notify": "metricsChanged",
+                        "read": "peakProcessMemoryBytes",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "qint64",
+                        "user": false
+                    }
+                ],
+                "qualifiedClassName": "DocumentRenderController",
+                "signals": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 0,
+                        "name": "requestMarkDocumentOpened",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "scale",
+                                "type": "qreal"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 1,
+                        "name": "requestPageRenderInternal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 2,
+                        "name": "requestThumbnailRenderInternal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "centerPage",
+                                "type": "int"
+                            },
+                            {
+                                "name": "radius",
+                                "type": "int"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 3,
+                        "name": "requestPrunePageCache",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 4,
+                        "name": "requestReleaseDocument",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 5,
+                        "name": "requestClear",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "thumbnail",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "scale",
+                                "type": "qreal"
+                            },
+                            {
+                                "name": "source",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "canceled",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "fromCache",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "firstPageVisibleMs",
+                                "type": "int"
+                            },
+                            {
+                                "name": "cacheBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "processMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "peakProcessMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "pendingCount",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 6,
+                        "name": "renderCompleted",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 7,
+                        "name": "metricsChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 8,
+                        "name": "busyChanged",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "private",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "thumbnail",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "scale",
+                                "type": "qreal"
+                            },
+                            {
+                                "name": "source",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "canceled",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "fromCache",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "firstPageVisibleMs",
+                                "type": "int"
+                            },
+                            {
+                                "name": "cacheBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "processMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "peakProcessMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "pendingCount",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 9,
+                        "name": "handleRenderCompleted",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "private",
+                        "arguments": [
+                            {
+                                "name": "cacheBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "processMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "peakProcessMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "pendingCount",
+                                "type": "int"
+                            },
+                            {
+                                "name": "busy",
+                                "type": "bool"
+                            }
+                        ],
+                        "index": 10,
+                        "name": "handleMetricsUpdated",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "DocumentRenderController.h",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
+                "className": "DocumentSearchController",
+                "lineNumber": 9,
+                "methods": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "requestId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 4,
+                        "name": "searchDocument",
+                        "returnType": "void"
+                    }
+                ],
+                "object": true,
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 0,
+                        "name": "busy",
+                        "notify": "busyChanged",
+                        "read": "busy",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false
+                    }
+                ],
+                "qualifiedClassName": "DocumentSearchController",
+                "signals": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "requestId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 0,
+                        "name": "requestSearch",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "requestId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "resultsJson",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "canceled",
+                                "type": "bool"
+                            }
+                        ],
+                        "index": 1,
+                        "name": "searchCompleted",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 2,
+                        "name": "busyChanged",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "private",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "requestId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "resultsJson",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "canceled",
+                                "type": "bool"
+                            }
+                        ],
+                        "index": 3,
+                        "name": "handleSearchCompleted",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "DocumentSearchController.h",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
+                "className": "PdfDocument",
+                "lineNumber": 8,
                 "object": true,
                 "properties": [
                     {
@@ -161,6 +771,20 @@
                         "designable": true,
                         "final": false,
                         "index": 8,
+                        "name": "fileSizeBytes",
+                        "notify": "fileSizeBytesChanged",
+                        "read": "fileSizeBytes",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "qint64",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 9,
                         "name": "title",
                         "notify": "titleChanged",
                         "read": "title",
@@ -174,7 +798,7 @@
                         "constant": false,
                         "designable": true,
                         "final": false,
-                        "index": 9,
+                        "index": 10,
                         "name": "isLoaded",
                         "notify": "isLoadedChanged",
                         "read": "isLoaded",
@@ -188,7 +812,7 @@
                         "constant": false,
                         "designable": true,
                         "final": false,
-                        "index": 10,
+                        "index": 11,
                         "name": "errorMessage",
                         "notify": "errorMessageChanged",
                         "read": "errorMessage",
@@ -270,18 +894,24 @@
                     {
                         "access": "public",
                         "index": 10,
-                        "name": "titleChanged",
+                        "name": "fileSizeBytesChanged",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 11,
-                        "name": "isLoadedChanged",
+                        "name": "titleChanged",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 12,
+                        "name": "isLoadedChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 13,
                         "name": "errorMessageChanged",
                         "returnType": "void"
                     }
@@ -295,7 +925,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 13,
+                        "index": 14,
                         "name": "load",
                         "returnType": "bool"
                     },
@@ -311,20 +941,7 @@
                                 "type": "qreal"
                             }
                         ],
-                        "index": 14,
-                        "name": "renderPage",
-                        "returnType": "QString"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "pageIndex",
-                                "type": "int"
-                            }
-                        ],
                         "index": 15,
-                        "isCloned": true,
                         "name": "renderPage",
                         "returnType": "QString"
                     },
@@ -337,6 +954,19 @@
                             }
                         ],
                         "index": 16,
+                        "isCloned": true,
+                        "name": "renderPage",
+                        "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 17,
                         "name": "renderThumbnail",
                         "returnType": "QString"
                     },
@@ -352,7 +982,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 17,
+                        "index": 18,
                         "name": "searchPage",
                         "returnType": "QString"
                     },
@@ -364,7 +994,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 18,
+                        "index": 19,
                         "name": "searchDocument",
                         "returnType": "QString"
                     },
@@ -376,13 +1006,13 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 19,
+                        "index": 20,
                         "name": "extractPageText",
                         "returnType": "QString"
                     },
                     {
                         "access": "public",
-                        "index": 20,
+                        "index": 21,
                         "name": "extractDocumentText",
                         "returnType": "QString"
                     },
@@ -394,7 +1024,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 21,
+                        "index": 22,
                         "name": "resolveLinkPage",
                         "returnType": "int"
                     },
@@ -414,13 +1044,13 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 22,
+                        "index": 23,
                         "name": "saveRotatedCopy",
                         "returnType": "bool"
                     },
                     {
                         "access": "public",
-                        "index": 23,
+                        "index": 24,
                         "name": "clear",
                         "returnType": "void"
                     }
@@ -434,6 +1064,292 @@
             }
         ],
         "inputFile": "PdfDocument.h",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
+                "className": "DocumentRenderWorker",
+                "lineNumber": 105,
+                "object": true,
+                "qualifiedClassName": "DocumentRenderWorker",
+                "signals": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "thumbnail",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "scale",
+                                "type": "qreal"
+                            },
+                            {
+                                "name": "source",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "canceled",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "fromCache",
+                                "type": "bool"
+                            },
+                            {
+                                "name": "firstPageVisibleMs",
+                                "type": "int"
+                            },
+                            {
+                                "name": "cacheBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "processMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "peakProcessMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "pendingCount",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 0,
+                        "name": "renderCompleted",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "cacheBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "processMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "peakProcessMemoryBytes",
+                                "type": "qint64"
+                            },
+                            {
+                                "name": "pendingCount",
+                                "type": "int"
+                            },
+                            {
+                                "name": "busy",
+                                "type": "bool"
+                            }
+                        ],
+                        "index": 1,
+                        "name": "metricsUpdated",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 2,
+                        "name": "markDocumentOpened",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "scale",
+                                "type": "qreal"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 3,
+                        "name": "enqueuePageRender",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 4,
+                        "name": "enqueueThumbnailRender",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "centerPage",
+                                "type": "int"
+                            },
+                            {
+                                "name": "radius",
+                                "type": "int"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 5,
+                        "name": "prunePageCache",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 6,
+                        "name": "releaseDocument",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 7,
+                        "name": "clear",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "DocumentRenderController.cpp",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
+                "className": "DocumentSearchWorker",
+                "lineNumber": 92,
+                "object": true,
+                "qualifiedClassName": "DocumentSearchWorker",
+                "signals": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "requestId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "resultsJson",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "canceled",
+                                "type": "bool"
+                            }
+                        ],
+                        "index": 0,
+                        "name": "searchCompleted",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "requestId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 1,
+                        "name": "search",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "DocumentSearchController.cpp",
         "outputRevision": 68
     }
 ]

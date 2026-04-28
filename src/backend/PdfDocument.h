@@ -3,9 +3,7 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
-
-typedef struct fz_context fz_context;
-typedef struct fz_document fz_document;
+#include <memory>
 
 class PdfDocument : public QObject {
     Q_OBJECT
@@ -17,6 +15,7 @@ class PdfDocument : public QObject {
     Q_PROPERTY(QString outlineJson READ outlineJson NOTIFY outlineJsonChanged)
     Q_PROPERTY(QString pageLinksJson READ pageLinksJson NOTIFY pageLinksJsonChanged)
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged)
+    Q_PROPERTY(qint64 fileSizeBytes READ fileSizeBytes NOTIFY fileSizeBytesChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool isLoaded READ isLoaded NOTIFY isLoadedChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
@@ -33,6 +32,7 @@ public:
     QString outlineJson() const { return m_outlineJson; }
     QString pageLinksJson() const { return m_pageLinksJson; }
     int pageCount() const { return m_pageCount; }
+    qint64 fileSizeBytes() const { return m_fileSizeBytes; }
     QString title() const { return m_title; }
     bool isLoaded() const { return m_isLoaded; }
     QString errorMessage() const { return m_errorMessage; }
@@ -61,11 +61,14 @@ signals:
     void outlineJsonChanged();
     void pageLinksJsonChanged();
     void pageCountChanged();
+    void fileSizeBytesChanged();
     void titleChanged();
     void isLoadedChanged();
     void errorMessageChanged();
 
 private:
+    class PdfEngine;
+
     void rebuildNavigationData();
 
     QString m_filePath;
@@ -78,7 +81,7 @@ private:
     QString m_title;
     QString m_errorMessage;
     int m_pageCount = 0;
+    qint64 m_fileSizeBytes = 0;
     bool m_isLoaded = false;
-    fz_context *m_ctx = nullptr;
-    fz_document *m_doc = nullptr;
+    std::unique_ptr<PdfEngine> m_engine;
 };

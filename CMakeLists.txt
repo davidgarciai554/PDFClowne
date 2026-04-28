@@ -57,6 +57,9 @@ qt_standard_project_setup(REQUIRES 6.5)
 set(CPP_SOURCES
     src/main.cpp
     src/backend/DesktopIntegration.cpp
+    src/backend/DocumentRenderController.cpp
+    src/backend/DocumentSearchController.cpp
+    src/backend/PdfRenderImageProvider.cpp
     src/backend/PdfDocument.cpp
 )
 
@@ -66,7 +69,10 @@ endif()
 
 set(CPP_HEADERS
     src/backend/DesktopIntegration.h
+    src/backend/DocumentRenderController.h
+    src/backend/DocumentSearchController.h
     src/backend/Logger.h
+    src/backend/PdfRenderImageProvider.h
     src/backend/PdfDocument.h
 )
 

@@ -35,12 +35,31 @@ PDFClowne_autogen/timestamp: \
 	C:/Program\ Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC.cmake \
 	C:/Program\ Files/CMake/share/cmake-4.3/Modules/Platform/Windows.cmake \
 	C:/Program\ Files/CMake/share/cmake-4.3/Modules/Platform/WindowsPaths.cmake \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QAtomicInteger \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QByteArray \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QDateTime \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QElapsedTimer \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QFileInfo \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QHash \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QJsonArray \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QJsonDocument \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QJsonObject \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QList \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QMetaObject \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QMutex \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QObject \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QRegularExpression \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QSharedPointer \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QString \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QStringList \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QThread \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QUrl \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20functional.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20iterator.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20memory.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20type_traits.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20utility.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/q23utility.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qalgorithms.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qanystringview.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qarraydata.h \
@@ -55,6 +74,9 @@ PDFClowne_autogen/timestamp: \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qbytearrayalgorithms.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qbytearraylist.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qbytearrayview.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcalendar.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcborcommon.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcborvalue.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qchar.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcompare.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcompare_impl.h \
@@ -65,9 +87,18 @@ PDFClowne_autogen/timestamp: \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcontainerfwd.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcontainerinfo.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcontainertools_impl.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qcontiguouscache.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qdarwinhelpers.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qdatastream.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qdatetime.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qdeadlinetimer.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qdebug.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qelapsedtimer.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qendian.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qexceptionhandling.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qfile.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qfiledevice.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qfileinfo.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qflags.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qfloat16.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qforeach.h \
@@ -76,18 +107,30 @@ PDFClowne_autogen/timestamp: \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qgenericatomic.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qglobal.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qglobalstatic.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qhash.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qhashfunctions.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qiodevice.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qiodevicebase.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qiterable.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qiterator.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qjsonarray.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qjsondocument.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qjsonobject.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qjsonvalue.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qlatin1stringview.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qline.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qlist.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qlocale.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qlogging.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qmalloc.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qmap.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qmargins.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qmath.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qmetacontainer.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qmetaobject.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qmetatype.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qminmax.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qmutex.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qnamespace.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qnumeric.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qobject.h \
@@ -96,10 +139,21 @@ PDFClowne_autogen/timestamp: \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qobjectdefs_impl.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qoverload.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qpair.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qpoint.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qpointer.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qprocessordetection.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qrect.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qrefcount.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qregularexpression.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qscopedpointer.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qscopeguard.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qset.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qshareddata.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qshareddata_impl.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qsharedpointer.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qsharedpointer_impl.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qsize.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qspan.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qstring.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qstringalgorithms.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qstringbuilder.h \
@@ -123,20 +177,73 @@ PDFClowne_autogen/timestamp: \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtdeprecationdefinitions.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtdeprecationmarkers.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtenvironmentvariables.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtextstream.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qthread.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtimezone.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtmetamacros.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtnoop.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtpreprocessorsupport.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtresource.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtsan_impl.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qttranslation.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qttypetraits.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtversion.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtversionchecks.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtypeinfo.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtyperevision.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qtypes.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qurl.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qutf8stringview.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/quuid.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qvariant.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qvarlengtharray.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qversionnumber.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qversiontagging.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qxptype_traits.h \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/qyieldcpu.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/QImage \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qcolor.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qimage.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qpaintdevice.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qpixelformat.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qpixmap.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qpolygon.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qregion.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qrgb.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qrgba64.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qtgui-config.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qtguiexports.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qtguiglobal.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qtransform.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qwindowdefs.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtGui/qwindowdefs_win.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtNetwork/qtnetwork-config.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtNetwork/qtnetworkexports.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtNetwork/qtnetworkglobal.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qjsengine.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qjsmanagedvalue.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qjsnumbercoercion.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qjsprimitivevalue.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qjsvalue.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqml.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmlabstracturlinterceptor.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmldebug.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmlengine.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmlerror.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmllist.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmlparserstatus.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmlprivate.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmlpropertyvaluesource.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qqmlregistration.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qtqml-config.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qtqmlexports.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQml/qtqmlglobal.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQmlIntegration/qqmlintegration.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQuick/QQuickImageProvider \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQuick/qquickimageprovider.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQuick/qtquick-config.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQuick/qtquickexports.h \
+	C:/Qt/6.8.3/msvc2022_64/include/QtQuick/qtquickglobal.h \
 	C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/FindWrapAtomic.cmake \
 	C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/FindWrapVulkanHeaders.cmake \
 	C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake \
@@ -1015,8 +1122,73 @@ PDFClowne_autogen/timestamp: \
 	D:/Aplicaciones/PDFClowne\ 2/resources/resources.qrc \
 	D:/Aplicaciones/PDFClowne\ 2/src/backend/DesktopIntegration.cpp \
 	D:/Aplicaciones/PDFClowne\ 2/src/backend/DesktopIntegration.h \
+	D:/Aplicaciones/PDFClowne\ 2/src/backend/DocumentRenderController.cpp \
+	D:/Aplicaciones/PDFClowne\ 2/src/backend/DocumentRenderController.h \
+	D:/Aplicaciones/PDFClowne\ 2/src/backend/DocumentSearchController.cpp \
+	D:/Aplicaciones/PDFClowne\ 2/src/backend/DocumentSearchController.h \
 	D:/Aplicaciones/PDFClowne\ 2/src/backend/Logger.h \
 	D:/Aplicaciones/PDFClowne\ 2/src/backend/PdfDocument.cpp \
 	D:/Aplicaciones/PDFClowne\ 2/src/backend/PdfDocument.h \
+	D:/Aplicaciones/PDFClowne\ 2/src/backend/PdfRenderImageProvider.cpp \
+	D:/Aplicaciones/PDFClowne\ 2/src/backend/PdfRenderImageProvider.h \
 	D:/Aplicaciones/PDFClowne\ 2/src/main.cpp \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/archive.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/band-writer.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/barcode.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/bidi.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/bitmap.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/buffer.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/color.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/compress.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/compressed-buffer.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/config.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/context.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/crypt.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/deskew.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/device.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/display-list.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/document.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/export.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/filter.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/font.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/geometry.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/getopt.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/glyph-cache.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/glyph.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/hash.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/heap-imp.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/heap.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/hyphen.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/image.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/json.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/link.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/log.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/options.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/outline.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/output-svg.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/output.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/path.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/pixmap.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/pool.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/separation.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/shade.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/store.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/story-writer.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/story.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/stream.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/string-util.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/structured-text.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/system.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/text.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/track-usage.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/transition.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/tree.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/types.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/util.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/version.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/write-pixmap.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/writer.h \
+	D:/Aplicaciones/mupdf/include/mupdf/fitz/xml.h \
+	D:/Aplicaciones/mupdf/include/mupdf/memento.h \
 	C:/Program\ Files/CMake/bin/cmake.exe

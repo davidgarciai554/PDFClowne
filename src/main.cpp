@@ -11,8 +11,11 @@
 #include <QVariant>
 
 #include "DesktopIntegration.h"
+#include "DocumentRenderController.h"
+#include "DocumentSearchController.h"
 #include "Logger.h"
 #include "PdfDocument.h"
+#include "PdfRenderImageProvider.h"
 
 namespace {
 QString normalizeStartupSource(const QString &argument)
@@ -52,8 +55,14 @@ int main(int argc, char *argv[])
     qmlRegisterType<PdfDocument>("PDFClowne.Backend", 1, 0, "PdfDocument");
 
     QQmlApplicationEngine engine;
+    auto *pdfRenderImageProvider = new PdfRenderImageProvider;
+    engine.addImageProvider(QStringLiteral("pdf-render"), pdfRenderImageProvider);
     DesktopIntegration desktopIntegration;
+    DocumentRenderController documentRenderController(pdfRenderImageProvider);
+    DocumentSearchController documentSearchController;
     engine.rootContext()->setContextProperty("desktopIntegration", &desktopIntegration);
+    engine.rootContext()->setContextProperty("documentRenderController", &documentRenderController);
+    engine.rootContext()->setContextProperty("documentSearchController", &documentSearchController);
 
     QObject::connect(
         &engine,

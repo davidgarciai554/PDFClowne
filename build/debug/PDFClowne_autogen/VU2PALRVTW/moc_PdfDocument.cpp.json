@@ -2,7 +2,7 @@
     "classes": [
         {
             "className": "PdfDocument",
-            "lineNumber": 10,
+            "lineNumber": 8,
             "object": true,
             "properties": [
                 {
@@ -122,6 +122,20 @@
                     "designable": true,
                     "final": false,
                     "index": 8,
+                    "name": "fileSizeBytes",
+                    "notify": "fileSizeBytesChanged",
+                    "read": "fileSizeBytes",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "qint64",
+                    "user": false
+                },
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 9,
                     "name": "title",
                     "notify": "titleChanged",
                     "read": "title",
@@ -135,7 +149,7 @@
                     "constant": false,
                     "designable": true,
                     "final": false,
-                    "index": 9,
+                    "index": 10,
                     "name": "isLoaded",
                     "notify": "isLoadedChanged",
                     "read": "isLoaded",
@@ -149,7 +163,7 @@
                     "constant": false,
                     "designable": true,
                     "final": false,
-                    "index": 10,
+                    "index": 11,
                     "name": "errorMessage",
                     "notify": "errorMessageChanged",
                     "read": "errorMessage",
@@ -231,18 +245,24 @@
                 {
                     "access": "public",
                     "index": 10,
-                    "name": "titleChanged",
+                    "name": "fileSizeBytesChanged",
                     "returnType": "void"
                 },
                 {
                     "access": "public",
                     "index": 11,
-                    "name": "isLoadedChanged",
+                    "name": "titleChanged",
                     "returnType": "void"
                 },
                 {
                     "access": "public",
                     "index": 12,
+                    "name": "isLoadedChanged",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "index": 13,
                     "name": "errorMessageChanged",
                     "returnType": "void"
                 }
@@ -256,7 +276,7 @@
                             "type": "QString"
                         }
                     ],
-                    "index": 13,
+                    "index": 14,
                     "name": "load",
                     "returnType": "bool"
                 },
@@ -272,20 +292,7 @@
                             "type": "qreal"
                         }
                     ],
-                    "index": 14,
-                    "name": "renderPage",
-                    "returnType": "QString"
-                },
-                {
-                    "access": "public",
-                    "arguments": [
-                        {
-                            "name": "pageIndex",
-                            "type": "int"
-                        }
-                    ],
                     "index": 15,
-                    "isCloned": true,
                     "name": "renderPage",
                     "returnType": "QString"
                 },
@@ -298,6 +305,19 @@
                         }
                     ],
                     "index": 16,
+                    "isCloned": true,
+                    "name": "renderPage",
+                    "returnType": "QString"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "pageIndex",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 17,
                     "name": "renderThumbnail",
                     "returnType": "QString"
                 },
@@ -313,7 +333,7 @@
                             "type": "QString"
                         }
                     ],
-                    "index": 17,
+                    "index": 18,
                     "name": "searchPage",
                     "returnType": "QString"
                 },
@@ -325,7 +345,7 @@
                             "type": "QString"
                         }
                     ],
-                    "index": 18,
+                    "index": 19,
                     "name": "searchDocument",
                     "returnType": "QString"
                 },
@@ -337,13 +357,13 @@
                             "type": "int"
                         }
                     ],
-                    "index": 19,
+                    "index": 20,
                     "name": "extractPageText",
                     "returnType": "QString"
                 },
                 {
                     "access": "public",
-                    "index": 20,
+                    "index": 21,
                     "name": "extractDocumentText",
                     "returnType": "QString"
                 },
@@ -355,7 +375,7 @@
                             "type": "QString"
                         }
                     ],
-                    "index": 21,
+                    "index": 22,
                     "name": "resolveLinkPage",
                     "returnType": "int"
                 },
@@ -375,13 +395,13 @@
                             "type": "QString"
                         }
                     ],
-                    "index": 22,
+                    "index": 23,
                     "name": "saveRotatedCopy",
                     "returnType": "bool"
                 },
                 {
                     "access": "public",
-                    "index": 23,
+                    "index": 24,
                     "name": "clear",
                     "returnType": "void"
                 }

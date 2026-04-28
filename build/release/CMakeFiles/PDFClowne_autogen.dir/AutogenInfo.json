@@ -1217,6 +1217,18 @@
 			null
 		],
 		[
+			"D:/Aplicaciones/PDFClowne 2/src/backend/DocumentRenderController.h",
+			"MU",
+			"VU2PALRVTW/moc_DocumentRenderController.cpp",
+			null
+		],
+		[
+			"D:/Aplicaciones/PDFClowne 2/src/backend/DocumentSearchController.h",
+			"MU",
+			"VU2PALRVTW/moc_DocumentSearchController.cpp",
+			null
+		],
+		[
 			"D:/Aplicaciones/PDFClowne 2/src/backend/Logger.h",
 			"MU",
 			"VU2PALRVTW/moc_Logger.cpp",
@@ -1226,6 +1238,12 @@
 			"D:/Aplicaciones/PDFClowne 2/src/backend/PdfDocument.h",
 			"MU",
 			"VU2PALRVTW/moc_PdfDocument.cpp",
+			null
+		],
+		[
+			"D:/Aplicaciones/PDFClowne 2/src/backend/PdfRenderImageProvider.h",
+			"MU",
+			"VU2PALRVTW/moc_PdfRenderImageProvider.cpp",
 			null
 		]
 	],
@@ -1319,7 +1337,22 @@
 			"MU",
 			null
 		],
+		[
+			"D:/Aplicaciones/PDFClowne 2/src/backend/DocumentRenderController.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/Aplicaciones/PDFClowne 2/src/backend/DocumentSearchController.cpp",
+			"MU",
+			null
+		],
 		[ "D:/Aplicaciones/PDFClowne 2/src/backend/PdfDocument.cpp", "MU", null ],
+		[
+			"D:/Aplicaciones/PDFClowne 2/src/backend/PdfRenderImageProvider.cpp",
+			"MU",
+			null
+		],
 		[ "D:/Aplicaciones/PDFClowne 2/src/main.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],

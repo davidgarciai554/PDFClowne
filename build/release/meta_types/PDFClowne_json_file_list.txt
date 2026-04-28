@@ -1,2 +1,6 @@
 D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/include/../VU2PALRVTW/moc_DesktopIntegration.cpp.json
+D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/include/../VU2PALRVTW/moc_DocumentRenderController.cpp.json
+D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/include/../VU2PALRVTW/moc_DocumentSearchController.cpp.json
 D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/include/../VU2PALRVTW/moc_PdfDocument.cpp.json
+D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/include/DocumentRenderController.moc.json
+D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne_autogen/include/DocumentSearchController.moc.json

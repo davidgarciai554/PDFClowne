@@ -20,11 +20,29 @@ Item {
     property string searchQuery: ""
     property var searchResults: []
     property int activeSearchResultIndex: -1
+    property var thumbnailListView: null
     property var cachedPageSources: []
     property var cachedThumbnailSources: []
+    property var pendingPageRequests: ({})
+    property var pendingThumbnailRequests: ({})
+    property bool pageChangeFromViewport: false
+    property int pendingJumpPage: -1
+    property bool programmaticJumpActive: false
+    property int prefetchRadius: 8
+    property bool largeJumpMode: false
+    property int largeJumpTargetPage: -1
+    property real largeJumpPreviewScale: 1.0
+    property bool largeJumpHighQualityRequested: false
+    property bool pageTransitionActive: false
+    property int pageTransitionTargetPage: -1
+    property bool pageTransitionHasPreview: false
+    property bool progressiveRenderingEnabled: false
+    property real progressivePreviewScale: 0.9
+    property var progressiveHighQualityRequests: ({})
     readonly property var visiblePageSources: normalizedPageSources()
     readonly property var pageSizes: normalizedPageSizes()
     readonly property var pageRows: buildPageRows()
+    readonly property bool viewportInteracting: viewport.moving || viewport.flicking
     property var pageRotations: []
     property int currentPageIndex: 0
     property string selectedText: ""
@@ -36,13 +54,13 @@ Item {
     property bool handToolEnabled: false
     property bool snapToPage: false
     property real pageSpacing: 18
-    property real renderScale: 4.0
+    property real renderScale: 2.5
     property real currentBaseScale: 1.0
     readonly property real currentZoomPercent: currentBaseScale * renderScale * zoom * 100
     property var zoomInAction: null
     property var zoomOutAction: null
-    property var renderPageAction: null
-    property var renderThumbnailAction: null
+    property var requestPageRenderAction: null
+    property var requestThumbnailRenderAction: null
     property var currentPageChangedAction: null
     property var sidePanelModeChangedAction: null
     property var outlineActivatedAction: null
@@ -51,9 +69,59 @@ Item {
     property url selectionDocumentSource: ""
     readonly property bool searchPanelAvailable: searchQuery.trim().length > 0 || searchResults.length > 0 || sidePanelMode === "search"
 
+    Timer {
+        id: prefetchTimer
+        interval: 140
+        repeat: false
+        onTriggered: root.prefetchAround(root.currentPageIndex, root.effectivePrefetchRadius())
+    }
+
+    Timer {
+        id: pageTransitionCompleteTimer
+        interval: 180
+        repeat: false
+        onTriggered: root.finishPageTransition()
+    }
+
+    Timer {
+        id: thumbnailSyncRetryTimer
+        interval: 90
+        repeat: false
+        onTriggered: root.syncThumbnailViewport()
+    }
+
+    Timer {
+        id: programmaticJumpTimer
+        interval: 220
+        repeat: false
+        onTriggered: root.completeProgrammaticJump()
+    }
+
     onCurrentPageIndexChanged: {
         selectedText = ""
+        syncThumbnailViewport()
+        if (pageChangeFromViewport) {
+            pageChangeFromViewport = false
+            pendingJumpPage = -1
+            ensurePage(currentPageIndex)
+            Qt.callLater(ensureViewportPages)
+            prefetchTimer.restart()
+            return
+        }
+        beginPageTransition(currentPageIndex, largeJumpMode)
+        pendingJumpPage = currentPageIndex
+        programmaticJumpActive = true
+        programmaticJumpTimer.restart()
         navigateToPage(currentPageIndex)
+        if (largeJumpMode && currentPageIndex === largeJumpTargetPage) {
+            Qt.callLater(function() {
+                if (!largeJumpHighQualityRequested && requestPageRenderAction)
+                    requestPageRenderAction(currentPageIndex, largeJumpPreviewScale)
+            })
+            return
+        }
+        if (!pageTransitionActive)
+            prefetchTimer.restart()
     }
     onZoomChanged: updateCurrentBaseScale()
     onLayoutModeChanged: relayoutToCurrentPage()
@@ -61,16 +129,23 @@ Item {
     onPageRowsChanged: relayoutToCurrentPage()
     onPageSourcesChanged: {
         syncPageCache()
-        resetPageCache()
+        if (pageTransitionActive && pageTransitionTargetPage >= 0 && sourceForPage(pageTransitionTargetPage))
+            pageTransitionHasPreview = true
+        Qt.callLater(ensureViewportPages)
     }
     onThumbnailSourcesChanged: {
         syncThumbnailCache()
         resetThumbnailCache()
     }
     onPageCountChanged: resetPageCache()
+    onProgressiveRenderingEnabledChanged: {
+        progressiveHighQualityRequests = {}
+        prefetchTimer.restart()
+    }
     Component.onCompleted: {
         syncPageCache()
         syncThumbnailCache()
+        syncThumbnailViewport()
     }
 
     PdfDocument {
@@ -208,6 +283,7 @@ Item {
             }
 
             Loader {
+                id: sidePanelLoader
                 width: parent.width
                 height: parent.height - 38
                 sourceComponent: root.sidePanelMode === "outline"
@@ -215,6 +291,7 @@ Item {
                                : root.sidePanelMode === "search"
                                  ? searchPanelComponent
                                  : thumbnailPanelComponent
+                onLoaded: root.syncThumbnailViewport()
             }
         }
     }
@@ -229,6 +306,22 @@ Item {
             spacing: 8
             clip: true
             model: root.visiblePageSources.length
+            highlightMoveDuration: 0
+            highlightResizeDuration: 0
+            preferredHighlightBegin: Math.max(0, (height - 150) / 2)
+            preferredHighlightEnd: preferredHighlightBegin + 150
+            highlightRangeMode: ListView.ApplyRange
+            onCountChanged: root.syncThumbnailViewport()
+            onHeightChanged: root.syncThumbnailViewport()
+            onVisibleChanged: if (visible) root.syncThumbnailViewport()
+            Component.onCompleted: {
+                root.thumbnailListView = thumbnailList
+                root.syncThumbnailViewport()
+            }
+            Component.onDestruction: {
+                if (root.thumbnailListView === thumbnailList)
+                    root.thumbnailListView = null
+            }
 
             delegate: Rectangle {
                 id: thumbnailFrame
@@ -253,7 +346,9 @@ Item {
                     height: 116
                     source: root.thumbnailSourceForPage(thumbnailFrame.index)
                     fillMode: Image.PreserveAspectFit
-                    cache: true
+                    asynchronous: true
+                    retainWhileLoading: true
+                    cache: false
                     smooth: true
                     rotation: root.rotationForPage(thumbnailFrame.index)
                     transformOrigin: Item.Center
@@ -463,7 +558,210 @@ Item {
         }
     }
 
-    Flickable {
+    Component {
+        id: pageRowDelegateComponent
+
+        Item {
+            id: pageRowDelegate
+            required property int index
+            required property var modelData
+
+            readonly property bool pageRowDelegate: true
+            readonly property int rowIndex: index
+
+            width: viewport.width
+            height: Math.max(1, rowContent.height)
+
+            Row {
+                id: rowContent
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: root.pageSpacing
+
+                Repeater {
+                    model: pageRowDelegate.modelData.pages
+
+                    Item {
+                        id: pageFrame
+                        required property var modelData
+
+                        readonly property bool pageItem: true
+                        readonly property int pageIndex: modelData.pageIndex
+                        readonly property string pageSource: root.sourceForPage(pageIndex)
+                        readonly property int pageRotation: root.rotationForPage(pageIndex)
+                        readonly property bool sideways: Math.abs(pageRotation % 180) === 90
+                        readonly property var pageSize: root.sizeForPage(pageIndex)
+                        readonly property real sourceWidth: pageImage.implicitWidth > 0 ? pageImage.implicitWidth : pageSize.width * root.renderScale
+                        readonly property real sourceHeight: pageImage.implicitHeight > 0 ? pageImage.implicitHeight : pageSize.height * root.renderScale
+                        readonly property real rotatedWidth: sideways ? sourceHeight : sourceWidth
+                        readonly property real rotatedHeight: sideways ? sourceWidth : sourceHeight
+                        readonly property bool paired: root.isTwoPageLayout()
+                        readonly property real availableWidth: Math.max(1, viewport.width - 56)
+                        readonly property real availableHeight: Math.max(1, viewport.height - 56)
+                        readonly property real pageAvailableWidth: paired ? Math.max(1, (availableWidth - rowContent.spacing) / 2) : availableWidth
+                        readonly property real widthScale: rotatedWidth > 0 ? (pageAvailableWidth * 0.9) / rotatedWidth : 1.0
+                        readonly property real heightScale: rotatedHeight > 0 ? availableHeight / rotatedHeight : 1.0
+                        readonly property real pageScale: rotatedWidth > 0 && rotatedHeight > 0
+                                                              ? Math.min(pageAvailableWidth / rotatedWidth, availableHeight / rotatedHeight)
+                                                              : 1.0
+                        readonly property real baseScale: root.baseScaleFor(pageFrame)
+                        readonly property var pagePaperItem: pagePaper
+
+                        width: Math.max(1, rotatedWidth * baseScale * root.zoom)
+                        height: Math.max(1, rotatedHeight * baseScale * root.zoom)
+                        onBaseScaleChanged: if (pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
+
+                        Item {
+                            id: pagePaper
+                            anchors.centerIn: parent
+                            width: Math.max(1, pageFrame.sourceWidth * pageFrame.baseScale * root.zoom)
+                            height: Math.max(1, pageFrame.sourceHeight * pageFrame.baseScale * root.zoom)
+                            rotation: pageFrame.pageRotation
+                            transformOrigin: Item.Center
+                            readonly property real pageScale: pageFrame.pageSize.width > 0
+                                                              ? width / pageFrame.pageSize.width
+                                                              : 1.0
+
+                            Image {
+                                id: pageImage
+                                anchors.fill: parent
+                                source: pageFrame.pageSource
+                                fillMode: Image.PreserveAspectFit
+                                asynchronous: true
+                                retainWhileLoading: true
+                                cache: false
+                                smooth: true
+                                mipmap: true
+                                onImplicitWidthChanged: if (pageFrame.pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
+                                onImplicitHeightChanged: if (pageFrame.pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
+                            }
+
+                            Shape {
+                                anchors.fill: parent
+                                visible: pageImage.status === Image.Ready
+
+                                ShapePath {
+                                    strokeWidth: -1
+                                    fillColor: Theme.isDark ? "#66E6C35A" : "#88F7D95A"
+                                    scale: Qt.size(pagePaper.pageScale, pagePaper.pageScale)
+
+                                    PathMultiline {
+                                        paths: selection.geometry
+                                    }
+                                }
+                            }
+
+                            DragHandler {
+                                id: textSelectionDrag
+                                enabled: !root.handToolEnabled && selectionDocument.status === PdfDocument.Ready
+                                acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
+                                target: null
+                            }
+
+                            TapHandler {
+                                id: selectionTapHandler
+                                enabled: !root.handToolEnabled
+                                acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus | PointerDevice.TouchScreen
+                                onTapped: {
+                                    selection.clear()
+                                    selection.forceActiveFocus()
+                                    root.selectedText = ""
+                                }
+                            }
+
+                            PdfSelection {
+                                id: selection
+                                anchors.fill: parent
+                                document: selectionDocument
+                                page: pageFrame.pageIndex
+                                renderScale: Math.max(0.01, Number(pagePaper.pageScale) || 0.01)
+                                from: textSelectionDrag.centroid.pressPosition
+                                to: textSelectionDrag.centroid.position
+                                hold: !textSelectionDrag.active && !selectionTapHandler.pressed
+                                focus: true
+                                onTextChanged: {
+                                    if (text.length > 0 || pageFrame.pageIndex === root.currentPageIndex)
+                                        root.selectedText = text
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            anchors.fill: pagePaper
+                            visible: pageImage.source.toString().length === 0
+                            color: Theme.isDark ? "#202033" : "#F5F6FB"
+                            border.color: Theme.border
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Cargando " + String(pageFrame.pageIndex + 1)
+                                color: Theme.secondaryText
+                                font.pixelSize: 12
+                            }
+                        }
+
+                        Repeater {
+                            model: root.linksForPage(pageFrame.pageIndex)
+
+                            Rectangle {
+                                required property var modelData
+                                readonly property var mappedRect: root.mapPageRect(modelData.rect || {}, pageFrame.pageSize, pagePaper, pageFrame.pageRotation)
+                                x: mappedRect.x
+                                y: mappedRect.y
+                                width: Math.max(8, mappedRect.width)
+                                height: Math.max(8, mappedRect.height)
+                                color: "transparent"
+                                border.color: linkMouse.containsMouse ? Theme.accent : "transparent"
+                                border.width: linkMouse.containsMouse ? 1 : 0
+                                visible: pageImage.status === Image.Ready
+
+                                MouseArea {
+                                    id: linkMouse
+                                    anchors.fill: parent
+                                    enabled: !root.handToolEnabled
+                                    hoverEnabled: true
+                                    cursorShape: root.handToolEnabled ? Qt.OpenHandCursor : Qt.PointingHandCursor
+                                    onClicked: {
+                                        if (root.linkActivatedAction)
+                                            root.linkActivatedAction(modelData.uri || "", modelData.pageIndex)
+                                    }
+                                }
+                            }
+                        }
+
+                        Repeater {
+                            model: root.searchHighlightsForPage(pageFrame.pageIndex)
+
+                            Rectangle {
+                                required property var modelData
+                                readonly property var mappedRect: root.mapPageRect(modelData, pageFrame.pageSize, pagePaper, pageFrame.pageRotation)
+                                x: mappedRect.x
+                                y: mappedRect.y
+                                width: Math.max(modelData.active ? 12 : 6, mappedRect.width)
+                                height: Math.max(modelData.active ? 12 : 6, mappedRect.height)
+                                color: modelData.active
+                                       ? (Theme.isDark ? "#C7FFD54F" : "#D7FFD54F")
+                                       : (Theme.isDark ? "#66E6C35A" : "#88F7D95A")
+                                border.color: modelData.active ? "#FFB300" : Theme.accent
+                                border.width: modelData.active ? 3 : 1
+                                radius: modelData.active ? 4 : 2
+                                visible: pageImage.status === Image.Ready
+                                opacity: modelData.active ? 1.0 : 0.88
+
+                                SequentialAnimation on opacity {
+                                    running: modelData.active && parent.visible
+                                    loops: Animation.Infinite
+                                    NumberAnimation { from: 1.0; to: 0.72; duration: 520; easing.type: Easing.InOutQuad }
+                                    NumberAnimation { from: 0.72; to: 1.0; duration: 520; easing.type: Easing.InOutQuad }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    ListView {
         id: viewport
         anchors {
             top: parent.top
@@ -472,11 +770,22 @@ Item {
             right: parent.right
         }
         clip: true
-        contentWidth: Math.max(width, pagesColumn.width + 56)
-        contentHeight: Math.max(height, pagesColumn.height + 56)
+        reuseItems: true
+        cacheBuffer: Math.max(0, height * 2)
+        topMargin: 28
+        bottomMargin: 28
+        leftMargin: 28
+        rightMargin: 28
+        spacing: root.isContinuousLayout() ? root.pageSpacing : Math.max(24, root.pageSpacing + 10)
         boundsBehavior: Flickable.StopAtBounds
-        onContentYChanged: root.updateCurrentPage()
+        model: root.pageRows
+        delegate: pageRowDelegateComponent
+        onContentYChanged: {
+            root.updateCurrentPage()
+            root.ensureViewportPages()
+        }
         onMovementEnded: {
+            root.completeProgrammaticJump()
             root.updateCurrentPage()
             if (root.snapToPage && root.isContinuousLayout())
                 root.jumpToPage(root.currentPageIndex)
@@ -535,206 +844,6 @@ Item {
                 event.accepted = true
             }
         }
-
-        Column {
-            id: pagesColumn
-            x: Math.max(28, (viewport.width - width) / 2)
-            y: 28
-            width: Math.max(1, childrenRect.width)
-            height: Math.max(1, childrenRect.height)
-            spacing: root.isContinuousLayout() ? root.pageSpacing : Math.max(24, root.pageSpacing + 10)
-
-            Repeater {
-                model: root.pageRows
-
-                Row {
-                    id: pageRow
-                    required property var modelData
-
-                    spacing: root.pageSpacing
-
-                    Repeater {
-                        model: pageRow.modelData.pages
-
-                        Item {
-                            id: pageFrame
-                            required property var modelData
-
-                            readonly property bool pageItem: true
-                            readonly property int pageIndex: modelData.pageIndex
-                            readonly property string pageSource: root.sourceForPage(pageIndex)
-                            readonly property int pageRotation: root.rotationForPage(pageIndex)
-                            readonly property bool sideways: Math.abs(pageRotation % 180) === 90
-                            readonly property var pageSize: root.sizeForPage(pageIndex)
-                            readonly property real sourceWidth: pageImage.implicitWidth > 0 ? pageImage.implicitWidth : pageSize.width * root.renderScale
-                            readonly property real sourceHeight: pageImage.implicitHeight > 0 ? pageImage.implicitHeight : pageSize.height * root.renderScale
-                            readonly property real rotatedWidth: sideways ? sourceHeight : sourceWidth
-                            readonly property real rotatedHeight: sideways ? sourceWidth : sourceHeight
-                            readonly property bool paired: root.isTwoPageLayout()
-                            readonly property real availableWidth: Math.max(1, viewport.width - 56)
-                            readonly property real availableHeight: Math.max(1, viewport.height - 56)
-                            readonly property real pageAvailableWidth: paired ? Math.max(1, (availableWidth - pageRow.spacing) / 2) : availableWidth
-                            readonly property real widthScale: rotatedWidth > 0 ? (pageAvailableWidth * 0.9) / rotatedWidth : 1.0
-                            readonly property real heightScale: rotatedHeight > 0 ? availableHeight / rotatedHeight : 1.0
-                            readonly property real pageScale: rotatedWidth > 0 && rotatedHeight > 0
-                                                                  ? Math.min(pageAvailableWidth / rotatedWidth, availableHeight / rotatedHeight)
-                                                                  : 1.0
-                            readonly property real baseScale: root.baseScaleFor(pageFrame)
-                            readonly property var pagePaperItem: pagePaper
-
-                            width: Math.max(1, rotatedWidth * baseScale * root.zoom)
-                            height: Math.max(1, rotatedHeight * baseScale * root.zoom)
-                            onBaseScaleChanged: if (pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
-
-                            Item {
-                                id: pagePaper
-                                anchors.centerIn: parent
-                                width: Math.max(1, pageFrame.sourceWidth * pageFrame.baseScale * root.zoom)
-                                height: Math.max(1, pageFrame.sourceHeight * pageFrame.baseScale * root.zoom)
-                                rotation: pageFrame.pageRotation
-                                transformOrigin: Item.Center
-                                readonly property real pageScale: pageFrame.pageSize.width > 0
-                                                                  ? width / pageFrame.pageSize.width
-                                                                  : 1.0
-
-                                Image {
-                                    id: pageImage
-                                    anchors.fill: parent
-                                    source: pageFrame.pageSource
-                                    fillMode: Image.PreserveAspectFit
-                                    cache: false
-                                    smooth: true
-                                    mipmap: true
-                                    onImplicitWidthChanged: if (pageFrame.pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
-                                    onImplicitHeightChanged: if (pageFrame.pageIndex === root.currentPageIndex) root.updateCurrentBaseScale()
-                                }
-
-                                Shape {
-                                    anchors.fill: parent
-                                    visible: pageImage.status === Image.Ready
-
-                                    ShapePath {
-                                        strokeWidth: -1
-                                        fillColor: Theme.isDark ? "#66E6C35A" : "#88F7D95A"
-                                        scale: Qt.size(pagePaper.pageScale, pagePaper.pageScale)
-
-                                        PathMultiline {
-                                            paths: selection.geometry
-                                        }
-                                    }
-                                }
-
-                                DragHandler {
-                                    id: textSelectionDrag
-                                    enabled: !root.handToolEnabled && selectionDocument.status === PdfDocument.Ready
-                                    acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
-                                    target: null
-                                }
-
-                                TapHandler {
-                                    id: selectionTapHandler
-                                    enabled: !root.handToolEnabled
-                                    acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus | PointerDevice.TouchScreen
-                                    onTapped: {
-                                        selection.clear()
-                                        selection.forceActiveFocus()
-                                        root.selectedText = ""
-                                    }
-                                }
-
-                                PdfSelection {
-                                    id: selection
-                                    anchors.fill: parent
-                                    document: selectionDocument
-                                    page: pageFrame.pageIndex
-                                    renderScale: pagePaper.pageScale
-                                    from: textSelectionDrag.centroid.pressPosition
-                                    to: textSelectionDrag.centroid.position
-                                    hold: !textSelectionDrag.active && !selectionTapHandler.pressed
-                                    focus: true
-                                    onTextChanged: {
-                                        if (text.length > 0 || pageFrame.pageIndex === root.currentPageIndex)
-                                            root.selectedText = text
-                                    }
-                                }
-                            }
-
-                            Rectangle {
-                                anchors.fill: pagePaper
-                                visible: pageImage.source.toString().length === 0
-                                color: Theme.isDark ? "#202033" : "#F5F6FB"
-                                border.color: Theme.border
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "Cargando " + String(pageFrame.pageIndex + 1)
-                                    color: Theme.secondaryText
-                                    font.pixelSize: 12
-                                }
-                            }
-
-                            Repeater {
-                                model: root.linksForPage(pageFrame.pageIndex)
-
-                                Rectangle {
-                                    required property var modelData
-                                    readonly property var mappedRect: root.mapPageRect(modelData.rect || {}, pageFrame.pageSize, pagePaper, pageFrame.pageRotation)
-                                    x: mappedRect.x
-                                    y: mappedRect.y
-                                    width: Math.max(8, mappedRect.width)
-                                    height: Math.max(8, mappedRect.height)
-                                    color: "transparent"
-                                    border.color: linkMouse.containsMouse ? Theme.accent : "transparent"
-                                    border.width: linkMouse.containsMouse ? 1 : 0
-                                    visible: pageImage.status === Image.Ready
-
-                                    MouseArea {
-                                        id: linkMouse
-                                        anchors.fill: parent
-                                        enabled: !root.handToolEnabled
-                                        hoverEnabled: true
-                                        cursorShape: root.handToolEnabled ? Qt.OpenHandCursor : Qt.PointingHandCursor
-                                        onClicked: {
-                                            if (root.linkActivatedAction)
-                                                root.linkActivatedAction(modelData.uri || "", modelData.pageIndex)
-                                        }
-                                    }
-                                }
-                            }
-
-                            Repeater {
-                                model: root.searchHighlightsForPage(pageFrame.pageIndex)
-
-                                Rectangle {
-                                    required property var modelData
-                                    readonly property var mappedRect: root.mapPageRect(modelData, pageFrame.pageSize, pagePaper, pageFrame.pageRotation)
-                                    x: mappedRect.x
-                                    y: mappedRect.y
-                                    width: Math.max(modelData.active ? 12 : 6, mappedRect.width)
-                                    height: Math.max(modelData.active ? 12 : 6, mappedRect.height)
-                                    color: modelData.active
-                                           ? (Theme.isDark ? "#C7FFD54F" : "#D7FFD54F")
-                                           : (Theme.isDark ? "#66E6C35A" : "#88F7D95A")
-                                    border.color: modelData.active ? "#FFB300" : Theme.accent
-                                    border.width: modelData.active ? 3 : 1
-                                    radius: modelData.active ? 4 : 2
-                                    visible: pageImage.status === Image.Ready
-                                    opacity: modelData.active ? 1.0 : 0.88
-
-                                    SequentialAnimation on opacity {
-                                        running: modelData.active && parent.visible
-                                        loops: Animation.Infinite
-                                        NumberAnimation { from: 1.0; to: 0.72; duration: 520; easing.type: Easing.InOutQuad }
-                                        NumberAnimation { from: 0.72; to: 1.0; duration: 520; easing.type: Easing.InOutQuad }
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
     }
 
     function isTwoPageLayout() {
@@ -767,6 +876,14 @@ Item {
                 sources.push(pageSources[i] || "")
         }
         cachedPageSources = sources
+
+        var pending = {}
+        for (var pageIndex = 0; pageIndex < sources.length; ++pageIndex) {
+            if (!sources[pageIndex] || sources[pageIndex].length === 0)
+                continue
+            pending[String(pageIndex)] = false
+        }
+        pendingPageRequests = pending
     }
 
     function syncThumbnailCache() {
@@ -776,13 +893,61 @@ Item {
                 sources.push(thumbnailSources[i] || "")
         }
         cachedThumbnailSources = sources
+
+        var pending = {}
+        for (var thumbIndex = 0; thumbIndex < sources.length; ++thumbIndex) {
+            if (!sources[thumbIndex] || sources[thumbIndex].length === 0)
+                continue
+            pending[String(thumbIndex)] = false
+        }
+        pendingThumbnailRequests = pending
     }
 
     function resetThumbnailCache() {
         Qt.callLater(function() {
-            for (var i = 0; i < Math.min(visiblePageSources.length, 12); ++i)
+            for (var i = 0; i < Math.min(visiblePageSources.length, 4); ++i)
                 ensureThumbnail(i)
         })
+    }
+
+    function syncThumbnailViewport() {
+        Qt.callLater(function() {
+            var list = thumbnailListView
+            if (!list || !list.visible || visiblePageSources.length <= 0)
+                return
+
+            var target = Math.max(0, Math.min(currentPageIndex, visiblePageSources.length - 1))
+            if (list.count <= target) {
+                thumbnailSyncRetryTimer.restart()
+                return
+            }
+
+            list.currentIndex = target
+            list.positionViewAtIndex(target, thumbnailPositionMode(target, list))
+            list.returnToBounds()
+            Qt.callLater(function() {
+                list = thumbnailListView
+                if (!list || list.count <= target)
+                    return
+
+                list.currentIndex = target
+                list.positionViewAtIndex(target, thumbnailPositionMode(target, list))
+                list.returnToBounds()
+            })
+        })
+    }
+
+    function thumbnailPositionMode(index, list) {
+        var targetList = list || thumbnailListView
+        if (!targetList)
+            return ListView.Center
+
+        var target = Math.max(0, Math.min(Number(index) || 0, Math.max(0, targetList.count - 1)))
+        if (target <= 1)
+            return ListView.Beginning
+        if (target >= Math.max(0, targetList.count - 2))
+            return ListView.End
+        return ListView.Center
     }
 
     function relayoutToCurrentPage() {
@@ -918,49 +1083,192 @@ Item {
     }
 
     function ensurePage(index) {
-        if (!renderPageAction || index < 0 || index >= visiblePageSources.length)
+        if (!requestPageRenderAction || index < 0 || index >= visiblePageSources.length)
             return
         if (visiblePageSources[index] && visiblePageSources[index].length > 0)
             return
-
-        var rendered = renderPageAction(index, renderScale)
-        if (!rendered || rendered.length === 0)
+        var key = String(index)
+        if (pendingPageRequests[key])
             return
-
-        var sources = visiblePageSources.slice()
-        sources[index] = rendered
-        cachedPageSources = sources
+        pendingPageRequests[key] = true
+        requestPageRenderAction(index, initialPageRenderScale(index))
     }
 
     function ensureThumbnail(index) {
-        if (!renderThumbnailAction || index < 0 || index >= visiblePageSources.length)
+        if (!requestThumbnailRenderAction || index < 0 || index >= visiblePageSources.length)
             return
         if (cachedThumbnailSources && index < cachedThumbnailSources.length && cachedThumbnailSources[index] && cachedThumbnailSources[index].length > 0)
             return
-
-        var rendered = renderThumbnailAction(index)
-        if (!rendered || rendered.length === 0)
+        var key = String(index)
+        if (pendingThumbnailRequests[key])
             return
-
-        var thumbs = []
-        if (cachedThumbnailSources && cachedThumbnailSources.length !== undefined)
-            thumbs = cachedThumbnailSources.slice()
-        while (thumbs.length < visiblePageSources.length)
-            thumbs.push("")
-        thumbs[index] = rendered
-        cachedThumbnailSources = thumbs
+        pendingThumbnailRequests[key] = true
+        requestThumbnailRenderAction(index)
     }
 
     function ensureViewportPages() {
-        var top = viewport.contentY - viewport.height * 0.5
-        var bottom = viewport.contentY + viewport.height * 1.5
+        if (pageTransitionActive) {
+            var transitionTarget = pageTransitionTargetPage >= 0 ? pageTransitionTargetPage : currentPageIndex
+            if (largeJumpMode && transitionTarget === largeJumpTargetPage) {
+                if (requestPageRenderAction && !sourceForPage(transitionTarget))
+                    requestPageRenderAction(transitionTarget, largeJumpPreviewScale)
+            } else {
+                ensurePage(transitionTarget)
+            }
+            return
+        }
+
+        if (largeJumpMode && currentPageIndex === largeJumpTargetPage) {
+            if (requestPageRenderAction && !sourceForPage(currentPageIndex))
+                requestPageRenderAction(currentPageIndex, largeJumpPreviewScale)
+            return
+        }
+
+        if (!sourceForPage(currentPageIndex)) {
+            ensurePage(currentPageIndex)
+            return
+        }
+
+        var top = viewport.contentY - viewport.height * 0.15
+        var bottom = viewport.contentY + viewport.height * 1.15
 
         forEachPageItem(function(item) {
-            var itemTop = pagesColumn.y + item.parent.y + item.y
+            var itemTop = pageTopInViewport(item)
             var itemBottom = itemTop + item.height
             if (itemBottom >= top && itemTop <= bottom)
                 ensurePage(item.pageIndex)
         })
+    }
+
+    function prefetchAround(index, radius) {
+        if (visiblePageSources.length <= 0)
+            return
+
+        var target = Math.max(0, Math.min(index, visiblePageSources.length - 1))
+        var safeRadius = Math.max(0, Number(radius) || 0)
+        ensurePage(target)
+
+        for (var offset = 1; offset <= safeRadius; ++offset) {
+            if (target + offset < visiblePageSources.length)
+                ensurePage(target + offset)
+            if (target - offset >= 0)
+                ensurePage(target - offset)
+        }
+    }
+
+    function effectivePrefetchRadius() {
+        return progressiveRenderingEnabled ? Math.min(1, prefetchRadius) : prefetchRadius
+    }
+
+    function initialPageRenderScale(index) {
+        if (!progressiveRenderingEnabled)
+            return renderScale
+
+        if (index === currentPageIndex || index === pageTransitionTargetPage)
+            return Math.max(0.5, Math.min(renderScale, progressivePreviewScale))
+
+        return Math.max(0.5, Math.min(renderScale, progressivePreviewScale))
+    }
+
+    function requestProgressiveHighQualityRender(pageIndex, renderedScale) {
+        if (!progressiveRenderingEnabled || !requestPageRenderAction)
+            return
+
+        var scale = Number(renderedScale)
+        if (!isFinite(scale) || scale + 0.01 >= renderScale)
+            return
+
+        if (pageIndex !== currentPageIndex && pageIndex !== pageTransitionTargetPage)
+            return
+
+        var key = String(pageIndex)
+        if (progressiveHighQualityRequests[key])
+            return
+
+        progressiveHighQualityRequests[key] = true
+        requestPageRenderAction(pageIndex, renderScale)
+    }
+
+    function beginLargeJump(targetPage, previewScale) {
+        largeJumpMode = true
+        largeJumpTargetPage = Math.max(0, Number(targetPage) || 0)
+        largeJumpPreviewScale = Math.max(0.75, Number(previewScale) || 1.0)
+        largeJumpHighQualityRequested = false
+        pendingJumpPage = largeJumpTargetPage
+        beginPageTransition(largeJumpTargetPage, true)
+    }
+
+    function completeLargeJumpRender(pageIndex, renderedScale) {
+        if (!largeJumpMode || pageIndex !== largeJumpTargetPage)
+            return
+
+        var scale = Number(renderedScale)
+        if (!isFinite(scale) || scale <= 0)
+            return
+
+        if (scale + 0.01 < renderScale) {
+            if (!largeJumpHighQualityRequested && requestPageRenderAction) {
+                largeJumpHighQualityRequested = true
+                requestPageRenderAction(pageIndex, renderScale)
+            }
+            return
+        }
+
+        largeJumpMode = false
+        largeJumpTargetPage = -1
+        largeJumpHighQualityRequested = false
+        pageTransitionHasPreview = true
+        pageTransitionCompleteTimer.restart()
+    }
+
+    function beginPageTransition(targetPage, forceOverlay) {
+        var lastPage = Math.max(0, visiblePageSources.length - 1)
+        var target = Math.max(0, Math.min(Number(targetPage) || 0, lastPage))
+        var shouldForceOverlay = !!forceOverlay
+        var alreadyVisible = !!sourceForPage(target)
+
+        pageTransitionCompleteTimer.stop()
+        prefetchTimer.stop()
+        pageTransitionTargetPage = target
+        pageTransitionHasPreview = alreadyVisible
+        pageTransitionActive = shouldForceOverlay || !alreadyVisible
+
+        if (!pageTransitionActive)
+            pageTransitionTargetPage = -1
+    }
+
+    function finishPageTransition() {
+        pageTransitionActive = false
+        pageTransitionTargetPage = -1
+        pageTransitionHasPreview = false
+
+        if (!largeJumpMode)
+            prefetchTimer.restart()
+    }
+
+    function notePageRenderCompleted(pageIndex, renderedScale) {
+        if (pageIndex === currentPageIndex || pageIndex === pageTransitionTargetPage)
+            pageTransitionHasPreview = true
+
+        completeLargeJumpRender(pageIndex, renderedScale)
+
+        var scale = Number(renderedScale)
+        if (isFinite(scale) && scale + 0.01 >= renderScale) {
+            var key = String(pageIndex)
+            if (progressiveHighQualityRequests[key])
+                progressiveHighQualityRequests[key] = false
+        }
+
+        requestProgressiveHighQualityRender(pageIndex, renderedScale)
+
+        if (!pageTransitionActive || largeJumpMode)
+            return
+
+        if (pageIndex !== currentPageIndex && pageIndex !== pageTransitionTargetPage)
+            return
+
+        if (isFinite(scale) && (scale + 0.01 >= renderScale || progressiveRenderingEnabled))
+            pageTransitionCompleteTimer.restart()
     }
 
     function buildPageRows() {
@@ -1015,25 +1323,62 @@ Item {
         return rows
     }
 
-    function forEachPageItem(callback) {
-        function visit(item) {
-            if (!item)
-                return
+    function rowIndexForPage(pageIndex) {
+        var target = Math.max(0, Math.min(Number(pageIndex) || 0, Math.max(0, visiblePageSources.length - 1)))
+        if (layoutMode === "single" || layoutMode === "twoPage")
+            return 0
+        if (!isTwoPageLayout())
+            return target
+        return Math.floor(target / 2)
+    }
 
-            if (item.pageItem)
-                callback(item)
+    function rowDelegateForRowIndex(rowIndex) {
+        var targetRow = Number(rowIndex)
+        if (!isFinite(targetRow) || !viewport || !viewport.contentItem)
+            return null
 
-            var children = item.children || []
-            for (var i = 0; i < children.length; ++i)
-                visit(children[i])
+        var children = viewport.contentItem.children || []
+        for (var i = 0; i < children.length; ++i) {
+            var child = children[i]
+            if (child && child.pageRowDelegate && Number(child.rowIndex) === targetRow)
+                return child
         }
 
-        visit(pagesColumn)
+        return null
+    }
+
+    function pageTopInViewport(item) {
+        if (!item)
+            return 0
+        return viewport.topMargin + item.parent.parent.y + item.parent.y + item.y
+    }
+
+    function forEachPageItem(callback) {
+        if (!viewport || !viewport.contentItem)
+            return
+
+        var children = viewport.contentItem.children || []
+        for (var i = 0; i < children.length; ++i) {
+            var rowDelegate = children[i]
+            if (!rowDelegate || !rowDelegate.pageRowDelegate)
+                continue
+
+            var rowChildren = rowDelegate.children || []
+            for (var rowChildIndex = 0; rowChildIndex < rowChildren.length; ++rowChildIndex) {
+                var rowChild = rowChildren[rowChildIndex]
+                var pageItems = rowChild.children || []
+                for (var pageIndex = 0; pageIndex < pageItems.length; ++pageIndex) {
+                    var pageItem = pageItems[pageIndex]
+                    if (pageItem && pageItem.pageItem)
+                        callback(pageItem)
+                }
+            }
+        }
     }
 
     function navigateToPage(index) {
         var target = Math.max(0, Math.min(index, visiblePageSources.length - 1))
-        if (layoutMode === "single") {
+        if (!isContinuousLayout()) {
             ensurePage(target)
             ensureThumbnail(target)
             viewport.contentY = 0
@@ -1049,15 +1394,13 @@ Item {
 
     function jumpToPage(index) {
         var target = Math.max(0, Math.min(index, visiblePageSources.length - 1))
+        pendingJumpPage = target
+        programmaticJumpActive = true
+        programmaticJumpTimer.restart()
         Qt.callLater(function() {
-            var found = false
-            forEachPageItem(function(item) {
-                if (found || item.pageIndex !== target)
-                    return
-
-                viewport.contentY = Math.max(0, pagesColumn.y + item.parent.y + item.y - 18)
-                found = true
-            })
+            var targetRow = rowIndexForPage(target)
+            viewport.positionViewAtIndex(targetRow, ListView.Beginning)
+            var found = !!rowDelegateForRowIndex(targetRow)
 
             if (!found) {
                 ensurePage(target)
@@ -1066,10 +1409,48 @@ Item {
                 return
             }
 
-            updateCurrentPage()
+            ensurePage(target)
             updateCurrentBaseScale()
             ensureViewportPages()
         })
+    }
+
+    function closestVisiblePageIndex() {
+        var centerY = viewport.contentY + viewport.height / 2
+        var closest = -1
+        var bestDistance = Number.MAX_VALUE
+
+        forEachPageItem(function(item) {
+            if (item.height <= 0 || item.pageIndex === undefined)
+                return
+
+            var pageCenter = pageTopInViewport(item) + item.height / 2
+            var distance = Math.abs(pageCenter - centerY)
+            if (distance < bestDistance) {
+                bestDistance = distance
+                closest = item.pageIndex
+            }
+        })
+
+        return closest
+    }
+
+    function completeProgrammaticJump() {
+        if (!programmaticJumpActive)
+            return
+
+        var closest = closestVisiblePageIndex()
+        if (closest < 0)
+            return
+
+        if (pendingJumpPage >= 0 && closest !== pendingJumpPage) {
+            programmaticJumpTimer.restart()
+            return
+        }
+
+        pendingJumpPage = -1
+        programmaticJumpActive = false
+        syncThumbnailViewport()
     }
 
     function focusSearchResult(result) {
@@ -1094,8 +1475,8 @@ Item {
                 }
 
                 var mappedRect = mapPageRect(targetRect, item.pageSize, paper, item.pageRotation)
-                var absoluteX = pagesColumn.x + item.parent.x + item.x + mappedRect.x + mappedRect.width / 2
-                var absoluteY = pagesColumn.y + item.parent.y + item.y + mappedRect.y + mappedRect.height / 2
+                var absoluteX = item.parent.x + item.x + mappedRect.x + mappedRect.width / 2
+                var absoluteY = pageTopInViewport(item) + mappedRect.y + mappedRect.height / 2
 
                 var maxX = Math.max(0, viewport.contentWidth - viewport.width)
                 var maxY = Math.max(0, viewport.contentHeight - viewport.height)
@@ -1130,29 +1511,40 @@ Item {
     }
 
     function updateCurrentPage() {
-        if (layoutMode === "single") {
+        if (!isContinuousLayout()) {
             updateCurrentBaseScale()
             return
         }
 
-        var centerY = viewport.contentY + viewport.height / 2
-        var closest = 0
-        var bestDistance = Number.MAX_VALUE
+        var closest = closestVisiblePageIndex()
+        if (closest < 0) {
+            updateCurrentBaseScale()
+            return
+        }
 
-        forEachPageItem(function(item) {
-            if (item.height <= 0 || item.pageIndex === undefined)
-                return
+        if (programmaticJumpActive && closest !== pendingJumpPage) {
+            updateCurrentBaseScale()
+            return
+        }
 
-            var pageCenter = pagesColumn.y + item.parent.y + item.y + item.height / 2
-            var distance = Math.abs(pageCenter - centerY)
-            if (distance < bestDistance) {
-                bestDistance = distance
-                closest = item.pageIndex
-            }
-        })
+        if (pendingJumpPage >= 0 && closest !== pendingJumpPage) {
+            updateCurrentBaseScale()
+            return
+        }
+
+        if (programmaticJumpActive && closest === pendingJumpPage) {
+            updateCurrentBaseScale()
+            return
+        }
+
+        if (pendingJumpPage >= 0 && closest === pendingJumpPage)
+            pendingJumpPage = -1
 
         if (closest !== currentPageIndex && currentPageChangedAction)
+        {
+            pageChangeFromViewport = true
             currentPageChangedAction(closest)
+        }
 
         updateCurrentBaseScale()
     }
