@@ -48,6 +48,7 @@ PDFClowne_autogen/timestamp: \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QMetaObject \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QMutex \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QObject \
+	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QPointF \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QRegularExpression \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QSharedPointer \
 	C:/Qt/6.8.3/msvc2022_64/include/QtCore/QString \

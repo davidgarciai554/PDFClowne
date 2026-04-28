@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import Qt.labs.settings
+import "ShortcutCatalog.js" as ShortcutCatalog
 import PDFClowne
 import PDFClowne.Backend
 
@@ -38,6 +39,7 @@ ApplicationWindow {
     property bool openInProgress: false
     property string pendingOpenSource: ""
     property string pendingOpenFileName: ""
+    readonly property var shortcutSections: ShortcutCatalog.sections
     readonly property int pageRenderWindowRadius: 8
     readonly property int pageRenderPruneDelayMs: 240
     readonly property int largeJumpThresholdPages: 5
@@ -330,6 +332,172 @@ ApplicationWindow {
         }
     }
 
+    Popup {
+        id: shortcutsPopup
+        modal: false
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        width: Math.min(560, window.width - 32)
+        height: Math.min(520, window.height - 32)
+        x: Math.max(16, Math.round(window.width - width - 12))
+        y: Math.max(16, Math.round(themeButton.y + themeButton.height + 8))
+        padding: 0
+
+        background: Rectangle {
+            color: Theme.surface
+            radius: Theme.radiusLg
+            border.color: Theme.border
+            border.width: 1
+        }
+
+        contentItem: ColumnLayout {
+            spacing: 0
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 48
+                Layout.leftMargin: 18
+                Layout.rightMargin: 12
+                spacing: 12
+
+                Text {
+                    text: "Atajos y gestos"
+                    color: Theme.text
+                    font.pixelSize: 15
+                    font.weight: Font.DemiBold
+                    Layout.fillWidth: true
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Button {
+                    id: closeShortcutsButton
+                    text: "X"
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: 30
+                    onClicked: shortcutsPopup.close()
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Cerrar"
+
+                    contentItem: Text {
+                        text: closeShortcutsButton.text
+                        color: Theme.secondaryText
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        color: closeShortcutsButton.down ? Theme.tabActive
+                              : closeShortcutsButton.hovered ? Theme.hover
+                              : "transparent"
+                        radius: Theme.radius
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.border
+            }
+
+            ScrollView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                padding: 0
+
+                Column {
+                    width: shortcutsPopup.width
+                    spacing: 14
+                    padding: 16
+
+                    Repeater {
+                        model: window.shortcutSections
+
+                        Column {
+                            required property var modelData
+                            width: parent.width - 32
+                            spacing: 8
+
+                            Text {
+                                text: modelData.title
+                                color: Theme.text
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
+                            }
+
+                            Repeater {
+                                model: modelData.entries
+
+                                Rectangle {
+                                    required property var modelData
+                                    width: parent.width
+                                    radius: Theme.radius
+                                    color: Theme.surfaceAlt
+                                    border.color: Theme.border
+                                    border.width: 1
+                                    implicitHeight: shortcutRow.implicitHeight + 16
+
+                                    RowLayout {
+                                        id: shortcutRow
+                                        anchors.fill: parent
+                                        anchors.margins: 8
+                                        spacing: 10
+
+                                        Rectangle {
+                                            Layout.alignment: Qt.AlignTop
+                                            Layout.preferredWidth: 110
+                                            radius: Theme.radius
+                                            color: Theme.background
+                                            border.color: Theme.border
+                                            border.width: 1
+                                            implicitHeight: triggerLabel.implicitHeight + 10
+
+                                            Text {
+                                                id: triggerLabel
+                                                anchors.centerIn: parent
+                                                text: modelData.trigger
+                                                color: Theme.text
+                                                font.pixelSize: 11
+                                                font.weight: Font.DemiBold
+                                                horizontalAlignment: Text.AlignHCenter
+                                                wrapMode: Text.Wrap
+                                                width: parent.width - 12
+                                            }
+                                        }
+
+                                        Column {
+                                            Layout.fillWidth: true
+                                            spacing: 2
+
+                                            Text {
+                                                width: parent.width
+                                                text: modelData.description
+                                                color: Theme.text
+                                                font.pixelSize: 12
+                                                wrapMode: Text.Wrap
+                                            }
+
+                                            Text {
+                                                width: parent.width
+                                                text: modelData.availability
+                                                color: Theme.secondaryText
+                                                font.pixelSize: 11
+                                                wrapMode: Text.Wrap
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Shortcut { sequence: "Ctrl+O"; onActivated: fileDialog.open() }
     Shortcut { sequence: "Ctrl+S"; enabled: window.activeDocumentHasRotations(); onActivated: window.saveActiveDocumentRotated() }
     Shortcut { sequence: "Ctrl+Shift+S"; enabled: window.activeDocumentHasRotations(); onActivated: saveRotatedDialog.open() }
@@ -346,6 +514,8 @@ ApplicationWindow {
     Shortcut { sequence: "F5"; enabled: window.hasActiveDocument; onActivated: window.togglePresentationMode() }
     Shortcut { sequence: "H"; enabled: window.hasActiveDocument && !window.reflowModeEnabled; onActivated: window.setHandToolEnabled(!window.handToolEnabled) }
     Shortcut { sequence: "Ctrl+Shift+R"; enabled: window.hasActiveDocument; onActivated: window.toggleReflowMode() }
+    Shortcut { sequence: StandardKey.Copy; context: Qt.ApplicationShortcut; enabled: window.hasActiveDocument && pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0; onActivated: window.copySelectedText() }
+    Shortcut { sequence: "Ctrl+C"; context: Qt.ApplicationShortcut; enabled: window.hasActiveDocument && pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0; onActivated: window.copySelectedText() }
     Shortcut { sequence: "Ctrl+Shift+C"; enabled: window.hasActiveDocument; onActivated: window.copyVisibleText() }
     Shortcut { sequence: "Escape"; enabled: window.readingFullscreenEnabled || window.presentationModeEnabled; onActivated: window.exitImmersiveModes() }
     Shortcut { sequence: "Right"; enabled: window.hasActiveDocument && (window.readingFullscreenEnabled || window.presentationModeEnabled); onActivated: window.goToNextPage() }
@@ -381,6 +551,12 @@ ApplicationWindow {
         return drivePrefix.length > 0
              ? "file:///" + drivePrefix + parts.join("/")
              : "file:///" + parts.join("/")
+    }
+
+    function isSameFilePath(left, right) {
+        var normalizedLeft = pathToFileUrl(left)
+        var normalizedRight = pathToFileUrl(right)
+        return normalizedLeft.length > 0 && normalizedLeft === normalizedRight
     }
 
     function readDocumentViewStates() {
@@ -620,12 +796,6 @@ ApplicationWindow {
         if (pdfViewer && pdfViewer.pageTransitionHasPreview)
             return 1
         return activeDocumentHasRenderedCurrentPage() ? 1 : 0
-    }
-
-    function currentSelectionDocumentSource() {
-        if (!hasActiveDocument || shouldShowDocumentLoadingOverlay())
-            return ""
-        return pathToFileUrl(documentModel.get(activeDocumentIndex).path)
     }
 
     function loadingOverlayTitle() {
@@ -1032,20 +1202,34 @@ ApplicationWindow {
     }
 
     function closeActiveDocument() {
-        if (!hasActiveDocument)
+        closeDocumentAt(activeDocumentIndex)
+    }
+
+    function closeDocumentAt(index) {
+        if (index < 0 || index >= documentModel.count)
             return
 
-        var closingDoc = documentModel.get(activeDocumentIndex)
+        var closingDoc = documentModel.get(index)
         if (closingDoc && closingDoc.path)
             documentRenderController.releaseDocument(closingDoc.path, closingDoc.renderSessionId || 0)
 
-        documentModel.remove(activeDocumentIndex)
-        if (documentModel.count === 0) {
+        var nextActiveIndex = activeDocumentIndex
+        if (index === activeDocumentIndex) {
+            if (documentModel.count === 1)
+                nextActiveIndex = -1
+            else if (index === documentModel.count - 1)
+                nextActiveIndex = index - 1
+            else
+                nextActiveIndex = index
+        } else if (index < activeDocumentIndex) {
+            nextActiveIndex = activeDocumentIndex - 1
+        }
+
+        documentModel.remove(index)
+        if (documentModel.count === 0 || nextActiveIndex < 0) {
             setActiveDocument(-1)
-        } else if (activeDocumentIndex >= documentModel.count) {
-            setActiveDocument(documentModel.count - 1)
         } else {
-            setActiveDocument(activeDocumentIndex)
+            setActiveDocument(Math.max(0, Math.min(nextActiveIndex, documentModel.count - 1)))
         }
     }
 
@@ -1159,9 +1343,17 @@ ApplicationWindow {
             return
 
         var doc = documentModel.get(activeDocumentIndex)
+        var overwriteCurrent = isSameFilePath(doc.path, target)
+        if (overwriteCurrent)
+            documentRenderController.releaseDocumentSync(doc.path, doc.renderSessionId || 0)
+
         if (pdfDocument.saveRotatedCopy(doc.path, target, doc.pageRotationsJson || "[]")) {
             saveMessage = "Guardado: " + fileNameFromPath(target)
+            if (overwriteCurrent)
+                refreshActiveDocumentFromDisk()
         } else {
+            if (overwriteCurrent)
+                documentRenderController.markDocumentOpened(doc.path, doc.renderSessionId || 0)
             saveMessage = ""
         }
     }
@@ -1349,11 +1541,15 @@ ApplicationWindow {
             saveMessage = "No se pudo copiar el texto."
     }
 
+    function copySelectedText() {
+        copyTextToClipboard(pdfViewer ? pdfViewer.selectedText : "", "Texto seleccionado copiado.", "No hay texto seleccionado.")
+    }
+
     function copyVisibleText() {
         if (reflowModeEnabled)
             copyTextToClipboard(ensureActiveDocumentReflowText(false), "Texto del documento copiado.", "Este PDF no tiene texto extraible para reflow.")
         else if (pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0)
-            copyTextToClipboard(pdfViewer.selectedText, "Texto seleccionado copiado.", "No hay texto seleccionado.")
+            copySelectedText()
         else
             copyTextToClipboard(activePageText(false), "Texto de la pagina copiado.", "La pagina actual no tiene texto extraible.")
     }
@@ -1707,10 +1903,12 @@ ApplicationWindow {
             return
 
         var doc = documentModel.get(activeDocumentIndex)
+        documentRenderController.releaseDocumentSync(doc.path, doc.renderSessionId || 0)
         if (pdfDocument.saveRotatedCopy(doc.path, doc.path, doc.pageRotationsJson || "[]")) {
             saveMessage = "Guardado: " + doc.title
             refreshActiveDocumentFromDisk()
         } else {
+            documentRenderController.markDocumentOpened(doc.path, doc.renderSessionId || 0)
             saveMessage = ""
         }
     }
@@ -1921,6 +2119,35 @@ ApplicationWindow {
                 }
 
                 Button {
+                    id: shortcutsButton
+                    text: "⌨"
+                    Layout.preferredWidth: 42
+                    Layout.preferredHeight: 34
+                    onClicked: shortcutsPopup.visible ? shortcutsPopup.close() : shortcutsPopup.open()
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Ver atajos y gestos"
+
+                    contentItem: Text {
+                        text: shortcutsButton.text
+                        color: Theme.text
+                        font.pixelSize: 17
+                        font.weight: Font.Medium
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                    }
+
+                    background: Rectangle {
+                        color: shortcutsButton.down ? Theme.tabActive
+                              : shortcutsButton.hovered ? Theme.hover
+                              : Theme.surfaceAlt
+                        border.color: shortcutsButton.activeFocus ? Theme.accent : Theme.border
+                        border.width: shortcutsButton.activeFocus ? 2 : 1
+                        radius: Theme.radius
+                    }
+                }
+
+                Button {
                     id: themeButton
                     text: Theme.modeIcon
                     Layout.preferredWidth: 42
@@ -2095,10 +2322,7 @@ ApplicationWindow {
                                         text: "×"
                                         Layout.preferredWidth: 24
                                         Layout.preferredHeight: 24
-                                        onClicked: {
-                                            window.setActiveDocument(documentTab.index)
-                                            window.closeActiveDocument()
-                                        }
+                                        onClicked: window.closeDocumentAt(documentTab.index)
                                         ToolTip.visible: hovered
                                         ToolTip.text: "Cerrar"
 
@@ -2120,6 +2344,11 @@ ApplicationWindow {
                                 TapHandler {
                                     acceptedButtons: Qt.LeftButton
                                     onTapped: window.setActiveDocument(documentTab.index)
+                                }
+
+                                TapHandler {
+                                    acceptedButtons: Qt.MiddleButton
+                                    onTapped: window.closeDocumentAt(documentTab.index)
                                 }
 
                                 DragHandler {
@@ -3046,6 +3275,7 @@ ApplicationWindow {
                         Behavior on opacity {
                             NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
                         }
+                        pdfDocument: pdfDocument
                         pageSources: window.activeDocumentPageSources()
                         thumbnailSources: window.activeDocumentThumbnailSources()
                         outlineEntries: window.activeDocumentOutlineEntries()
@@ -3057,6 +3287,9 @@ ApplicationWindow {
                         pageSizesJson: window.activeDocumentPageSizesJson()
                         pageRotations: window.activeDocumentPageRotations()
                         currentPageIndex: window.activePageIndex
+                        selectedText: pdfDocument.selectionText
+                        selectionGeometryJson: pdfDocument.selectionGeometryJson
+                        selectionPageIndex: pdfDocument.selectionPage
                         zoom: window.viewerZoom
                         layoutMode: window.layoutMode
                         zoomMode: window.zoomMode
@@ -3077,7 +3310,11 @@ ApplicationWindow {
                         outlineActivatedAction: window.activateLinkTarget
                         linkActivatedAction: window.activateLinkTarget
                         searchResultActivatedAction: function(index) { window.activateSearchResult(index, true) }
-                        selectionDocumentSource: window.currentSelectionDocumentSource()
+                        beginSelectionAction: pdfDocument.beginSelection
+                        updateSelectionAction: pdfDocument.updateSelection
+                        endSelectionAction: pdfDocument.endSelection
+                        clearSelectionAction: pdfDocument.clearSelection
+                        copySelectionAction: window.copySelectedText
                     }
 
                     Rectangle {

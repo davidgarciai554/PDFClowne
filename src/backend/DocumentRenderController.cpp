@@ -922,6 +922,18 @@ void DocumentRenderController::releaseDocument(const QString &filePath, int sess
     emit requestReleaseDocument(filePath, sessionId);
 }
 
+void DocumentRenderController::releaseDocumentSync(const QString &filePath, int sessionId)
+{
+    if (!m_worker)
+        return;
+
+    QMetaObject::invokeMethod(m_worker,
+                              [worker = m_worker, filePath, sessionId]() {
+                                  worker->releaseDocument(filePath, sessionId);
+                              },
+                              Qt::BlockingQueuedConnection);
+}
+
 void DocumentRenderController::prunePageCache(const QString &filePath, int centerPage, int radius, int sessionId)
 {
     emit requestPrunePageCache(filePath, centerPage, radius, sessionId);

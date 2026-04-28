@@ -4,9 +4,17 @@
             {
                 "entries": [
                     {
+                        "codegenSuccessfull": true,
+                        "column": 12,
+                        "durationMicroseconds": 172,
+                        "errorMessage": "",
+                        "functionName": "focus",
+                        "line": 8
+                    },
+                    {
                         "codegenSuccessfull": false,
                         "column": 36,
-                        "durationMicroseconds": 193,
+                        "durationMicroseconds": 50,
                         "errorMessage": "Cannot load property previewSource from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pdfDocument with type QVariant.",
                         "functionName": "previewSource",
                         "line": 11
@@ -14,7 +22,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 31,
-                        "durationMicroseconds": 848,
+                        "durationMicroseconds": 343,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "pageSources",
                         "line": 12
@@ -22,7 +30,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 36,
-                        "durationMicroseconds": 149,
+                        "durationMicroseconds": 52,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "thumbnailSources",
                         "line": 13
@@ -30,7 +38,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 29,
-                        "durationMicroseconds": 33,
+                        "durationMicroseconds": 22,
                         "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageSources with type QVariant.",
                         "functionName": "pageCount",
                         "line": 14
@@ -38,7 +46,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 34,
-                        "durationMicroseconds": 58,
+                        "durationMicroseconds": 46,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "outlineEntries",
                         "line": 18
@@ -46,7 +54,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 29,
-                        "durationMicroseconds": 82,
+                        "durationMicroseconds": 43,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "pageLinks",
                         "line": 19
@@ -54,7 +62,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 33,
-                        "durationMicroseconds": 50,
+                        "durationMicroseconds": 42,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "searchResults",
                         "line": 21
@@ -62,7 +70,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 37,
-                        "durationMicroseconds": 45,
+                        "durationMicroseconds": 43,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "cachedPageSources",
                         "line": 24
@@ -70,7 +78,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 42,
-                        "durationMicroseconds": 48,
+                        "durationMicroseconds": 42,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "cachedThumbnailSources",
                         "line": 25
@@ -78,7 +86,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 39,
-                        "durationMicroseconds": 56,
+                        "durationMicroseconds": 48,
                         "errorMessage": "",
                         "functionName": "pendingPageRequests",
                         "line": 26
@@ -86,7 +94,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 44,
+                        "durationMicroseconds": 41,
                         "errorMessage": "",
                         "functionName": "pendingThumbnailRequests",
                         "line": 27
@@ -94,7 +102,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 50,
-                        "durationMicroseconds": 43,
+                        "durationMicroseconds": 40,
                         "errorMessage": "",
                         "functionName": "progressiveHighQualityRequests",
                         "line": 41
@@ -102,7 +110,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 47,
-                        "durationMicroseconds": 84,
+                        "durationMicroseconds": 70,
                         "errorMessage": "",
                         "functionName": "visiblePageSources",
                         "line": 42
@@ -110,7 +118,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 38,
-                        "durationMicroseconds": 59,
+                        "durationMicroseconds": 56,
                         "errorMessage": "",
                         "functionName": "pageSizes",
                         "line": 43
@@ -118,7 +126,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 37,
-                        "durationMicroseconds": 56,
+                        "durationMicroseconds": 54,
                         "errorMessage": "",
                         "functionName": "pageRows",
                         "line": 44
@@ -126,7 +134,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 49,
-                        "durationMicroseconds": 165,
+                        "durationMicroseconds": 139,
                         "errorMessage": "",
                         "functionName": "viewportInteracting",
                         "line": 45
@@ -134,114 +142,114 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 33,
-                        "durationMicroseconds": 103,
+                        "durationMicroseconds": 46,
                         "errorMessage": "Cannot generate efficient code for storing an array in a non-sequence type",
                         "functionName": "pageRotations",
-                        "line": 46
+                        "line": 47
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 48,
-                        "durationMicroseconds": 214,
+                        "durationMicroseconds": 200,
                         "errorMessage": "",
                         "functionName": "currentZoomPercent",
-                        "line": 59
+                        "line": 60
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 50,
-                        "durationMicroseconds": 52,
+                        "durationMicroseconds": 46,
                         "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::searchResults with type QVariant.",
                         "functionName": "searchPanelAvailable",
-                        "line": 70
+                        "line": 77
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 32,
-                        "durationMicroseconds": 1209,
+                        "durationMicroseconds": 1063,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "onCurrentPageIndexChanged",
-                        "line": 100
+                        "line": 122
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 20,
-                        "durationMicroseconds": 60,
+                        "durationMicroseconds": 49,
                         "errorMessage": "",
                         "functionName": "onZoomChanged",
-                        "line": 126
+                        "line": 147
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 26,
-                        "durationMicroseconds": 42,
+                        "durationMicroseconds": 39,
                         "errorMessage": "",
                         "functionName": "onLayoutModeChanged",
-                        "line": 127
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 24,
-                        "durationMicroseconds": 40,
-                        "errorMessage": "",
-                        "functionName": "onZoomModeChanged",
-                        "line": 128
+                        "line": 148
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 24,
                         "durationMicroseconds": 38,
                         "errorMessage": "",
+                        "functionName": "onZoomModeChanged",
+                        "line": 149
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 24,
+                        "durationMicroseconds": 23,
+                        "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageRows with type QVariant.",
                         "functionName": "onPageRowsChanged",
-                        "line": 129
+                        "line": 150
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 27,
-                        "durationMicroseconds": 388,
+                        "durationMicroseconds": 360,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "onPageSourcesChanged",
-                        "line": 130
+                        "line": 157
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 60,
+                        "durationMicroseconds": 56,
                         "errorMessage": "",
                         "functionName": "onThumbnailSourcesChanged",
-                        "line": 136
+                        "line": 163
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 25,
-                        "durationMicroseconds": 40,
+                        "durationMicroseconds": 37,
                         "errorMessage": "",
                         "functionName": "onPageCountChanged",
-                        "line": 140
+                        "line": 167
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 43,
-                        "durationMicroseconds": 104,
+                        "durationMicroseconds": 110,
                         "errorMessage": "",
                         "functionName": "onProgressiveRenderingEnabledChanged",
-                        "line": 141
+                        "line": 168
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 39,
+                        "durationMicroseconds": 38,
                         "errorMessage": "function without return type annotation returns conversion to bool. This may prevent proper compilation to Cpp.",
                         "functionName": "isTwoPageLayout",
-                        "line": 849
+                        "line": 876
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 34,
+                        "durationMicroseconds": 47,
                         "errorMessage": "function without return type annotation returns conversion to bool. This may prevent proper compilation to Cpp.",
                         "functionName": "isContinuousLayout",
-                        "line": 853
+                        "line": 880
                     },
                     {
                         "codegenSuccessfull": false,
@@ -249,47 +257,47 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "baseScaleFor",
-                        "line": 857
+                        "line": 884
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 147,
+                        "durationMicroseconds": 126,
                         "errorMessage": "Cannot generate efficient code for lookup of (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::ensureViewportPages(...) (stored as QJSValue)",
                         "functionName": "resetPageCache",
-                        "line": 867
+                        "line": 894
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 41,
+                        "durationMicroseconds": 37,
                         "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageSources with type QVariant.",
                         "functionName": "syncPageCache",
-                        "line": 872
+                        "line": 899
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 31,
+                        "durationMicroseconds": 30,
                         "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::thumbnailSources with type QVariant.",
                         "functionName": "syncThumbnailCache",
-                        "line": 889
+                        "line": 916
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 111,
+                        "durationMicroseconds": 106,
                         "errorMessage": "Cannot generate efficient code for LoadClosure",
                         "functionName": "resetThumbnailCache",
-                        "line": 906
+                        "line": 933
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 148,
+                        "durationMicroseconds": 100,
                         "errorMessage": "Cannot generate efficient code for LoadClosure",
                         "functionName": "syncThumbnailViewport",
-                        "line": 913
+                        "line": 940
                     },
                     {
                         "codegenSuccessfull": false,
@@ -297,15 +305,15 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "thumbnailPositionMode",
-                        "line": 940
+                        "line": 967
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 103,
+                        "durationMicroseconds": 98,
                         "errorMessage": "Cannot generate efficient code for LoadClosure",
                         "functionName": "relayoutToCurrentPage",
-                        "line": 953
+                        "line": 980
                     },
                     {
                         "codegenSuccessfull": false,
@@ -313,23 +321,23 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "rotationForPage",
-                        "line": 960
+                        "line": 987
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 35,
+                        "durationMicroseconds": 38,
                         "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::cachedPageSources with type QVariant.",
                         "functionName": "normalizedPageSources",
-                        "line": 966
+                        "line": 993
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 93,
+                        "durationMicroseconds": 105,
                         "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::visiblePageSources with type QVariant.",
                         "functionName": "normalizedPageSizes",
-                        "line": 983
+                        "line": 1010
                     },
                     {
                         "codegenSuccessfull": false,
@@ -337,7 +345,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "sizeForPage",
-                        "line": 997
+                        "line": 1024
                     },
                     {
                         "codegenSuccessfull": false,
@@ -345,7 +353,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "sourceForPage",
-                        "line": 1003
+                        "line": 1030
                     },
                     {
                         "codegenSuccessfull": false,
@@ -353,7 +361,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "linksForPage",
-                        "line": 1009
+                        "line": 1036
                     },
                     {
                         "codegenSuccessfull": false,
@@ -361,7 +369,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "searchHighlightsForPage",
-                        "line": 1015
+                        "line": 1042
                     },
                     {
                         "codegenSuccessfull": false,
@@ -369,7 +377,31 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "mapPageRect",
-                        "line": 1033
+                        "line": 1060
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 5,
+                        "durationMicroseconds": 0,
+                        "errorMessage": "Functions without type annotations won't be compiled",
+                        "functionName": "selectionPoint",
+                        "line": 1106
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 5,
+                        "durationMicroseconds": 0,
+                        "errorMessage": "Functions without type annotations won't be compiled",
+                        "functionName": "shouldHandleCopyShortcut",
+                        "line": 1111
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 5,
+                        "durationMicroseconds": 3497,
+                        "errorMessage": "function without return type annotation returns QVariantList. This may prevent proper compilation to Cpp.",
+                        "functionName": "selectionPaths",
+                        "line": 1126
                     },
                     {
                         "codegenSuccessfull": false,
@@ -377,7 +409,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "thumbnailSourceForPage",
-                        "line": 1079
+                        "line": 1156
                     },
                     {
                         "codegenSuccessfull": false,
@@ -385,7 +417,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "ensurePage",
-                        "line": 1085
+                        "line": 1162
                     },
                     {
                         "codegenSuccessfull": false,
@@ -393,15 +425,15 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "ensureThumbnail",
-                        "line": 1097
+                        "line": 1174
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 254,
+                        "durationMicroseconds": 135,
                         "errorMessage": "method requestPageRenderAction cannot be resolved.",
                         "functionName": "ensureViewportPages",
-                        "line": 1109
+                        "line": 1186
                     },
                     {
                         "codegenSuccessfull": false,
@@ -409,15 +441,15 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "prefetchAround",
-                        "line": 1143
+                        "line": 1220
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 92,
+                        "durationMicroseconds": 70,
                         "errorMessage": "function without return type annotation returns conversion to double. This may prevent proper compilation to Cpp.",
                         "functionName": "effectivePrefetchRadius",
-                        "line": 1159
+                        "line": 1236
                     },
                     {
                         "codegenSuccessfull": false,
@@ -425,46 +457,6 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "initialPageRenderScale",
-                        "line": 1163
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 5,
-                        "durationMicroseconds": 0,
-                        "errorMessage": "Functions without type annotations won't be compiled",
-                        "functionName": "requestProgressiveHighQualityRender",
-                        "line": 1173
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 5,
-                        "durationMicroseconds": 0,
-                        "errorMessage": "Functions without type annotations won't be compiled",
-                        "functionName": "beginLargeJump",
-                        "line": 1192
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 5,
-                        "durationMicroseconds": 0,
-                        "errorMessage": "Functions without type annotations won't be compiled",
-                        "functionName": "completeLargeJumpRender",
-                        "line": 1201
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 5,
-                        "durationMicroseconds": 0,
-                        "errorMessage": "Functions without type annotations won't be compiled",
-                        "functionName": "beginPageTransition",
-                        "line": 1224
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 5,
-                        "durationMicroseconds": 259,
-                        "errorMessage": "",
-                        "functionName": "finishPageTransition",
                         "line": 1240
                     },
                     {
@@ -472,16 +464,56 @@
                         "column": 5,
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
-                        "functionName": "notePageRenderCompleted",
-                        "line": 1249
+                        "functionName": "requestProgressiveHighQualityRender",
+                        "line": 1250
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 108,
-                        "errorMessage": "Cannot load property length from QVariant.",
+                        "durationMicroseconds": 0,
+                        "errorMessage": "Functions without type annotations won't be compiled",
+                        "functionName": "beginLargeJump",
+                        "line": 1269
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 5,
+                        "durationMicroseconds": 0,
+                        "errorMessage": "Functions without type annotations won't be compiled",
+                        "functionName": "completeLargeJumpRender",
+                        "line": 1278
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 5,
+                        "durationMicroseconds": 0,
+                        "errorMessage": "Functions without type annotations won't be compiled",
+                        "functionName": "beginPageTransition",
+                        "line": 1301
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 5,
+                        "durationMicroseconds": 200,
+                        "errorMessage": "",
+                        "functionName": "finishPageTransition",
+                        "line": 1317
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 5,
+                        "durationMicroseconds": 0,
+                        "errorMessage": "Functions without type annotations won't be compiled",
+                        "functionName": "notePageRenderCompleted",
+                        "line": 1326
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 5,
+                        "durationMicroseconds": 405,
+                        "errorMessage": "function without return type annotation returns QVariantList. This may prevent proper compilation to Cpp.",
                         "functionName": "buildPageRows",
-                        "line": 1274
+                        "line": 1351
                     },
                     {
                         "codegenSuccessfull": false,
@@ -489,7 +521,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "rowIndexForPage",
-                        "line": 1326
+                        "line": 1406
                     },
                     {
                         "codegenSuccessfull": false,
@@ -497,7 +529,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "rowDelegateForRowIndex",
-                        "line": 1335
+                        "line": 1415
                     },
                     {
                         "codegenSuccessfull": false,
@@ -505,7 +537,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "pageTopInViewport",
-                        "line": 1350
+                        "line": 1430
                     },
                     {
                         "codegenSuccessfull": false,
@@ -513,7 +545,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "forEachPageItem",
-                        "line": 1356
+                        "line": 1436
                     },
                     {
                         "codegenSuccessfull": false,
@@ -521,7 +553,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "navigateToPage",
-                        "line": 1379
+                        "line": 1459
                     },
                     {
                         "codegenSuccessfull": false,
@@ -529,23 +561,23 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "jumpToPage",
-                        "line": 1395
+                        "line": 1475
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 51,
+                        "durationMicroseconds": 46,
                         "errorMessage": "Instruction \"generate_StoreLocal\" not implemented",
                         "functionName": "closestVisiblePageIndex",
-                        "line": 1418
+                        "line": 1498
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 5,
-                        "durationMicroseconds": 585,
+                        "durationMicroseconds": 506,
                         "errorMessage": "",
                         "functionName": "completeProgrammaticJump",
-                        "line": 1438
+                        "line": 1518
                     },
                     {
                         "codegenSuccessfull": false,
@@ -553,7 +585,7 @@
                         "durationMicroseconds": 0,
                         "errorMessage": "Functions without type annotations won't be compiled",
                         "functionName": "focusSearchResult",
-                        "line": 1456
+                        "line": 1536
                     },
                     {
                         "codegenSuccessfull": false,
@@ -561,399 +593,343 @@
                         "durationMicroseconds": 8,
                         "errorMessage": "Instruction \"generate_StoreLocal\" not implemented",
                         "functionName": "updateCurrentBaseScale",
-                        "line": 1499
+                        "line": 1579
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 262,
+                        "durationMicroseconds": 274,
                         "errorMessage": "method currentPageChangedAction cannot be resolved.",
                         "functionName": "updateCurrentPage",
-                        "line": 1513
+                        "line": 1593
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 20,
+                        "durationMicroseconds": 125,
+                        "errorMessage": "",
+                        "functionName": "priority",
+                        "line": 79
                     },
                     {
                         "codegenSuccessfull": false,
-                        "column": 22,
-                        "durationMicroseconds": 296,
+                        "column": 30,
+                        "durationMicroseconds": 182,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "onTriggered",
-                        "line": 76
+                        "functionName": "onShortcutOverride",
+                        "line": 80
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 22,
-                        "durationMicroseconds": 91,
+                        "column": 30,
+                        "durationMicroseconds": 40,
                         "errorMessage": "",
-                        "functionName": "onTriggered",
-                        "line": 83
+                        "functionName": "onShortcutOverride",
+                        "line": 80
                     },
                     {
-                        "codegenSuccessfull": true,
-                        "column": 22,
-                        "durationMicroseconds": 81,
-                        "errorMessage": "",
-                        "functionName": "onTriggered",
-                        "line": 90
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 22,
-                        "durationMicroseconds": 71,
-                        "errorMessage": "",
-                        "functionName": "onTriggered",
-                        "line": 97
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 28,
-                        "durationMicroseconds": 71,
-                        "errorMessage": "",
-                        "functionName": "onCompleted",
-                        "line": 145
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 17,
-                        "durationMicroseconds": 80,
-                        "errorMessage": "",
-                        "functionName": "source",
-                        "line": 153
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 16,
-                        "durationMicroseconds": 2801,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 158
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 23,
-                        "durationMicroseconds": 72,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 157
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 16,
-                        "durationMicroseconds": 250,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 168
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 18,
-                        "durationMicroseconds": 80,
-                        "errorMessage": "",
-                        "functionName": "visible",
-                        "line": 169
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 16,
-                        "durationMicroseconds": 98,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 171
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 18,
-                        "durationMicroseconds": 104,
-                        "errorMessage": "",
-                        "functionName": "top",
-                        "line": 164
+                        "codegenSuccessfull": false,
+                        "column": 21,
+                        "durationMicroseconds": 65,
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property copySelectionAction for calling",
+                        "functionName": "onPressed",
+                        "line": 85
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 21,
+                        "durationMicroseconds": 34,
+                        "errorMessage": "",
+                        "functionName": "onPressed",
+                        "line": 85
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 22,
+                        "durationMicroseconds": 256,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "onTriggered",
+                        "line": 98
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 22,
+                        "durationMicroseconds": 145,
+                        "errorMessage": "",
+                        "functionName": "onTriggered",
+                        "line": 105
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 22,
                         "durationMicroseconds": 87,
                         "errorMessage": "",
-                        "functionName": "bottom",
-                        "line": 165
+                        "functionName": "onTriggered",
+                        "line": 112
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 19,
-                        "durationMicroseconds": 82,
+                        "column": 22,
+                        "durationMicroseconds": 81,
                         "errorMessage": "",
-                        "functionName": "left",
-                        "line": 166
+                        "functionName": "onTriggered",
+                        "line": 119
                     },
                     {
-                        "codegenSuccessfull": true,
-                        "column": 23,
-                        "durationMicroseconds": 83,
-                        "errorMessage": "",
-                        "functionName": "color",
+                        "codegenSuccessfull": false,
+                        "column": 28,
+                        "durationMicroseconds": 40,
+                        "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageRows with type QVariant.",
+                        "functionName": "onCompleted",
                         "line": 172
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 27,
-                        "durationMicroseconds": 42,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 175
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 24,
-                        "durationMicroseconds": 77,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 179
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 24,
-                        "durationMicroseconds": 81,
+                        "column": 16,
+                        "durationMicroseconds": 2795,
                         "errorMessage": "",
                         "functionName": "color",
                         "line": 181
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 31,
-                        "durationMicroseconds": 82,
+                        "column": 23,
+                        "durationMicroseconds": 64,
                         "errorMessage": "",
-                        "functionName": "color",
-                        "line": 182
+                        "functionName": "fill",
+                        "line": 180
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 28,
-                        "durationMicroseconds": 290,
+                        "column": 16,
+                        "durationMicroseconds": 127,
                         "errorMessage": "",
                         "functionName": "width",
-                        "line": 186
+                        "line": 191
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 29,
-                        "durationMicroseconds": 74,
+                        "column": 18,
+                        "durationMicroseconds": 58,
                         "errorMessage": "",
-                        "functionName": "radius",
+                        "functionName": "visible",
+                        "line": 192
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 16,
+                        "durationMicroseconds": 95,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 194
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 18,
+                        "durationMicroseconds": 98,
+                        "errorMessage": "",
+                        "functionName": "top",
+                        "line": 187
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 21,
+                        "durationMicroseconds": 84,
+                        "errorMessage": "",
+                        "functionName": "bottom",
                         "line": 188
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 28,
-                        "durationMicroseconds": 84,
+                        "column": 19,
+                        "durationMicroseconds": 79,
                         "errorMessage": "",
-                        "functionName": "color",
+                        "functionName": "left",
                         "line": 189
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 39,
-                        "durationMicroseconds": 45,
-                        "errorMessage": "",
-                        "functionName": "centerIn",
-                        "line": 185
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 35,
-                        "durationMicroseconds": 87,
+                        "column": 23,
+                        "durationMicroseconds": 80,
                         "errorMessage": "",
                         "functionName": "color",
-                        "line": 190
+                        "line": 195
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 61,
-                        "durationMicroseconds": 120,
-                        "errorMessage": "",
-                        "functionName": "segmentCount",
-                        "line": 196
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 62,
-                        "durationMicroseconds": 296,
-                        "errorMessage": "",
-                        "functionName": "segmentWidth",
-                        "line": 197
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 39,
-                        "durationMicroseconds": 55,
+                        "column": 27,
+                        "durationMicroseconds": 40,
                         "errorMessage": "",
                         "functionName": "fill",
-                        "line": 193
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 36,
-                        "durationMicroseconds": 289,
-                        "errorMessage": "Cannot load property segmentWidth from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::parent with type QQuickItem.",
-                        "functionName": "width",
-                        "line": 201
+                        "line": 198
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 37,
-                        "durationMicroseconds": 78,
+                        "column": 24,
+                        "durationMicroseconds": 58,
                         "errorMessage": "",
-                        "functionName": "height",
+                        "functionName": "width",
                         "line": 202
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 37,
-                        "durationMicroseconds": 64,
-                        "errorMessage": "",
-                        "functionName": "radius",
-                        "line": 203
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 294,
+                        "column": 24,
+                        "durationMicroseconds": 84,
                         "errorMessage": "",
                         "functionName": "color",
                         "line": 204
                     },
                     {
-                        "codegenSuccessfull": false,
-                        "column": 43,
-                        "durationMicroseconds": 473,
-                        "errorMessage": "Cannot generate efficient code for internal conversion with incompatible or ambiguous types: conversion to QVariant -> QColor stored as QVariant",
+                        "codegenSuccessfull": true,
+                        "column": 31,
+                        "durationMicroseconds": 75,
+                        "errorMessage": "",
                         "functionName": "color",
                         "line": 205
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 167,
+                        "column": 28,
+                        "durationMicroseconds": 225,
                         "errorMessage": "",
                         "functionName": "width",
-                        "line": 206
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 40,
-                        "durationMicroseconds": 291,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 211
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 51,
-                        "durationMicroseconds": 49,
-                        "errorMessage": "",
-                        "functionName": "centerIn",
                         "line": 209
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 46,
-                        "durationMicroseconds": 251,
+                        "column": 29,
+                        "durationMicroseconds": 79,
                         "errorMessage": "",
-                        "functionName": "weight",
-                        "line": 213
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 44,
-                        "durationMicroseconds": 89,
-                        "errorMessage": "Type  stored as QQuickItem does not have a property sidePanelModeChangedAction for calling",
-                        "functionName": "onClicked",
-                        "line": 218
+                        "functionName": "radius",
+                        "line": 211
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 47,
-                        "durationMicroseconds": 69,
+                        "column": 28,
+                        "durationMicroseconds": 88,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 212
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 39,
+                        "durationMicroseconds": 50,
+                        "errorMessage": "",
+                        "functionName": "centerIn",
+                        "line": 208
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 35,
+                        "durationMicroseconds": 134,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 213
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 61,
+                        "durationMicroseconds": 154,
+                        "errorMessage": "",
+                        "functionName": "segmentCount",
+                        "line": 219
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 62,
+                        "durationMicroseconds": 372,
+                        "errorMessage": "",
+                        "functionName": "segmentWidth",
+                        "line": 220
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 39,
+                        "durationMicroseconds": 56,
                         "errorMessage": "",
                         "functionName": "fill",
-                        "line": 217
+                        "line": 216
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 36,
-                        "durationMicroseconds": 87,
+                        "durationMicroseconds": 100,
                         "errorMessage": "Cannot load property segmentWidth from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::parent with type QQuickItem.",
                         "functionName": "width",
+                        "line": 224
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 37,
+                        "durationMicroseconds": 76,
+                        "errorMessage": "",
+                        "functionName": "height",
+                        "line": 225
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 37,
+                        "durationMicroseconds": 73,
+                        "errorMessage": "",
+                        "functionName": "radius",
+                        "line": 226
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 298,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 227
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 43,
+                        "durationMicroseconds": 501,
+                        "errorMessage": "Cannot generate efficient code for internal conversion with incompatible or ambiguous types: conversion to QVariant -> QColor stored as QVariant",
+                        "functionName": "color",
                         "line": 228
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 37,
-                        "durationMicroseconds": 80,
+                        "column": 43,
+                        "durationMicroseconds": 200,
                         "errorMessage": "",
-                        "functionName": "height",
+                        "functionName": "width",
                         "line": 229
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 37,
-                        "durationMicroseconds": 66,
-                        "errorMessage": "",
-                        "functionName": "radius",
-                        "line": 230
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 327,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 231
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 43,
-                        "durationMicroseconds": 535,
-                        "errorMessage": "Cannot generate efficient code for internal conversion with incompatible or ambiguous types: conversion to QVariant -> QColor stored as QVariant",
-                        "functionName": "color",
-                        "line": 232
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 212,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 233
-                    },
-                    {
-                        "codegenSuccessfull": true,
                         "column": 40,
-                        "durationMicroseconds": 325,
+                        "durationMicroseconds": 288,
                         "errorMessage": "",
                         "functionName": "color",
-                        "line": 238
+                        "line": 234
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 51,
-                        "durationMicroseconds": 53,
+                        "durationMicroseconds": 51,
                         "errorMessage": "",
                         "functionName": "centerIn",
-                        "line": 236
+                        "line": 232
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 46,
-                        "durationMicroseconds": 213,
+                        "durationMicroseconds": 216,
                         "errorMessage": "",
                         "functionName": "weight",
-                        "line": 240
+                        "line": 236
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 44,
-                        "durationMicroseconds": 45,
-                        "errorMessage": "Type  stored as QQuickItem does not have a property sidePanelModeChangedAction for calling",
+                        "durationMicroseconds": 46,
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property sidePanelModeChangedAction for calling",
                         "functionName": "onClicked",
-                        "line": 245
+                        "line": 241
                     },
                     {
                         "codegenSuccessfull": true,
@@ -961,71 +937,63 @@
                         "durationMicroseconds": 48,
                         "errorMessage": "",
                         "functionName": "fill",
-                        "line": 244
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 38,
-                        "durationMicroseconds": 76,
-                        "errorMessage": "",
-                        "functionName": "visible",
-                        "line": 255
+                        "line": 240
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 36,
-                        "durationMicroseconds": 80,
+                        "durationMicroseconds": 89,
                         "errorMessage": "Cannot load property segmentWidth from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::parent with type QQuickItem.",
+                        "functionName": "width",
+                        "line": 251
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 37,
+                        "durationMicroseconds": 88,
+                        "errorMessage": "",
+                        "functionName": "height",
+                        "line": 252
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 37,
+                        "durationMicroseconds": 63,
+                        "errorMessage": "",
+                        "functionName": "radius",
+                        "line": 253
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 278,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 254
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 43,
+                        "durationMicroseconds": 513,
+                        "errorMessage": "Cannot generate efficient code for internal conversion with incompatible or ambiguous types: conversion to QVariant -> QColor stored as QVariant",
+                        "functionName": "color",
+                        "line": 255
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 43,
+                        "durationMicroseconds": 186,
+                        "errorMessage": "",
                         "functionName": "width",
                         "line": 256
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 37,
-                        "durationMicroseconds": 65,
-                        "errorMessage": "",
-                        "functionName": "height",
-                        "line": 257
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 37,
-                        "durationMicroseconds": 66,
-                        "errorMessage": "",
-                        "functionName": "radius",
-                        "line": 258
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 311,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 259
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 43,
-                        "durationMicroseconds": 481,
-                        "errorMessage": "Cannot generate efficient code for internal conversion with incompatible or ambiguous types: conversion to QVariant -> QColor stored as QVariant",
-                        "functionName": "color",
-                        "line": 260
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 171,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 261
-                    },
-                    {
-                        "codegenSuccessfull": true,
                         "column": 40,
-                        "durationMicroseconds": 390,
+                        "durationMicroseconds": 306,
                         "errorMessage": "",
                         "functionName": "color",
-                        "line": 266
+                        "line": 261
                     },
                     {
                         "codegenSuccessfull": true,
@@ -1033,239 +1001,335 @@
                         "durationMicroseconds": 50,
                         "errorMessage": "",
                         "functionName": "centerIn",
-                        "line": 264
+                        "line": 259
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 46,
-                        "durationMicroseconds": 220,
+                        "durationMicroseconds": 441,
                         "errorMessage": "",
                         "functionName": "weight",
+                        "line": 263
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 44,
+                        "durationMicroseconds": 61,
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property sidePanelModeChangedAction for calling",
+                        "functionName": "onClicked",
                         "line": 268
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 47,
+                        "durationMicroseconds": 64,
+                        "errorMessage": "",
+                        "functionName": "fill",
+                        "line": 267
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 38,
+                        "durationMicroseconds": 106,
+                        "errorMessage": "",
+                        "functionName": "visible",
+                        "line": 278
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 36,
+                        "durationMicroseconds": 90,
+                        "errorMessage": "Cannot load property segmentWidth from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::parent with type QQuickItem.",
+                        "functionName": "width",
+                        "line": 279
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 37,
+                        "durationMicroseconds": 70,
+                        "errorMessage": "",
+                        "functionName": "height",
+                        "line": 280
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 37,
+                        "durationMicroseconds": 63,
+                        "errorMessage": "",
+                        "functionName": "radius",
+                        "line": 281
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 378,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 282
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 43,
+                        "durationMicroseconds": 633,
+                        "errorMessage": "Cannot generate efficient code for internal conversion with incompatible or ambiguous types: conversion to QVariant -> QColor stored as QVariant",
+                        "functionName": "color",
+                        "line": 283
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 43,
+                        "durationMicroseconds": 497,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 284
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 40,
+                        "durationMicroseconds": 339,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 289
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 51,
+                        "durationMicroseconds": 59,
+                        "errorMessage": "",
+                        "functionName": "centerIn",
+                        "line": 287
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 46,
+                        "durationMicroseconds": 207,
+                        "errorMessage": "",
+                        "functionName": "weight",
+                        "line": 291
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 44,
                         "durationMicroseconds": 46,
-                        "errorMessage": "Type  stored as QQuickItem does not have a property sidePanelModeChangedAction for calling",
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property sidePanelModeChangedAction for calling",
                         "functionName": "onClicked",
-                        "line": 273
+                        "line": 296
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 47,
-                        "durationMicroseconds": 48,
+                        "durationMicroseconds": 59,
                         "errorMessage": "",
                         "functionName": "fill",
-                        "line": 272
+                        "line": 295
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 24,
-                        "durationMicroseconds": 108,
+                        "durationMicroseconds": 74,
                         "errorMessage": "",
                         "functionName": "width",
-                        "line": 287
+                        "line": 310
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 25,
-                        "durationMicroseconds": 175,
+                        "durationMicroseconds": 109,
                         "errorMessage": "",
                         "functionName": "height",
-                        "line": 288
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 34,
-                        "durationMicroseconds": 398,
-                        "errorMessage": "",
-                        "functionName": "sourceComponent",
-                        "line": 289
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 27,
-                        "durationMicroseconds": 90,
-                        "errorMessage": "",
-                        "functionName": "onLoaded",
-                        "line": 294
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 20,
-                        "durationMicroseconds": 23,
-                        "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::visiblePageSources with type QVariant.",
-                        "functionName": "model",
-                        "line": 308
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 38,
-                        "durationMicroseconds": 244,
-                        "errorMessage": "",
-                        "functionName": "preferredHighlightBegin",
                         "line": 311
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 95,
+                        "column": 34,
+                        "durationMicroseconds": 360,
                         "errorMessage": "",
-                        "functionName": "preferredHighlightEnd",
+                        "functionName": "sourceComponent",
                         "line": 312
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 33,
-                        "durationMicroseconds": 74,
-                        "errorMessage": "",
-                        "functionName": "highlightRangeMode",
-                        "line": 313
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 29,
+                        "column": 27,
                         "durationMicroseconds": 85,
                         "errorMessage": "",
-                        "functionName": "onCountChanged",
-                        "line": 314
+                        "functionName": "onLoaded",
+                        "line": 317
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 20,
+                        "durationMicroseconds": 28,
+                        "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::visiblePageSources with type QVariant.",
+                        "functionName": "model",
+                        "line": 331
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 30,
-                        "durationMicroseconds": 69,
+                        "column": 38,
+                        "durationMicroseconds": 246,
                         "errorMessage": "",
-                        "functionName": "onHeightChanged",
-                        "line": 315
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 31,
-                        "durationMicroseconds": 245,
-                        "errorMessage": "",
-                        "functionName": "onVisibleChanged",
-                        "line": 316
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 27,
-                        "durationMicroseconds": 70,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 304
+                        "functionName": "preferredHighlightBegin",
+                        "line": 334
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 36,
-                        "durationMicroseconds": 161,
+                        "durationMicroseconds": 92,
                         "errorMessage": "",
-                        "functionName": "onCompleted",
-                        "line": 317
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 38,
-                        "durationMicroseconds": 268,
-                        "errorMessage": "",
-                        "functionName": "onDestruction",
-                        "line": 321
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 24,
-                        "durationMicroseconds": 75,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 330
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 25,
-                        "durationMicroseconds": 64,
-                        "errorMessage": "",
-                        "functionName": "radius",
-                        "line": 332
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 24,
-                        "durationMicroseconds": 533,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 333
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 31,
-                        "durationMicroseconds": 313,
-                        "errorMessage": "",
-                        "functionName": "color",
+                        "functionName": "preferredHighlightEnd",
                         "line": 335
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 31,
-                        "durationMicroseconds": 173,
+                        "column": 33,
+                        "durationMicroseconds": 75,
                         "errorMessage": "",
-                        "functionName": "width",
+                        "functionName": "highlightRangeMode",
                         "line": 336
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 28,
-                        "durationMicroseconds": 231,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 345
-                    },
-                    {
-                        "codegenSuccessfull": false,
                         "column": 29,
-                        "durationMicroseconds": 179,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "source",
-                        "line": 347
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 31,
-                        "durationMicroseconds": 72,
+                        "durationMicroseconds": 88,
                         "errorMessage": "",
-                        "functionName": "fillMode",
-                        "line": 348
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 31,
-                        "durationMicroseconds": 205,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "rotation",
-                        "line": 353
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 38,
-                        "durationMicroseconds": 66,
-                        "errorMessage": "",
-                        "functionName": "transformOrigin",
-                        "line": 354
+                        "functionName": "onCountChanged",
+                        "line": 337
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 30,
-                        "durationMicroseconds": 106,
+                        "durationMicroseconds": 68,
+                        "errorMessage": "",
+                        "functionName": "onHeightChanged",
+                        "line": 338
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 31,
+                        "durationMicroseconds": 148,
+                        "errorMessage": "",
+                        "functionName": "onVisibleChanged",
+                        "line": 339
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 27,
+                        "durationMicroseconds": 50,
+                        "errorMessage": "",
+                        "functionName": "fill",
+                        "line": 327
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 256,
+                        "errorMessage": "",
+                        "functionName": "onCompleted",
+                        "line": 340
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 38,
+                        "durationMicroseconds": 345,
+                        "errorMessage": "",
+                        "functionName": "onDestruction",
+                        "line": 344
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 24,
+                        "durationMicroseconds": 105,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 353
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 25,
+                        "durationMicroseconds": 71,
+                        "errorMessage": "",
+                        "functionName": "radius",
+                        "line": 355
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 24,
+                        "durationMicroseconds": 463,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 356
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 31,
+                        "durationMicroseconds": 314,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 358
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 31,
+                        "durationMicroseconds": 163,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 359
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 28,
+                        "durationMicroseconds": 263,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 368
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 29,
+                        "durationMicroseconds": 176,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "source",
+                        "line": 370
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 31,
+                        "durationMicroseconds": 68,
+                        "errorMessage": "",
+                        "functionName": "fillMode",
+                        "line": 371
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 31,
+                        "durationMicroseconds": 156,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "rotation",
+                        "line": 376
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 38,
+                        "durationMicroseconds": 57,
+                        "errorMessage": "",
+                        "functionName": "transformOrigin",
+                        "line": 377
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 30,
+                        "durationMicroseconds": 100,
                         "errorMessage": "",
                         "functionName": "top",
-                        "line": 341
+                        "line": 364
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 43,
-                        "durationMicroseconds": 102,
+                        "durationMicroseconds": 92,
                         "errorMessage": "",
                         "functionName": "horizontalCenter",
-                        "line": 342
+                        "line": 365
                     },
                     {
                         "codegenSuccessfull": false,
@@ -1273,215 +1337,319 @@
                         "durationMicroseconds": 210,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "text",
-                        "line": 364
+                        "line": 387
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 28,
-                        "durationMicroseconds": 61,
+                        "durationMicroseconds": 47,
                         "errorMessage": "Cannot access value for name index",
                         "functionName": "color",
-                        "line": 365
+                        "line": 388
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 42,
-                        "durationMicroseconds": 82,
+                        "durationMicroseconds": 68,
                         "errorMessage": "",
                         "functionName": "horizontalAlignment",
-                        "line": 368
+                        "line": 391
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 31,
-                        "durationMicroseconds": 126,
+                        "durationMicroseconds": 96,
                         "errorMessage": "",
                         "functionName": "left",
-                        "line": 359
+                        "line": 382
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 95,
+                        "durationMicroseconds": 85,
                         "errorMessage": "",
                         "functionName": "right",
-                        "line": 360
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 33,
-                        "durationMicroseconds": 236,
-                        "errorMessage": "",
-                        "functionName": "bottom",
-                        "line": 361
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 34,
-                        "durationMicroseconds": 66,
-                        "errorMessage": "Cannot access value for name index",
-                        "functionName": "weight",
-                        "line": 367
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 32,
-                        "durationMicroseconds": 60,
-                        "errorMessage": "Type  stored as QQuickItem does not have a property currentPageChangedAction for calling",
-                        "functionName": "onClicked",
-                        "line": 375
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 35,
-                        "durationMicroseconds": 78,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 373
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 40,
-                        "durationMicroseconds": 181,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "onCompleted",
                         "line": 383
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 20,
-                        "durationMicroseconds": 91,
+                        "column": 33,
+                        "durationMicroseconds": 80,
                         "errorMessage": "",
-                        "functionName": "model",
-                        "line": 397
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 27,
-                        "durationMicroseconds": 50,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 393
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 24,
-                        "durationMicroseconds": 137,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 403
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 25,
-                        "durationMicroseconds": 67,
-                        "errorMessage": "",
-                        "functionName": "radius",
-                        "line": 405
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 24,
-                        "durationMicroseconds": 308,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 406
+                        "functionName": "bottom",
+                        "line": 384
                     },
                     {
                         "codegenSuccessfull": false,
-                        "column": 31,
-                        "durationMicroseconds": 26,
-                        "errorMessage": "Cannot load property pageIndex from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
-                        "functionName": "color",
-                        "line": 407
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 27,
-                        "durationMicroseconds": 31,
-                        "errorMessage": "Cannot access value for name modelData",
-                        "functionName": "text",
-                        "line": 417
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 28,
-                        "durationMicroseconds": 115,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 418
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 28,
-                        "durationMicroseconds": 70,
-                        "errorMessage": "",
-                        "functionName": "elide",
-                        "line": 420
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 31,
-                        "durationMicroseconds": 113,
-                        "errorMessage": "",
-                        "functionName": "left",
-                        "line": 411
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 32,
-                        "durationMicroseconds": 92,
-                        "errorMessage": "",
-                        "functionName": "right",
-                        "line": 412
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 41,
-                        "durationMicroseconds": 88,
-                        "errorMessage": "",
-                        "functionName": "verticalCenter",
-                        "line": 413
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 37,
-                        "durationMicroseconds": 31,
-                        "errorMessage": "Cannot access value for name modelData",
-                        "functionName": "leftMargin",
-                        "line": 414
+                        "column": 34,
+                        "durationMicroseconds": 42,
+                        "errorMessage": "Cannot access value for name index",
+                        "functionName": "weight",
+                        "line": 390
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 32,
-                        "durationMicroseconds": 55,
-                        "errorMessage": "Cannot access value for name modelData",
+                        "durationMicroseconds": 48,
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property currentPageChangedAction for calling",
                         "functionName": "onClicked",
-                        "line": 427
+                        "line": 398
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 35,
-                        "durationMicroseconds": 55,
+                        "durationMicroseconds": 51,
                         "errorMessage": "",
                         "functionName": "fill",
-                        "line": 425
+                        "line": 396
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 40,
+                        "durationMicroseconds": 158,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "onCompleted",
+                        "line": 406
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 20,
+                        "durationMicroseconds": 78,
+                        "errorMessage": "",
+                        "functionName": "model",
+                        "line": 420
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 27,
-                        "durationMicroseconds": 46,
+                        "durationMicroseconds": 42,
                         "errorMessage": "",
                         "functionName": "fill",
+                        "line": 416
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 24,
+                        "durationMicroseconds": 59,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 426
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 25,
+                        "durationMicroseconds": 59,
+                        "errorMessage": "",
+                        "functionName": "radius",
+                        "line": 428
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 24,
+                        "durationMicroseconds": 284,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 429
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 31,
+                        "durationMicroseconds": 27,
+                        "errorMessage": "Cannot load property pageIndex from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
+                        "functionName": "color",
+                        "line": 430
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 27,
+                        "durationMicroseconds": 29,
+                        "errorMessage": "Cannot access value for name modelData",
+                        "functionName": "text",
                         "line": 440
                     },
                     {
                         "codegenSuccessfull": true,
+                        "column": 28,
+                        "durationMicroseconds": 554,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 441
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 28,
+                        "durationMicroseconds": 77,
+                        "errorMessage": "",
+                        "functionName": "elide",
+                        "line": 443
+                    },
+                    {
+                        "codegenSuccessfull": true,
                         "column": 31,
-                        "durationMicroseconds": 40,
+                        "durationMicroseconds": 105,
+                        "errorMessage": "",
+                        "functionName": "left",
+                        "line": 434
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 32,
+                        "durationMicroseconds": 87,
+                        "errorMessage": "",
+                        "functionName": "right",
+                        "line": 435
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 41,
+                        "durationMicroseconds": 89,
+                        "errorMessage": "",
+                        "functionName": "verticalCenter",
+                        "line": 436
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 37,
+                        "durationMicroseconds": 34,
+                        "errorMessage": "Cannot access value for name modelData",
+                        "functionName": "leftMargin",
+                        "line": 437
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 32,
+                        "durationMicroseconds": 47,
+                        "errorMessage": "Cannot access value for name modelData",
+                        "functionName": "onClicked",
+                        "line": 450
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 35,
+                        "durationMicroseconds": 71,
                         "errorMessage": "",
                         "functionName": "fill",
-                        "line": 443
+                        "line": 448
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 27,
+                        "durationMicroseconds": 41,
+                        "errorMessage": "",
+                        "functionName": "fill",
+                        "line": 463
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 31,
+                        "durationMicroseconds": 38,
+                        "errorMessage": "",
+                        "functionName": "fill",
+                        "line": 466
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 28,
+                        "durationMicroseconds": 97,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 471
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 29,
+                        "durationMicroseconds": 77,
+                        "errorMessage": "",
+                        "functionName": "radius",
+                        "line": 473
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 28,
+                        "durationMicroseconds": 82,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 474
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 35,
+                        "durationMicroseconds": 88,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 475
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 39,
+                        "durationMicroseconds": 47,
+                        "errorMessage": "",
+                        "functionName": "fill",
+                        "line": 478
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 35,
+                        "durationMicroseconds": 449,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "text",
+                        "line": 483
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 119,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 484
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 61,
+                        "errorMessage": "",
+                        "functionName": "elide",
+                        "line": 487
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 42,
+                        "durationMicroseconds": 59,
+                        "errorMessage": "",
+                        "functionName": "weight",
+                        "line": 486
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 35,
+                        "durationMicroseconds": 29,
+                        "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::searchResults with type QVariant.",
+                        "functionName": "text",
+                        "line": 491
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 85,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 494
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 64,
+                        "errorMessage": "",
+                        "functionName": "elide",
+                        "line": 496
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 30,
+                        "durationMicroseconds": 22,
+                        "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::searchResults with type QVariant.",
+                        "functionName": "visible",
+                        "line": 502
                     },
                     {
                         "codegenSuccessfull": true,
@@ -1489,199 +1657,95 @@
                         "durationMicroseconds": 73,
                         "errorMessage": "",
                         "functionName": "width",
-                        "line": 448
+                        "line": 503
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 29,
-                        "durationMicroseconds": 65,
+                        "durationMicroseconds": 58,
                         "errorMessage": "",
                         "functionName": "radius",
-                        "line": 450
+                        "line": 505
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 28,
+                        "column": 35,
                         "durationMicroseconds": 81,
                         "errorMessage": "",
                         "functionName": "color",
-                        "line": 451
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 35,
-                        "durationMicroseconds": 83,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 452
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 39,
-                        "durationMicroseconds": 43,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 455
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 35,
-                        "durationMicroseconds": 418,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "text",
-                        "line": 460
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 126,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 461
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 72,
-                        "errorMessage": "",
-                        "functionName": "elide",
-                        "line": 464
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 42,
-                        "durationMicroseconds": 63,
-                        "errorMessage": "",
-                        "functionName": "weight",
-                        "line": 463
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 35,
-                        "durationMicroseconds": 48,
-                        "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::searchResults with type QVariant.",
-                        "functionName": "text",
-                        "line": 468
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 171,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 471
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 171,
-                        "errorMessage": "",
-                        "functionName": "elide",
-                        "line": 473
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 30,
-                        "durationMicroseconds": 37,
-                        "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::searchResults with type QVariant.",
-                        "functionName": "visible",
-                        "line": 479
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 28,
-                        "durationMicroseconds": 100,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 480
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 29,
-                        "durationMicroseconds": 75,
-                        "errorMessage": "",
-                        "functionName": "radius",
-                        "line": 482
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 35,
-                        "durationMicroseconds": 95,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 484
+                        "line": 507
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 131,
+                        "durationMicroseconds": 118,
                         "errorMessage": "",
                         "functionName": "width",
-                        "line": 489
+                        "line": 512
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 31,
-                        "durationMicroseconds": 282,
+                        "durationMicroseconds": 265,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "text",
-                        "line": 490
+                        "line": 513
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 110,
+                        "durationMicroseconds": 90,
                         "errorMessage": "",
                         "functionName": "color",
-                        "line": 493
+                        "line": 516
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 35,
-                        "durationMicroseconds": 121,
+                        "durationMicroseconds": 58,
                         "errorMessage": "",
                         "functionName": "wrapMode",
-                        "line": 495
+                        "line": 518
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 46,
-                        "durationMicroseconds": 52,
+                        "durationMicroseconds": 49,
                         "errorMessage": "",
                         "functionName": "horizontalAlignment",
-                        "line": 496
+                        "line": 519
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 43,
-                        "durationMicroseconds": 113,
+                        "durationMicroseconds": 57,
                         "errorMessage": "",
                         "functionName": "centerIn",
-                        "line": 488
+                        "line": 511
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 30,
-                        "durationMicroseconds": 35,
+                        "durationMicroseconds": 33,
                         "errorMessage": "Cannot load property length from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::searchResults with type QVariant.",
                         "functionName": "visible",
-                        "line": 501
+                        "line": 524
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 28,
-                        "durationMicroseconds": 95,
+                        "durationMicroseconds": 252,
                         "errorMessage": "",
                         "functionName": "width",
-                        "line": 502
+                        "line": 525
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 29,
-                        "durationMicroseconds": 120,
+                        "durationMicroseconds": 257,
                         "errorMessage": "",
                         "functionName": "height",
-                        "line": 503
+                        "line": 526
                     },
                     {
                         "codegenSuccessfull": true,
@@ -1689,391 +1753,407 @@
                         "durationMicroseconds": 76,
                         "errorMessage": "",
                         "functionName": "model",
-                        "line": 506
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 32,
-                        "durationMicroseconds": 99,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 513
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 33,
-                        "durationMicroseconds": 117,
-                        "errorMessage": "",
-                        "functionName": "height",
-                        "line": 514
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 33,
-                        "durationMicroseconds": 62,
-                        "errorMessage": "",
-                        "functionName": "radius",
-                        "line": 515
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 32,
-                        "durationMicroseconds": 443,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 516
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 39,
-                        "durationMicroseconds": 375,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 519
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 39,
-                        "durationMicroseconds": 176,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 520
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 54,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 523
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 39,
-                        "durationMicroseconds": 39,
-                        "errorMessage": "Cannot access value for name modelData",
-                        "functionName": "text",
-                        "line": 528
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 40,
-                        "durationMicroseconds": 22,
-                        "errorMessage": "Cannot access value for name index",
-                        "functionName": "color",
                         "line": 529
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 46,
-                        "durationMicroseconds": 71,
-                        "errorMessage": "",
-                        "functionName": "weight",
-                        "line": 531
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 40,
-                        "durationMicroseconds": 73,
+                        "column": 32,
+                        "durationMicroseconds": 170,
                         "errorMessage": "",
                         "functionName": "width",
                         "line": 536
                     },
                     {
-                        "codegenSuccessfull": false,
-                        "column": 39,
-                        "durationMicroseconds": 27,
-                        "errorMessage": "Cannot access value for name modelData",
-                        "functionName": "text",
+                        "codegenSuccessfull": true,
+                        "column": 33,
+                        "durationMicroseconds": 134,
+                        "errorMessage": "",
+                        "functionName": "height",
                         "line": 537
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 40,
-                        "durationMicroseconds": 96,
+                        "column": 33,
+                        "durationMicroseconds": 64,
                         "errorMessage": "",
-                        "functionName": "color",
+                        "functionName": "radius",
                         "line": 538
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 128,
+                        "column": 32,
+                        "durationMicroseconds": 451,
                         "errorMessage": "",
-                        "functionName": "wrapMode",
-                        "line": 540
+                        "functionName": "color",
+                        "line": 539
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 40,
-                        "durationMicroseconds": 68,
+                        "column": 39,
+                        "durationMicroseconds": 305,
                         "errorMessage": "",
-                        "functionName": "elide",
+                        "functionName": "color",
                         "line": 542
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 39,
+                        "durationMicroseconds": 163,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 543
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 43,
+                        "durationMicroseconds": 47,
+                        "errorMessage": "",
+                        "functionName": "fill",
+                        "line": 546
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 39,
+                        "durationMicroseconds": 36,
+                        "errorMessage": "Cannot access value for name modelData",
+                        "functionName": "text",
+                        "line": 551
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 40,
-                        "durationMicroseconds": 65,
+                        "durationMicroseconds": 21,
                         "errorMessage": "Cannot access value for name index",
-                        "functionName": "onClicked",
-                        "line": 550
+                        "functionName": "color",
+                        "line": 552
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 46,
+                        "durationMicroseconds": 73,
+                        "errorMessage": "",
+                        "functionName": "weight",
+                        "line": 554
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 40,
+                        "durationMicroseconds": 78,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 559
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 39,
+                        "durationMicroseconds": 28,
+                        "errorMessage": "Cannot access value for name modelData",
+                        "functionName": "text",
+                        "line": 560
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 40,
+                        "durationMicroseconds": 88,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 561
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 43,
-                        "durationMicroseconds": 71,
+                        "durationMicroseconds": 60,
                         "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 548
+                        "functionName": "wrapMode",
+                        "line": 563
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 45,
-                        "durationMicroseconds": 61,
+                        "column": 40,
+                        "durationMicroseconds": 53,
                         "errorMessage": "",
-                        "functionName": "rowIndex",
-                        "line": 570
+                        "functionName": "elide",
+                        "line": 565
                     },
                     {
-                        "codegenSuccessfull": true,
-                        "column": 20,
-                        "durationMicroseconds": 88,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 572
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 21,
-                        "durationMicroseconds": 212,
-                        "errorMessage": "",
-                        "functionName": "height",
+                        "codegenSuccessfull": false,
+                        "column": 40,
+                        "durationMicroseconds": 50,
+                        "errorMessage": "Cannot access value for name index",
+                        "functionName": "onClicked",
                         "line": 573
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 26,
-                        "durationMicroseconds": 105,
-                        "errorMessage": "",
-                        "functionName": "spacing",
-                        "line": 578
-                    },
-                    {
-                        "codegenSuccessfull": true,
                         "column": 43,
-                        "durationMicroseconds": 141,
+                        "durationMicroseconds": 45,
                         "errorMessage": "",
-                        "functionName": "horizontalCenter",
-                        "line": 577
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 28,
-                        "durationMicroseconds": 63,
-                        "errorMessage": "Cannot load property pages from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
-                        "functionName": "model",
-                        "line": 581
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 58,
-                        "durationMicroseconds": 26,
-                        "errorMessage": "Cannot load property pageIndex from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
-                        "functionName": "pageIndex",
-                        "line": 588
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 62,
-                        "durationMicroseconds": 228,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "pageSource",
-                        "line": 589
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 61,
-                        "durationMicroseconds": 167,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "pageRotation",
-                        "line": 590
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 58,
-                        "durationMicroseconds": 246,
-                        "errorMessage": "",
-                        "functionName": "sideways",
-                        "line": 591
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 57,
-                        "durationMicroseconds": 148,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "pageSize",
-                        "line": 592
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 61,
-                        "durationMicroseconds": 61,
-                        "errorMessage": "Cannot load property width from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageSize with type QVariant.",
-                        "functionName": "sourceWidth",
-                        "line": 593
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 62,
-                        "durationMicroseconds": 55,
-                        "errorMessage": "Cannot load property height from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageSize with type QVariant.",
-                        "functionName": "sourceHeight",
-                        "line": 594
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 62,
-                        "durationMicroseconds": 112,
-                        "errorMessage": "",
-                        "functionName": "rotatedWidth",
-                        "line": 595
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 63,
-                        "durationMicroseconds": 91,
-                        "errorMessage": "",
-                        "functionName": "rotatedHeight",
-                        "line": 596
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 56,
-                        "durationMicroseconds": 93,
-                        "errorMessage": "",
-                        "functionName": "paired",
-                        "line": 597
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 64,
-                        "durationMicroseconds": 214,
-                        "errorMessage": "",
-                        "functionName": "availableWidth",
-                        "line": 598
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 65,
-                        "durationMicroseconds": 212,
-                        "errorMessage": "",
-                        "functionName": "availableHeight",
-                        "line": 599
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 68,
-                        "durationMicroseconds": 419,
-                        "errorMessage": "",
-                        "functionName": "pageAvailableWidth",
-                        "line": 600
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 60,
-                        "durationMicroseconds": 287,
-                        "errorMessage": "",
-                        "functionName": "widthScale",
-                        "line": 601
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 61,
-                        "durationMicroseconds": 250,
-                        "errorMessage": "",
-                        "functionName": "heightScale",
-                        "line": 602
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 59,
-                        "durationMicroseconds": 575,
-                        "errorMessage": "",
-                        "functionName": "pageScale",
-                        "line": 603
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 59,
-                        "durationMicroseconds": 166,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "baseScale",
-                        "line": 606
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 62,
-                        "durationMicroseconds": 60,
-                        "errorMessage": "",
-                        "functionName": "pagePaperItem",
-                        "line": 607
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 32,
-                        "durationMicroseconds": 316,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 609
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 33,
-                        "durationMicroseconds": 324,
-                        "errorMessage": "",
-                        "functionName": "height",
-                        "line": 610
+                        "functionName": "fill",
+                        "line": 571
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 45,
-                        "durationMicroseconds": 256,
+                        "durationMicroseconds": 39,
                         "errorMessage": "",
-                        "functionName": "onBaseScaleChanged",
-                        "line": 611
+                        "functionName": "rowIndex",
+                        "line": 593
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 307,
+                        "column": 20,
+                        "durationMicroseconds": 77,
                         "errorMessage": "",
                         "functionName": "width",
+                        "line": 596
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 21,
+                        "durationMicroseconds": 167,
+                        "errorMessage": "",
+                        "functionName": "height",
+                        "line": 597
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 32,
+                        "durationMicroseconds": 55,
+                        "errorMessage": "",
+                        "functionName": "onPooled",
+                        "line": 599
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 32,
+                        "durationMicroseconds": 41,
+                        "errorMessage": "",
+                        "functionName": "onReused",
+                        "line": 600
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 26,
+                        "durationMicroseconds": 60,
+                        "errorMessage": "",
+                        "functionName": "spacing",
+                        "line": 605
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 43,
+                        "durationMicroseconds": 96,
+                        "errorMessage": "",
+                        "functionName": "horizontalCenter",
+                        "line": 604
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 28,
+                        "durationMicroseconds": 18,
+                        "errorMessage": "Cannot load property pages from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
+                        "functionName": "model",
+                        "line": 608
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 58,
+                        "durationMicroseconds": 19,
+                        "errorMessage": "Cannot load property pageIndex from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
+                        "functionName": "pageIndex",
+                        "line": 615
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 62,
+                        "durationMicroseconds": 169,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "pageSource",
                         "line": 616
                     },
                     {
-                        "codegenSuccessfull": true,
-                        "column": 37,
-                        "durationMicroseconds": 274,
-                        "errorMessage": "",
-                        "functionName": "height",
+                        "codegenSuccessfull": false,
+                        "column": 61,
+                        "durationMicroseconds": 178,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "pageRotation",
                         "line": 617
                     },
                     {
                         "codegenSuccessfull": true,
+                        "column": 58,
+                        "durationMicroseconds": 218,
+                        "errorMessage": "",
+                        "functionName": "sideways",
+                        "line": 618
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 57,
+                        "durationMicroseconds": 143,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "pageSize",
+                        "line": 619
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 61,
+                        "durationMicroseconds": 56,
+                        "errorMessage": "Cannot load property width from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageSize with type QVariant.",
+                        "functionName": "sourceWidth",
+                        "line": 620
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 62,
+                        "durationMicroseconds": 44,
+                        "errorMessage": "Cannot load property height from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageSize with type QVariant.",
+                        "functionName": "sourceHeight",
+                        "line": 621
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 62,
+                        "durationMicroseconds": 104,
+                        "errorMessage": "",
+                        "functionName": "rotatedWidth",
+                        "line": 622
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 63,
+                        "durationMicroseconds": 88,
+                        "errorMessage": "",
+                        "functionName": "rotatedHeight",
+                        "line": 623
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 56,
+                        "durationMicroseconds": 86,
+                        "errorMessage": "",
+                        "functionName": "paired",
+                        "line": 624
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 64,
+                        "durationMicroseconds": 237,
+                        "errorMessage": "",
+                        "functionName": "availableWidth",
+                        "line": 625
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 65,
+                        "durationMicroseconds": 195,
+                        "errorMessage": "",
+                        "functionName": "availableHeight",
+                        "line": 626
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 68,
+                        "durationMicroseconds": 478,
+                        "errorMessage": "",
+                        "functionName": "pageAvailableWidth",
+                        "line": 627
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 60,
+                        "durationMicroseconds": 269,
+                        "errorMessage": "",
+                        "functionName": "widthScale",
+                        "line": 628
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 61,
+                        "durationMicroseconds": 239,
+                        "errorMessage": "",
+                        "functionName": "heightScale",
+                        "line": 629
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 59,
+                        "durationMicroseconds": 529,
+                        "errorMessage": "",
+                        "functionName": "pageScale",
+                        "line": 630
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 59,
+                        "durationMicroseconds": 150,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "baseScale",
+                        "line": 633
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 62,
+                        "durationMicroseconds": 59,
+                        "errorMessage": "",
+                        "functionName": "pagePaperItem",
+                        "line": 634
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 32,
+                        "durationMicroseconds": 258,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 636
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 33,
+                        "durationMicroseconds": 235,
+                        "errorMessage": "",
+                        "functionName": "height",
+                        "line": 637
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 45,
+                        "durationMicroseconds": 239,
+                        "errorMessage": "",
+                        "functionName": "onBaseScaleChanged",
+                        "line": 638
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 288,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 643
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 37,
+                        "durationMicroseconds": 271,
+                        "errorMessage": "",
+                        "functionName": "height",
+                        "line": 644
+                    },
+                    {
+                        "codegenSuccessfull": true,
                         "column": 39,
-                        "durationMicroseconds": 64,
+                        "durationMicroseconds": 69,
                         "errorMessage": "",
                         "functionName": "rotation",
-                        "line": 618
+                        "line": 645
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 46,
-                        "durationMicroseconds": 63,
+                        "durationMicroseconds": 73,
                         "errorMessage": "",
                         "functionName": "transformOrigin",
-                        "line": 619
+                        "line": 646
                     },
                     {
                         "codegenSuccessfull": false,
@@ -2081,463 +2161,415 @@
                         "durationMicroseconds": 22,
                         "errorMessage": "Cannot load property width from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pageSize with type QVariant.",
                         "functionName": "pageScale",
-                        "line": 620
+                        "line": 647
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 47,
-                        "durationMicroseconds": 46,
+                        "durationMicroseconds": 58,
                         "errorMessage": "",
                         "functionName": "centerIn",
-                        "line": 615
+                        "line": 642
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 41,
-                        "durationMicroseconds": 132,
+                        "durationMicroseconds": 99,
                         "errorMessage": "",
                         "functionName": "source",
-                        "line": 627
+                        "line": 654
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 43,
-                        "durationMicroseconds": 63,
+                        "durationMicroseconds": 60,
                         "errorMessage": "",
                         "functionName": "fillMode",
-                        "line": 628
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 57,
-                        "durationMicroseconds": 227,
-                        "errorMessage": "",
-                        "functionName": "onImplicitWidthChanged",
-                        "line": 634
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 58,
-                        "durationMicroseconds": 207,
-                        "errorMessage": "",
-                        "functionName": "onImplicitHeightChanged",
-                        "line": 635
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 47,
-                        "durationMicroseconds": 52,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 626
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 42,
-                        "durationMicroseconds": 181,
-                        "errorMessage": "",
-                        "functionName": "visible",
-                        "line": 640
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 47,
-                        "durationMicroseconds": 44,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 639
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 48,
-                        "durationMicroseconds": 282,
-                        "errorMessage": "",
-                        "functionName": "fillColor",
-                        "line": 644
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 44,
-                        "durationMicroseconds": 301,
-                        "errorMessage": "",
-                        "functionName": "scale",
-                        "line": 645
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 48,
-                        "durationMicroseconds": 30,
-                        "errorMessage": "Cannot load property geometry from  stored as QQuickPdfSelection.",
-                        "functionName": "paths",
-                        "line": 648
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 42,
-                        "durationMicroseconds": 257,
-                        "errorMessage": "",
-                        "functionName": "enabled",
                         "line": 655
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 50,
-                        "durationMicroseconds": 162,
+                        "column": 57,
+                        "durationMicroseconds": 230,
                         "errorMessage": "",
-                        "functionName": "acceptedDevices",
-                        "line": 656
+                        "functionName": "onImplicitWidthChanged",
+                        "line": 661
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 42,
-                        "durationMicroseconds": 89,
+                        "column": 58,
+                        "durationMicroseconds": 224,
                         "errorMessage": "",
-                        "functionName": "enabled",
+                        "functionName": "onImplicitHeightChanged",
                         "line": 662
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 50,
-                        "durationMicroseconds": 191,
+                        "column": 47,
+                        "durationMicroseconds": 51,
                         "errorMessage": "",
-                        "functionName": "acceptedDevices",
-                        "line": 663
+                        "functionName": "fill",
+                        "line": 653
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 215,
+                        "column": 42,
+                        "durationMicroseconds": 277,
                         "errorMessage": "",
-                        "functionName": "onTapped",
-                        "line": 664
+                        "functionName": "visible",
+                        "line": 667
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 68,
+                        "column": 47,
+                        "durationMicroseconds": 45,
                         "errorMessage": "",
-                        "functionName": "document",
-                        "line": 674
+                        "functionName": "fill",
+                        "line": 666
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 39,
-                        "durationMicroseconds": 62,
+                        "column": 48,
+                        "durationMicroseconds": 298,
                         "errorMessage": "",
-                        "functionName": "page",
+                        "functionName": "fillColor",
+                        "line": 671
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 44,
+                        "durationMicroseconds": 253,
+                        "errorMessage": "",
+                        "functionName": "scale",
+                        "line": 672
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 48,
+                        "durationMicroseconds": 98,
+                        "errorMessage": "",
+                        "functionName": "paths",
                         "line": 675
                     },
                     {
                         "codegenSuccessfull": false,
-                        "column": 46,
-                        "durationMicroseconds": 332,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "renderScale",
-                        "line": 676
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 39,
-                        "durationMicroseconds": 140,
-                        "errorMessage": "",
-                        "functionName": "from",
-                        "line": 677
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 37,
-                        "durationMicroseconds": 119,
-                        "errorMessage": "",
-                        "functionName": "to",
-                        "line": 678
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 39,
-                        "durationMicroseconds": 141,
-                        "errorMessage": "",
-                        "functionName": "hold",
-                        "line": 679
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 48,
-                        "durationMicroseconds": 530,
-                        "errorMessage": "",
-                        "functionName": "onTextChanged",
-                        "line": 681
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 47,
-                        "durationMicroseconds": 57,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 673
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 38,
-                        "durationMicroseconds": 248,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "visible",
-                        "line": 690
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 36,
-                        "durationMicroseconds": 322,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 691
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 57,
-                        "errorMessage": "",
-                        "functionName": "fill",
-                        "line": 689
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 43,
-                        "durationMicroseconds": 93,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 692
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 39,
-                        "durationMicroseconds": 243,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "text",
-                        "line": 696
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 40,
-                        "durationMicroseconds": 92,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 697
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 51,
-                        "durationMicroseconds": 44,
-                        "errorMessage": "",
-                        "functionName": "centerIn",
-                        "line": 695
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 36,
-                        "durationMicroseconds": 175,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
-                        "functionName": "model",
-                        "line": 703
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 67,
-                        "durationMicroseconds": 31,
-                        "errorMessage": "Cannot load property rect from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
-                        "functionName": "mappedRect",
-                        "line": 707
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 36,
-                        "durationMicroseconds": 10,
-                        "errorMessage": "Cannot load property x from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
-                        "functionName": "x",
-                        "line": 708
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 36,
-                        "durationMicroseconds": 41,
-                        "errorMessage": "Cannot load property y from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
-                        "functionName": "y",
-                        "line": 709
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 40,
-                        "durationMicroseconds": 34,
-                        "errorMessage": "Cannot load property width from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
-                        "functionName": "width",
-                        "line": 710
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 41,
-                        "durationMicroseconds": 22,
-                        "errorMessage": "Cannot load property height from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
-                        "functionName": "height",
-                        "line": 711
-                    },
-                    {
-                        "codegenSuccessfull": true,
                         "column": 42,
-                        "durationMicroseconds": 172,
-                        "errorMessage": "",
-                        "functionName": "visible",
-                        "line": 715
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 47,
-                        "durationMicroseconds": 326,
-                        "errorMessage": "",
-                        "functionName": "color",
-                        "line": 713
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 47,
-                        "durationMicroseconds": 135,
-                        "errorMessage": "",
-                        "functionName": "width",
-                        "line": 714
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 46,
-                        "durationMicroseconds": 93,
-                        "errorMessage": "",
+                        "durationMicroseconds": 61,
+                        "errorMessage": "Cannot load property isLoaded from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::pdfDocument with type QVariant.",
                         "functionName": "enabled",
-                        "line": 720
+                        "line": 682
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 50,
-                        "durationMicroseconds": 187,
+                        "durationMicroseconds": 169,
                         "errorMessage": "",
-                        "functionName": "cursorShape",
-                        "line": 722
+                        "functionName": "acceptedDevices",
+                        "line": 683
                     },
                     {
                         "codegenSuccessfull": false,
-                        "column": 48,
-                        "durationMicroseconds": 64,
-                        "errorMessage": "Cannot access value for name modelData",
-                        "functionName": "onClicked",
-                        "line": 723
+                        "column": 50,
+                        "durationMicroseconds": 140,
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property beginSelectionAction for calling",
+                        "functionName": "onActiveChanged",
+                        "line": 685
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 52,
+                        "durationMicroseconds": 100,
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property updateSelectionAction for calling",
+                        "functionName": "onCentroidChanged",
+                        "line": 697
                     },
                     {
                         "codegenSuccessfull": true,
-                        "column": 51,
-                        "durationMicroseconds": 77,
+                        "column": 42,
+                        "durationMicroseconds": 85,
+                        "errorMessage": "",
+                        "functionName": "enabled",
+                        "line": 705
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 50,
+                        "durationMicroseconds": 197,
+                        "errorMessage": "",
+                        "functionName": "acceptedDevices",
+                        "line": 706
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 43,
+                        "durationMicroseconds": 54,
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property clearSelectionAction for calling",
+                        "functionName": "onTapped",
+                        "line": 707
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 38,
+                        "durationMicroseconds": 259,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "visible",
+                        "line": 717
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 36,
+                        "durationMicroseconds": 306,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 718
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 43,
+                        "durationMicroseconds": 50,
                         "errorMessage": "",
                         "functionName": "fill",
+                        "line": 716
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 43,
+                        "durationMicroseconds": 87,
+                        "errorMessage": "",
+                        "functionName": "color",
                         "line": 719
                     },
                     {
                         "codegenSuccessfull": false,
+                        "column": 39,
+                        "durationMicroseconds": 228,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "text",
+                        "line": 723
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 40,
+                        "durationMicroseconds": 86,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 724
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 51,
+                        "durationMicroseconds": 54,
+                        "errorMessage": "",
+                        "functionName": "centerIn",
+                        "line": 722
+                    },
+                    {
+                        "codegenSuccessfull": false,
                         "column": 36,
-                        "durationMicroseconds": 215,
+                        "durationMicroseconds": 196,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "model",
-                        "line": 732
+                        "line": 730
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 67,
-                        "durationMicroseconds": 504,
-                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "durationMicroseconds": 38,
+                        "errorMessage": "Cannot load property rect from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
                         "functionName": "mappedRect",
+                        "line": 734
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 36,
+                        "durationMicroseconds": 11,
+                        "errorMessage": "Cannot load property x from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
+                        "functionName": "x",
+                        "line": 735
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 36,
+                        "durationMicroseconds": 8,
+                        "errorMessage": "Cannot load property y from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
+                        "functionName": "y",
                         "line": 736
                     },
                     {
                         "codegenSuccessfull": false,
-                        "column": 36,
-                        "durationMicroseconds": 18,
-                        "errorMessage": "Cannot load property x from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
-                        "functionName": "x",
+                        "column": 40,
+                        "durationMicroseconds": 22,
+                        "errorMessage": "Cannot load property width from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
+                        "functionName": "width",
                         "line": 737
                     },
                     {
                         "codegenSuccessfull": false,
-                        "column": 36,
-                        "durationMicroseconds": 16,
-                        "errorMessage": "Cannot load property y from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
-                        "functionName": "y",
-                        "line": 738
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 40,
-                        "durationMicroseconds": 25,
-                        "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
-                        "functionName": "width",
-                        "line": 739
-                    },
-                    {
-                        "codegenSuccessfull": false,
                         "column": 41,
-                        "durationMicroseconds": 19,
-                        "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
+                        "durationMicroseconds": 18,
+                        "errorMessage": "Cannot load property height from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
                         "functionName": "height",
-                        "line": 740
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 40,
-                        "durationMicroseconds": 12,
-                        "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
-                        "functionName": "color",
-                        "line": 741
-                    },
-                    {
-                        "codegenSuccessfull": false,
-                        "column": 41,
-                        "durationMicroseconds": 10,
-                        "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
-                        "functionName": "radius",
-                        "line": 746
+                        "line": 738
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 42,
-                        "durationMicroseconds": 156,
+                        "durationMicroseconds": 157,
                         "errorMessage": "",
                         "functionName": "visible",
+                        "line": 742
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 47,
+                        "durationMicroseconds": 313,
+                        "errorMessage": "",
+                        "functionName": "color",
+                        "line": 740
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 47,
+                        "durationMicroseconds": 116,
+                        "errorMessage": "",
+                        "functionName": "width",
+                        "line": 741
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 46,
+                        "durationMicroseconds": 76,
+                        "errorMessage": "",
+                        "functionName": "enabled",
                         "line": 747
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 50,
+                        "durationMicroseconds": 172,
+                        "errorMessage": "",
+                        "functionName": "cursorShape",
+                        "line": 749
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 48,
+                        "durationMicroseconds": 65,
+                        "errorMessage": "Cannot access value for name modelData",
+                        "functionName": "onClicked",
+                        "line": 750
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 51,
+                        "durationMicroseconds": 51,
+                        "errorMessage": "",
+                        "functionName": "fill",
+                        "line": 746
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 36,
+                        "durationMicroseconds": 169,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "model",
+                        "line": 759
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 67,
+                        "durationMicroseconds": 369,
+                        "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
+                        "functionName": "mappedRect",
+                        "line": 763
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 36,
+                        "durationMicroseconds": 14,
+                        "errorMessage": "Cannot load property x from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
+                        "functionName": "x",
+                        "line": 764
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 36,
+                        "durationMicroseconds": 8,
+                        "errorMessage": "Cannot load property y from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::mappedRect with type QVariant.",
+                        "functionName": "y",
+                        "line": 765
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 40,
+                        "durationMicroseconds": 23,
+                        "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
+                        "functionName": "width",
+                        "line": 766
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 41,
+                        "durationMicroseconds": 17,
+                        "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
+                        "functionName": "height",
+                        "line": 767
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 40,
+                        "durationMicroseconds": 10,
+                        "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
+                        "functionName": "color",
+                        "line": 768
+                    },
+                    {
+                        "codegenSuccessfull": false,
+                        "column": 41,
+                        "durationMicroseconds": 8,
+                        "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
+                        "functionName": "radius",
+                        "line": 773
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 42,
+                        "durationMicroseconds": 132,
+                        "errorMessage": "",
+                        "functionName": "visible",
+                        "line": 774
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 42,
-                        "durationMicroseconds": 13,
+                        "durationMicroseconds": 10,
                         "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
                         "functionName": "opacity",
-                        "line": 748
+                        "line": 775
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 47,
-                        "durationMicroseconds": 11,
+                        "durationMicroseconds": 13,
                         "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
                         "functionName": "color",
-                        "line": 744
+                        "line": 771
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 47,
-                        "durationMicroseconds": 8,
+                        "durationMicroseconds": 14,
                         "errorMessage": "Cannot load property active from (component in D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml)::modelData with type QVariant.",
                         "functionName": "width",
-                        "line": 745
+                        "line": 772
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 46,
-                        "durationMicroseconds": 31,
+                        "durationMicroseconds": 27,
                         "errorMessage": "Cannot access value for name modelData",
                         "functionName": "running",
-                        "line": 751
+                        "line": 778
                     },
                     {
                         "codegenSuccessfull": true,
@@ -2545,15 +2577,15 @@
                         "durationMicroseconds": 69,
                         "errorMessage": "",
                         "functionName": "loops",
-                        "line": 752
+                        "line": 779
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 104,
-                        "durationMicroseconds": 60,
+                        "durationMicroseconds": 62,
                         "errorMessage": "",
                         "functionName": "type",
-                        "line": 753
+                        "line": 780
                     },
                     {
                         "codegenSuccessfull": true,
@@ -2561,47 +2593,47 @@
                         "durationMicroseconds": 52,
                         "errorMessage": "",
                         "functionName": "type",
-                        "line": 754
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 22,
-                        "durationMicroseconds": 227,
-                        "errorMessage": "",
-                        "functionName": "cacheBuffer",
-                        "line": 774
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 18,
-                        "durationMicroseconds": 408,
-                        "errorMessage": "",
-                        "functionName": "spacing",
-                        "line": 779
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 25,
-                        "durationMicroseconds": 71,
-                        "errorMessage": "",
-                        "functionName": "boundsBehavior",
-                        "line": 780
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 16,
-                        "durationMicroseconds": 77,
-                        "errorMessage": "",
-                        "functionName": "model",
                         "line": 781
                     },
                     {
                         "codegenSuccessfull": true,
+                        "column": 22,
+                        "durationMicroseconds": 231,
+                        "errorMessage": "",
+                        "functionName": "cacheBuffer",
+                        "line": 801
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 18,
+                        "durationMicroseconds": 525,
+                        "errorMessage": "",
+                        "functionName": "spacing",
+                        "line": 806
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 25,
+                        "durationMicroseconds": 81,
+                        "errorMessage": "",
+                        "functionName": "boundsBehavior",
+                        "line": 807
+                    },
+                    {
+                        "codegenSuccessfull": true,
+                        "column": 16,
+                        "durationMicroseconds": 81,
+                        "errorMessage": "",
+                        "functionName": "model",
+                        "line": 808
+                    },
+                    {
+                        "codegenSuccessfull": true,
                         "column": 19,
-                        "durationMicroseconds": 47,
+                        "durationMicroseconds": 44,
                         "errorMessage": "",
                         "functionName": "delegate",
-                        "line": 782
+                        "line": 809
                     },
                     {
                         "codegenSuccessfull": true,
@@ -2609,167 +2641,167 @@
                         "durationMicroseconds": 126,
                         "errorMessage": "",
                         "functionName": "onContentYChanged",
-                        "line": 783
+                        "line": 810
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 26,
-                        "durationMicroseconds": 585,
+                        "durationMicroseconds": 457,
                         "errorMessage": "Cannot generate efficient code for call to untyped JavaScript function",
                         "functionName": "onMovementEnded",
-                        "line": 787
+                        "line": 814
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 25,
-                        "durationMicroseconds": 153,
+                        "durationMicroseconds": 268,
                         "errorMessage": "Cannot generate efficient code for lookup of function property.",
                         "functionName": "onWidthChanged",
-                        "line": 795
+                        "line": 822
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 26,
-                        "durationMicroseconds": 131,
+                        "durationMicroseconds": 242,
                         "errorMessage": "Cannot generate efficient code for lookup of function property.",
                         "functionName": "onHeightChanged",
-                        "line": 796
+                        "line": 823
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 18,
-                        "durationMicroseconds": 112,
+                        "durationMicroseconds": 110,
                         "errorMessage": "",
                         "functionName": "top",
-                        "line": 767
+                        "line": 794
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 21,
-                        "durationMicroseconds": 88,
+                        "durationMicroseconds": 91,
                         "errorMessage": "",
                         "functionName": "bottom",
-                        "line": 768
+                        "line": 795
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 19,
-                        "durationMicroseconds": 85,
+                        "durationMicroseconds": 83,
                         "errorMessage": "",
                         "functionName": "left",
-                        "line": 769
+                        "line": 796
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 20,
-                        "durationMicroseconds": 82,
+                        "durationMicroseconds": 88,
                         "errorMessage": "",
                         "functionName": "right",
-                        "line": 770
-                    },
-                    {
-                        "codegenSuccessfull": true,
-                        "column": 32,
-                        "durationMicroseconds": 132,
-                        "errorMessage": "",
-                        "functionName": "onCompleted",
                         "line": 797
                     },
                     {
                         "codegenSuccessfull": true,
+                        "column": 32,
+                        "durationMicroseconds": 137,
+                        "errorMessage": "",
+                        "functionName": "onCompleted",
+                        "line": 824
+                    },
+                    {
+                        "codegenSuccessfull": true,
                         "column": 16,
-                        "durationMicroseconds": 184,
+                        "durationMicroseconds": 149,
                         "errorMessage": "",
                         "functionName": "z",
-                        "line": 805
+                        "line": 832
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 22,
-                        "durationMicroseconds": 58,
+                        "durationMicroseconds": 60,
                         "errorMessage": "",
                         "functionName": "enabled",
-                        "line": 806
+                        "line": 833
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 30,
-                        "durationMicroseconds": 121,
+                        "durationMicroseconds": 101,
                         "errorMessage": "",
                         "functionName": "acceptedButtons",
-                        "line": 807
+                        "line": 834
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 26,
-                        "durationMicroseconds": 143,
+                        "durationMicroseconds": 141,
                         "errorMessage": "",
                         "functionName": "cursorShape",
-                        "line": 809
+                        "line": 836
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 24,
-                        "durationMicroseconds": 222,
+                        "durationMicroseconds": 219,
                         "errorMessage": "",
                         "functionName": "onPressed",
-                        "line": 817
+                        "line": 844
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 24,
-                        "durationMicroseconds": 38,
+                        "durationMicroseconds": 36,
                         "errorMessage": "",
                         "functionName": "onPressed",
-                        "line": 817
+                        "line": 844
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 1504,
+                        "durationMicroseconds": 1413,
                         "errorMessage": "",
                         "functionName": "onPositionChanged",
-                        "line": 825
+                        "line": 852
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 48,
+                        "durationMicroseconds": 41,
                         "errorMessage": "",
                         "functionName": "onPositionChanged",
-                        "line": 825
+                        "line": 852
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 27,
-                        "durationMicroseconds": 54,
+                        "durationMicroseconds": 51,
                         "errorMessage": "",
                         "functionName": "fill",
-                        "line": 804
+                        "line": 831
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 32,
-                        "durationMicroseconds": 85,
+                        "durationMicroseconds": 84,
                         "errorMessage": "",
                         "functionName": "acceptedModifiers",
-                        "line": 838
+                        "line": 865
                     },
                     {
                         "codegenSuccessfull": false,
                         "column": 22,
-                        "durationMicroseconds": 66,
-                        "errorMessage": "Type  stored as QQuickItem does not have a property zoomInAction for calling",
+                        "durationMicroseconds": 124,
+                        "errorMessage": "Type  stored as QQuickFocusScope does not have a property zoomInAction for calling",
                         "functionName": "onWheel",
-                        "line": 839
+                        "line": 866
                     },
                     {
                         "codegenSuccessfull": true,
                         "column": 22,
-                        "durationMicroseconds": 38,
+                        "durationMicroseconds": 42,
                         "errorMessage": "",
                         "functionName": "onWheel",
-                        "line": 839
+                        "line": 866
                     }
                 ],
                 "filepath": "D:/Aplicaciones/PDFClowne 2/src/qml/PdfViewer.qml"

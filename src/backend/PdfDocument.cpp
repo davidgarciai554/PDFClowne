@@ -212,6 +212,30 @@ QJsonObject quadToJson(const fz_quad &quad)
     return rectToJson(fz_rect_from_quad(quad));
 }
 
+QJsonArray pointToJson(const fz_point &point)
+{
+    return QJsonArray{ point.x, point.y };
+}
+
+QJsonArray quadPathToJson(const fz_quad &quad)
+{
+    return QJsonArray{
+        pointToJson(quad.ul),
+        pointToJson(quad.ur),
+        pointToJson(quad.lr),
+        pointToJson(quad.ll)
+    };
+}
+
+QString selectionGeometryToJson(const QVector<fz_quad> &quads, int count)
+{
+    QJsonArray geometry;
+    const int safeCount = std::clamp(count, 0, static_cast<int>(quads.size()));
+    for (int i = 0; i < safeCount; ++i)
+        geometry.append(quadPathToJson(quads.at(i)));
+    return QString::fromUtf8(QJsonDocument(geometry).toJson(QJsonDocument::Compact));
+}
+
 QJsonArray outlineToJson(fz_context *ctx, fz_document *doc, fz_outline *outline)
 {
     QJsonArray items;
@@ -405,6 +429,7 @@ public:
 
     void close()
     {
+        clearSelectionCache();
         dropOpenDocument(m_ctx, m_doc);
     }
 
@@ -423,9 +448,58 @@ public:
         return m_doc;
     }
 
+    fz_stext_page *selectionTextPage(int pageIndex, QString *error)
+    {
+        if (!m_ctx || !m_doc || pageIndex < 0)
+            return nullptr;
+
+        if (m_selectionTextPage && m_selectionPageIndex == pageIndex)
+            return m_selectionTextPage;
+
+        clearSelectionCache();
+
+        QString selectionError;
+        fz_try(m_ctx)
+        {
+            fz_stext_options options = {};
+            m_selectionPage = fz_load_page(m_ctx, m_doc, pageIndex);
+            m_selectionTextPage = fz_new_stext_page_from_page(m_ctx, m_selectionPage, &options);
+            m_selectionPageIndex = pageIndex;
+        }
+        fz_catch(m_ctx)
+        {
+            selectionError = QString::fromUtf8(fz_caught_message(m_ctx));
+        }
+
+        if (!selectionError.isEmpty()) {
+            clearSelectionCache();
+            if (error)
+                *error = selectionError;
+            return nullptr;
+        }
+
+        return m_selectionTextPage;
+    }
+
+    void clearSelectionCache()
+    {
+        if (m_selectionTextPage) {
+            fz_drop_stext_page(m_ctx, m_selectionTextPage);
+            m_selectionTextPage = nullptr;
+        }
+        if (m_selectionPage) {
+            fz_drop_page(m_ctx, m_selectionPage);
+            m_selectionPage = nullptr;
+        }
+        m_selectionPageIndex = -1;
+    }
+
 private:
     fz_context *m_ctx = nullptr;
     fz_document *m_doc = nullptr;
+    fz_page *m_selectionPage = nullptr;
+    fz_stext_page *m_selectionTextPage = nullptr;
+    int m_selectionPageIndex = -1;
 };
 
 PdfDocument::PdfDocument(QObject *parent)
@@ -436,6 +510,85 @@ PdfDocument::PdfDocument(QObject *parent)
 
 PdfDocument::~PdfDocument()
 = default;
+
+void PdfDocument::setSelectionState(const QString &text, const QString &geometryJson, int pageIndex)
+{
+    const QString nextGeometry = geometryJson.isEmpty() ? QStringLiteral("[]") : geometryJson;
+    if (m_selectionText == text && m_selectionGeometryJson == nextGeometry && m_selectionPage == pageIndex)
+        return;
+
+    m_selectionText = text;
+    m_selectionGeometryJson = nextGeometry;
+    m_selectionPage = pageIndex;
+    emit selectionChanged();
+}
+
+void PdfDocument::beginSelection(int pageIndex, const QPointF &point)
+{
+    m_selectionInProgress = true;
+    m_selectionAnchor = point;
+    updateSelection(pageIndex, point);
+}
+
+void PdfDocument::updateSelection(int pageIndex, const QPointF &point)
+{
+    fz_context *ctx = m_engine->context();
+    if (!ctx || !m_engine->document() || pageIndex < 0 || pageIndex >= m_pageCount) {
+        setSelectionState(QString(), QStringLiteral("[]"), -1);
+        return;
+    }
+
+    if (!m_selectionInProgress)
+        m_selectionAnchor = point;
+
+    QString error;
+    fz_stext_page *textPage = m_engine->selectionTextPage(pageIndex, &error);
+    if (!textPage) {
+        setSelectionState(QString(), QStringLiteral("[]"), -1);
+        return;
+    }
+
+    fz_point anchor = { static_cast<float>(m_selectionAnchor.x()), static_cast<float>(m_selectionAnchor.y()) };
+    fz_point cursor = { static_cast<float>(point.x()), static_cast<float>(point.y()) };
+    QVector<fz_quad> quads(2048);
+    QString selectionText;
+    QString geometryJson = QStringLiteral("[]");
+    int selectionPageIndex = -1;
+
+    fz_try(ctx)
+    {
+        fz_snap_selection(ctx, textPage, &anchor, &cursor, FZ_SELECT_WORDS);
+        const int quadCount = fz_highlight_selection(ctx, textPage, anchor, cursor, quads.data(), quads.size());
+        geometryJson = selectionGeometryToJson(quads, quadCount);
+        char *copied = fz_copy_selection(ctx, textPage, anchor, cursor, 0);
+        if (copied) {
+            selectionText = QString::fromUtf8(copied).trimmed();
+            fz_free(ctx, copied);
+        }
+        if (!selectionText.isEmpty() && quadCount > 0)
+            selectionPageIndex = pageIndex;
+    }
+    fz_catch(ctx)
+    {
+        selectionText.clear();
+        geometryJson = QStringLiteral("[]");
+        selectionPageIndex = -1;
+    }
+
+    setSelectionState(selectionText, geometryJson, selectionPageIndex);
+}
+
+void PdfDocument::endSelection()
+{
+    m_selectionInProgress = false;
+}
+
+void PdfDocument::clearSelection()
+{
+    m_selectionInProgress = false;
+    m_selectionAnchor = QPointF();
+    setSelectionState(QString(), QStringLiteral("[]"), -1);
+}
 
 void PdfDocument::clear()
 {
@@ -459,6 +612,8 @@ void PdfDocument::clear()
     m_pageCount = 0;
     m_fileSizeBytes = 0;
     m_isLoaded = false;
+    m_selectionInProgress = false;
+    m_selectionAnchor = QPointF();
 
     emit filePathChanged();
     emit previewSourceChanged();
@@ -472,6 +627,7 @@ void PdfDocument::clear()
     emit titleChanged();
     emit errorMessageChanged();
     emit isLoadedChanged();
+    setSelectionState(QString(), QStringLiteral("[]"), -1);
 }
 
 bool PdfDocument::load(const QString &source)
@@ -491,6 +647,8 @@ bool PdfDocument::load(const QString &source)
     m_pageCount = 0;
     m_fileSizeBytes = 0;
     m_isLoaded = false;
+    m_selectionInProgress = false;
+    m_selectionAnchor = QPointF();
     m_engine->close();
     emit previewSourceChanged();
     emit pageSourcesChanged();
@@ -502,6 +660,7 @@ bool PdfDocument::load(const QString &source)
     emit pageCountChanged();
     emit fileSizeBytesChanged();
     emit isLoadedChanged();
+    setSelectionState(QString(), QStringLiteral("[]"), -1);
 
     if (!fileInfo.exists() || !fileInfo.isFile() ||
         fileInfo.suffix().compare(QLatin1String("pdf"), Qt::CaseInsensitive) != 0) {

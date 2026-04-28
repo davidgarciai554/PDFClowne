@@ -409,7 +409,7 @@ build .rcc\qmlcache\PDFClowne_src\qml\Theme_qml.cpp .rcc\qmlcache\PDFClowne_src\
 #############################################
 # Custom command for .qt\rcc\qrc_PDFClowne_raw_qml_0.cpp
 
-build .qt\rcc\qrc_PDFClowne_raw_qml_0.cpp | ${cmake_ninja_workdir}.qt\rcc\qrc_PDFClowne_raw_qml_0.cpp: CUSTOM_COMMAND D$:\Aplicaciones\PDFClowne$ 2\src\qml\main.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml D$:\Aplicaciones\PDFClowne$ 2\resources\resources.qrc .qt\rcc\PDFClowne_raw_qml_0.qrc C$:\Qt\6.8.3\msvc2022_64\bin\rcc.exe || PDFClowne_autogen PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
+build .qt\rcc\qrc_PDFClowne_raw_qml_0.cpp | ${cmake_ninja_workdir}.qt\rcc\qrc_PDFClowne_raw_qml_0.cpp: CUSTOM_COMMAND D$:\Aplicaciones\PDFClowne$ 2\src\qml\main.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\PdfViewer.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\Theme.qml D$:\Aplicaciones\PDFClowne$ 2\src\qml\ShortcutCatalog.js D$:\Aplicaciones\PDFClowne$ 2\resources\resources.qrc .qt\rcc\PDFClowne_raw_qml_0.qrc C$:\Qt\6.8.3\msvc2022_64\bin\rcc.exe || PDFClowne_autogen PDFClowne_autogen_timestamp_deps PDFClowne_copy_qml PDFClowne_copy_res PDFClowne_qmlimportscan
   COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && C:\Qt\6.8.3\msvc2022_64\bin\rcc.exe --output "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qrc_PDFClowne_raw_qml_0.cpp" --name PDFClowne_raw_qml_0 "D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/PDFClowne_raw_qml_0.qrc" --no-zstd"
   DESC = Running rcc for resource PDFClowne_raw_qml_0
   restat = 1
@@ -495,7 +495,7 @@ build CMakeFiles\PDFClowne_copy_res | ${cmake_ninja_workdir}CMakeFiles\PDFClowne
 #############################################
 # Custom command for .qt\PDFClowne_res.txt
 
-build .qt\PDFClowne_res.txt | ${cmake_ninja_workdir}.qt\PDFClowne_res.txt: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\lib\cmake\Qt6Qml\Qt6QmlCopyFiles.cmake D$:\Aplicaciones\PDFClowne$ 2\resources\resources.qrc
+build .qt\PDFClowne_res.txt | ${cmake_ninja_workdir}.qt\PDFClowne_res.txt: CUSTOM_COMMAND C$:\Qt\6.8.3\msvc2022_64\lib\cmake\Qt6Qml\Qt6QmlCopyFiles.cmake D$:\Aplicaciones\PDFClowne$ 2\src\qml\ShortcutCatalog.js D$:\Aplicaciones\PDFClowne$ 2\resources\resources.qrc
   COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Aplicaciones\PDFClowne 2\build\debug" && "C:\Program Files\CMake\bin\cmake.exe" "-DFILES_INFO_PATH=D:/Aplicaciones/PDFClowne 2/build/debug/.qt/PDFClowne_res.cmake" -P C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6Qml/Qt6QmlCopyFiles.cmake"
   DESC = Copying PDFClowne qml resources into build dir
   restat = 1

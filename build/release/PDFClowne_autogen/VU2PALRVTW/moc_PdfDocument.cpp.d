@@ -1,10 +1,13 @@
 D:/Aplicaciones/PDFClowne\ 2/build/release/PDFClowne_autogen/VU2PALRVTW/moc_PdfDocument.cpp: D:/Aplicaciones/PDFClowne\ 2/src/backend/PdfDocument.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/QObject \
+  C:/Qt/6.8.3/msvc2022_64/include/QtCore/QPointF \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/QString \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/QStringList \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20functional.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20memory.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20type_traits.h \
+  C:/Qt/6.8.3/msvc2022_64/include/QtCore/q20utility.h \
+  C:/Qt/6.8.3/msvc2022_64/include/QtCore/q23utility.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qalgorithms.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qanystringview.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qarraydata.h \
@@ -60,6 +63,7 @@ D:/Aplicaciones/PDFClowne\ 2/build/release/PDFClowne_autogen/VU2PALRVTW/moc_PdfD
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qobjectdefs_impl.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qoverload.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qpair.h \
+  C:/Qt/6.8.3/msvc2022_64/include/QtCore/qpoint.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qprocessordetection.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qrefcount.h \
   C:/Qt/6.8.3/msvc2022_64/include/QtCore/qscopedpointer.h \

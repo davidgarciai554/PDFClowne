@@ -1,11 +1,11 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Pdf
 import QtQuick.Shapes
 import PDFClowne
 
-Item {
+FocusScope {
     id: root
+    focus: visible
 
     property var pdfDocument: null
     property string previewSource: pdfDocument ? pdfDocument.previewSource : ""
@@ -43,6 +43,7 @@ Item {
     readonly property var pageSizes: normalizedPageSizes()
     readonly property var pageRows: buildPageRows()
     readonly property bool viewportInteracting: viewport.moving || viewport.flicking
+    property int lastPageRowCount: 0
     property var pageRotations: []
     property int currentPageIndex: 0
     property string selectedText: ""
@@ -66,8 +67,29 @@ Item {
     property var outlineActivatedAction: null
     property var linkActivatedAction: null
     property var searchResultActivatedAction: null
-    property url selectionDocumentSource: ""
+    property string selectionGeometryJson: "[]"
+    property int selectionPageIndex: -1
+    property var beginSelectionAction: null
+    property var updateSelectionAction: null
+    property var endSelectionAction: null
+    property var clearSelectionAction: null
+    property var copySelectionAction: null
     readonly property bool searchPanelAvailable: searchQuery.trim().length > 0 || searchResults.length > 0 || sidePanelMode === "search"
+
+    Keys.priority: Keys.BeforeItem
+    Keys.onShortcutOverride: function(event) {
+        if (root.shouldHandleCopyShortcut(event)) {
+            event.accepted = true
+        }
+    }
+    Keys.onPressed: function(event) {
+        if (!root.shouldHandleCopyShortcut(event))
+            return
+
+        event.accepted = true
+        if (root.copySelectionAction)
+            root.copySelectionAction()
+    }
 
     Timer {
         id: prefetchTimer
@@ -98,7 +120,6 @@ Item {
     }
 
     onCurrentPageIndexChanged: {
-        selectedText = ""
         syncThumbnailViewport()
         if (pageChangeFromViewport) {
             pageChangeFromViewport = false
@@ -126,7 +147,13 @@ Item {
     onZoomChanged: updateCurrentBaseScale()
     onLayoutModeChanged: relayoutToCurrentPage()
     onZoomModeChanged: relayoutToCurrentPage()
-    onPageRowsChanged: relayoutToCurrentPage()
+    onPageRowsChanged: {
+        var nextRowCount = pageRows && pageRows.length !== undefined ? pageRows.length : 0
+        var shouldRelayout = nextRowCount !== lastPageRowCount
+        lastPageRowCount = nextRowCount
+        if (shouldRelayout)
+            relayoutToCurrentPage()
+    }
     onPageSourcesChanged: {
         syncPageCache()
         if (pageTransitionActive && pageTransitionTargetPage >= 0 && sourceForPage(pageTransitionTargetPage))
@@ -145,12 +172,8 @@ Item {
     Component.onCompleted: {
         syncPageCache()
         syncThumbnailCache()
+        lastPageRowCount = pageRows && pageRows.length !== undefined ? pageRows.length : 0
         syncThumbnailViewport()
-    }
-
-    PdfDocument {
-        id: selectionDocument
-        source: root.selectionDocumentSource
     }
 
     Rectangle {
@@ -568,9 +591,13 @@ Item {
 
             readonly property bool pageRowDelegate: true
             readonly property int rowIndex: index
+            property bool pooledForReuse: false
 
             width: viewport.width
             height: Math.max(1, rowContent.height)
+
+            ListView.onPooled: pooledForReuse = true
+            ListView.onReused: pooledForReuse = false
 
             Row {
                 id: rowContent
@@ -637,7 +664,7 @@ Item {
 
                             Shape {
                                 anchors.fill: parent
-                                visible: pageImage.status === Image.Ready
+                                visible: pageImage.status === Image.Ready && pageFrame.pageIndex === root.selectionPageIndex
 
                                 ShapePath {
                                     strokeWidth: -1
@@ -645,16 +672,32 @@ Item {
                                     scale: Qt.size(pagePaper.pageScale, pagePaper.pageScale)
 
                                     PathMultiline {
-                                        paths: selection.geometry
+                                        paths: root.selectionPaths()
                                     }
                                 }
                             }
 
                             DragHandler {
                                 id: textSelectionDrag
-                                enabled: !root.handToolEnabled && selectionDocument.status === PdfDocument.Ready
+                                enabled: !root.handToolEnabled && root.pdfDocument && root.pdfDocument.isLoaded
                                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
                                 target: null
+                                onActiveChanged: {
+                                    if (active) {
+                                        root.forceActiveFocus()
+                                        if (root.beginSelectionAction)
+                                            root.beginSelectionAction(pageFrame.pageIndex, root.selectionPoint(textSelectionDrag.centroid.pressPosition, pagePaper.pageScale))
+                                    } else {
+                                        if (root.updateSelectionAction)
+                                            root.updateSelectionAction(pageFrame.pageIndex, root.selectionPoint(textSelectionDrag.centroid.position, pagePaper.pageScale))
+                                        if (root.endSelectionAction)
+                                            root.endSelectionAction()
+                                    }
+                                }
+                                onCentroidChanged: {
+                                    if (active && root.updateSelectionAction)
+                                        root.updateSelectionAction(pageFrame.pageIndex, root.selectionPoint(textSelectionDrag.centroid.position, pagePaper.pageScale))
+                                }
                             }
 
                             TapHandler {
@@ -662,25 +705,9 @@ Item {
                                 enabled: !root.handToolEnabled
                                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus | PointerDevice.TouchScreen
                                 onTapped: {
-                                    selection.clear()
-                                    selection.forceActiveFocus()
-                                    root.selectedText = ""
-                                }
-                            }
-
-                            PdfSelection {
-                                id: selection
-                                anchors.fill: parent
-                                document: selectionDocument
-                                page: pageFrame.pageIndex
-                                renderScale: Math.max(0.01, Number(pagePaper.pageScale) || 0.01)
-                                from: textSelectionDrag.centroid.pressPosition
-                                to: textSelectionDrag.centroid.position
-                                hold: !textSelectionDrag.active && !selectionTapHandler.pressed
-                                focus: true
-                                onTextChanged: {
-                                    if (text.length > 0 || pageFrame.pageIndex === root.currentPageIndex)
-                                        root.selectedText = text
+                                    root.forceActiveFocus()
+                                    if (root.clearSelectionAction)
+                                        root.clearSelectionAction()
                                 }
                             }
                         }
@@ -1076,6 +1103,56 @@ Item {
         }
     }
 
+    function selectionPoint(point, scale) {
+        var safeScale = Math.max(0.01, Number(scale) || 0.01)
+        return Qt.point((Number(point.x) || 0) / safeScale, (Number(point.y) || 0) / safeScale)
+    }
+
+    function shouldHandleCopyShortcut(event) {
+        if (!event || !root.activeFocus || String(root.selectedText || "").trim().length === 0)
+            return false
+
+        if (event.matches(StandardKey.Copy))
+            return true
+
+        var modifiers = Number(event.modifiers || 0)
+        return event.key === Qt.Key_C
+               && (modifiers & Qt.ControlModifier)
+               && !(modifiers & Qt.AltModifier)
+               && !(modifiers & Qt.MetaModifier)
+               && !(modifiers & Qt.ShiftModifier)
+    }
+
+    function selectionPaths() {
+        var parsed = []
+        try {
+            parsed = JSON.parse(selectionGeometryJson || "[]")
+        } catch(e) {
+            parsed = []
+        }
+
+        var paths = []
+        for (var pathIndex = 0; pathIndex < parsed.length; ++pathIndex) {
+            var sourcePath = parsed[pathIndex]
+            if (!sourcePath || sourcePath.length === undefined)
+                continue
+
+            var targetPath = []
+            for (var pointIndex = 0; pointIndex < sourcePath.length; ++pointIndex) {
+                var sourcePoint = sourcePath[pointIndex]
+                if (!sourcePoint || sourcePoint.length === undefined || sourcePoint.length < 2)
+                    continue
+
+                targetPath.push(Qt.point(Number(sourcePoint[0]) || 0, Number(sourcePoint[1]) || 0))
+            }
+
+            if (targetPath.length > 0)
+                paths.push(targetPath)
+        }
+
+        return paths
+    }
+
     function thumbnailSourceForPage(index) {
         if (cachedThumbnailSources && index >= 0 && index < cachedThumbnailSources.length)
             return cachedThumbnailSources[index] || sourceForPage(index)
@@ -1272,18 +1349,21 @@ Item {
     }
 
     function buildPageRows() {
-        var sources = normalizedPageSources()
+        var totalPages = Math.max(0, Number(pageCount) || 0)
+        if (totalPages <= 0 && previewSource.length > 0)
+            totalPages = 1
+
         var rows = []
 
         if (layoutMode === "single") {
-            var singlePage = Math.max(0, Math.min(currentPageIndex, sources.length - 1))
-            if (sources.length > 0)
-                rows.push({ pages: [{ pageIndex: singlePage, source: sources[singlePage] }] })
+            var singlePage = Math.max(0, Math.min(currentPageIndex, totalPages - 1))
+            if (totalPages > 0)
+                rows.push({ pages: [{ pageIndex: singlePage }] })
             return rows
         }
 
         if (layoutMode === "twoPage") {
-            if (sources.length === 0)
+            if (totalPages === 0)
                 return rows
 
             var rightPage = currentPageIndex
@@ -1298,25 +1378,25 @@ Item {
             }
 
             var spread = []
-            if (rightPage >= 0 && rightPage < sources.length)
-                spread.push({ pageIndex: rightPage, source: sources[rightPage] })
-            if (leftPage >= 0 && leftPage < sources.length)
-                spread.push({ pageIndex: leftPage, source: sources[leftPage] })
+            if (rightPage >= 0 && rightPage < totalPages)
+                spread.push({ pageIndex: rightPage })
+            if (leftPage >= 0 && leftPage < totalPages)
+                spread.push({ pageIndex: leftPage })
             rows.push({ pages: spread })
             return rows
         }
 
         if (!isTwoPageLayout()) {
-            for (var i = 0; i < sources.length; ++i)
-                rows.push({ pages: [{ pageIndex: i, source: sources[i] }] })
+            for (var i = 0; i < totalPages; ++i)
+                rows.push({ pages: [{ pageIndex: i }] })
             return rows
         }
 
-        for (var page = 0; page < sources.length; page += 2) {
+        for (var page = 0; page < totalPages; page += 2) {
             var pair = []
-            pair.push({ pageIndex: page, source: sources[page] })
-            if (page + 1 < sources.length)
-                pair.push({ pageIndex: page + 1, source: sources[page + 1] })
+            pair.push({ pageIndex: page })
+            if (page + 1 < totalPages)
+                pair.push({ pageIndex: page + 1 })
             rows.push({ pages: pair })
         }
 
@@ -1340,7 +1420,7 @@ Item {
         var children = viewport.contentItem.children || []
         for (var i = 0; i < children.length; ++i) {
             var child = children[i]
-            if (child && child.pageRowDelegate && Number(child.rowIndex) === targetRow)
+            if (child && child.pageRowDelegate && !child.pooledForReuse && Number(child.rowIndex) === targetRow)
                 return child
         }
 
@@ -1360,7 +1440,7 @@ Item {
         var children = viewport.contentItem.children || []
         for (var i = 0; i < children.length; ++i) {
             var rowDelegate = children[i]
-            if (!rowDelegate || !rowDelegate.pageRowDelegate)
+            if (!rowDelegate || !rowDelegate.pageRowDelegate || rowDelegate.pooledForReuse)
                 continue
 
             var rowChildren = rowDelegate.children || []
@@ -1512,6 +1592,11 @@ Item {
 
     function updateCurrentPage() {
         if (!isContinuousLayout()) {
+            updateCurrentBaseScale()
+            return
+        }
+
+        if (pageTransitionActive) {
             updateCurrentBaseScale()
             return
         }

@@ -145,7 +145,23 @@
                     },
                     {
                         "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
                         "index": 16,
+                        "name": "releaseDocumentSync",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 17,
                         "name": "clear",
                         "returnType": "void"
                     }
@@ -651,7 +667,7 @@
         "classes": [
             {
                 "className": "PdfDocument",
-                "lineNumber": 8,
+                "lineNumber": 9,
                 "object": true,
                 "properties": [
                     {
@@ -821,6 +837,48 @@
                         "stored": true,
                         "type": "QString",
                         "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 12,
+                        "name": "selectionText",
+                        "notify": "selectionChanged",
+                        "read": "selectionText",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 13,
+                        "name": "selectionGeometryJson",
+                        "notify": "selectionChanged",
+                        "read": "selectionGeometryJson",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 14,
+                        "name": "selectionPage",
+                        "notify": "selectionChanged",
+                        "read": "selectionPage",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false
                     }
                 ],
                 "qualifiedClassName": "PdfDocument",
@@ -914,6 +972,12 @@
                         "index": 13,
                         "name": "errorMessageChanged",
                         "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 14,
+                        "name": "selectionChanged",
+                        "returnType": "void"
                     }
                 ],
                 "slots": [
@@ -925,7 +989,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 14,
+                        "index": 15,
                         "name": "load",
                         "returnType": "bool"
                     },
@@ -941,20 +1005,7 @@
                                 "type": "qreal"
                             }
                         ],
-                        "index": 15,
-                        "name": "renderPage",
-                        "returnType": "QString"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "pageIndex",
-                                "type": "int"
-                            }
-                        ],
                         "index": 16,
-                        "isCloned": true,
                         "name": "renderPage",
                         "returnType": "QString"
                     },
@@ -967,6 +1018,19 @@
                             }
                         ],
                         "index": 17,
+                        "isCloned": true,
+                        "name": "renderPage",
+                        "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 18,
                         "name": "renderThumbnail",
                         "returnType": "QString"
                     },
@@ -982,7 +1046,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 18,
+                        "index": 19,
                         "name": "searchPage",
                         "returnType": "QString"
                     },
@@ -994,7 +1058,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 19,
+                        "index": 20,
                         "name": "searchDocument",
                         "returnType": "QString"
                     },
@@ -1006,13 +1070,13 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 20,
+                        "index": 21,
                         "name": "extractPageText",
                         "returnType": "QString"
                     },
                     {
                         "access": "public",
-                        "index": 21,
+                        "index": 22,
                         "name": "extractDocumentText",
                         "returnType": "QString"
                     },
@@ -1024,7 +1088,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 22,
+                        "index": 23,
                         "name": "resolveLinkPage",
                         "returnType": "int"
                     },
@@ -1044,13 +1108,57 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 23,
+                        "index": 24,
                         "name": "saveRotatedCopy",
                         "returnType": "bool"
                     },
                     {
                         "access": "public",
-                        "index": 24,
+                        "arguments": [
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "point",
+                                "type": "QPointF"
+                            }
+                        ],
+                        "index": 25,
+                        "name": "beginSelection",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "pageIndex",
+                                "type": "int"
+                            },
+                            {
+                                "name": "point",
+                                "type": "QPointF"
+                            }
+                        ],
+                        "index": 26,
+                        "name": "updateSelection",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 27,
+                        "name": "endSelection",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 28,
+                        "name": "clearSelection",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 29,
                         "name": "clear",
                         "returnType": "void"
                     }

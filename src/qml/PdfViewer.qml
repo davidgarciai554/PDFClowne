@@ -1,11 +1,11 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Pdf
 import QtQuick.Shapes
 import PDFClowne
 
-Item {
+FocusScope {
     id: root
+    focus: visible
 
     property var pdfDocument: null
     property string previewSource: pdfDocument ? pdfDocument.previewSource : ""
@@ -67,8 +67,29 @@ Item {
     property var outlineActivatedAction: null
     property var linkActivatedAction: null
     property var searchResultActivatedAction: null
-    property url selectionDocumentSource: ""
+    property string selectionGeometryJson: "[]"
+    property int selectionPageIndex: -1
+    property var beginSelectionAction: null
+    property var updateSelectionAction: null
+    property var endSelectionAction: null
+    property var clearSelectionAction: null
+    property var copySelectionAction: null
     readonly property bool searchPanelAvailable: searchQuery.trim().length > 0 || searchResults.length > 0 || sidePanelMode === "search"
+
+    Keys.priority: Keys.BeforeItem
+    Keys.onShortcutOverride: function(event) {
+        if (root.shouldHandleCopyShortcut(event)) {
+            event.accepted = true
+        }
+    }
+    Keys.onPressed: function(event) {
+        if (!root.shouldHandleCopyShortcut(event))
+            return
+
+        event.accepted = true
+        if (root.copySelectionAction)
+            root.copySelectionAction()
+    }
 
     Timer {
         id: prefetchTimer
@@ -99,7 +120,6 @@ Item {
     }
 
     onCurrentPageIndexChanged: {
-        selectedText = ""
         syncThumbnailViewport()
         if (pageChangeFromViewport) {
             pageChangeFromViewport = false
@@ -154,11 +174,6 @@ Item {
         syncThumbnailCache()
         lastPageRowCount = pageRows && pageRows.length !== undefined ? pageRows.length : 0
         syncThumbnailViewport()
-    }
-
-    PdfDocument {
-        id: selectionDocument
-        source: root.selectionDocumentSource
     }
 
     Rectangle {
@@ -649,7 +664,7 @@ Item {
 
                             Shape {
                                 anchors.fill: parent
-                                visible: pageImage.status === Image.Ready
+                                visible: pageImage.status === Image.Ready && pageFrame.pageIndex === root.selectionPageIndex
 
                                 ShapePath {
                                     strokeWidth: -1
@@ -657,16 +672,32 @@ Item {
                                     scale: Qt.size(pagePaper.pageScale, pagePaper.pageScale)
 
                                     PathMultiline {
-                                        paths: selection.geometry
+                                        paths: root.selectionPaths()
                                     }
                                 }
                             }
 
                             DragHandler {
                                 id: textSelectionDrag
-                                enabled: !root.handToolEnabled && selectionDocument.status === PdfDocument.Ready
+                                enabled: !root.handToolEnabled && root.pdfDocument && root.pdfDocument.isLoaded
                                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
                                 target: null
+                                onActiveChanged: {
+                                    if (active) {
+                                        root.forceActiveFocus()
+                                        if (root.beginSelectionAction)
+                                            root.beginSelectionAction(pageFrame.pageIndex, root.selectionPoint(textSelectionDrag.centroid.pressPosition, pagePaper.pageScale))
+                                    } else {
+                                        if (root.updateSelectionAction)
+                                            root.updateSelectionAction(pageFrame.pageIndex, root.selectionPoint(textSelectionDrag.centroid.position, pagePaper.pageScale))
+                                        if (root.endSelectionAction)
+                                            root.endSelectionAction()
+                                    }
+                                }
+                                onCentroidChanged: {
+                                    if (active && root.updateSelectionAction)
+                                        root.updateSelectionAction(pageFrame.pageIndex, root.selectionPoint(textSelectionDrag.centroid.position, pagePaper.pageScale))
+                                }
                             }
 
                             TapHandler {
@@ -674,25 +705,9 @@ Item {
                                 enabled: !root.handToolEnabled
                                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus | PointerDevice.TouchScreen
                                 onTapped: {
-                                    selection.clear()
-                                    selection.forceActiveFocus()
-                                    root.selectedText = ""
-                                }
-                            }
-
-                            PdfSelection {
-                                id: selection
-                                anchors.fill: parent
-                                document: selectionDocument
-                                page: pageFrame.pageIndex
-                                renderScale: Math.max(0.01, Number(pagePaper.pageScale) || 0.01)
-                                from: textSelectionDrag.centroid.pressPosition
-                                to: textSelectionDrag.centroid.position
-                                hold: !textSelectionDrag.active && !selectionTapHandler.pressed
-                                focus: true
-                                onTextChanged: {
-                                    if (text.length > 0 || pageFrame.pageIndex === root.currentPageIndex)
-                                        root.selectedText = text
+                                    root.forceActiveFocus()
+                                    if (root.clearSelectionAction)
+                                        root.clearSelectionAction()
                                 }
                             }
                         }
@@ -1086,6 +1101,56 @@ Item {
             width: (rectWidth / pageWidth) * imageWidth,
             height: (rectHeight / pageHeight) * imageHeight
         }
+    }
+
+    function selectionPoint(point, scale) {
+        var safeScale = Math.max(0.01, Number(scale) || 0.01)
+        return Qt.point((Number(point.x) || 0) / safeScale, (Number(point.y) || 0) / safeScale)
+    }
+
+    function shouldHandleCopyShortcut(event) {
+        if (!event || !root.activeFocus || String(root.selectedText || "").trim().length === 0)
+            return false
+
+        if (event.matches(StandardKey.Copy))
+            return true
+
+        var modifiers = Number(event.modifiers || 0)
+        return event.key === Qt.Key_C
+               && (modifiers & Qt.ControlModifier)
+               && !(modifiers & Qt.AltModifier)
+               && !(modifiers & Qt.MetaModifier)
+               && !(modifiers & Qt.ShiftModifier)
+    }
+
+    function selectionPaths() {
+        var parsed = []
+        try {
+            parsed = JSON.parse(selectionGeometryJson || "[]")
+        } catch(e) {
+            parsed = []
+        }
+
+        var paths = []
+        for (var pathIndex = 0; pathIndex < parsed.length; ++pathIndex) {
+            var sourcePath = parsed[pathIndex]
+            if (!sourcePath || sourcePath.length === undefined)
+                continue
+
+            var targetPath = []
+            for (var pointIndex = 0; pointIndex < sourcePath.length; ++pointIndex) {
+                var sourcePoint = sourcePath[pointIndex]
+                if (!sourcePoint || sourcePoint.length === undefined || sourcePoint.length < 2)
+                    continue
+
+                targetPath.push(Qt.point(Number(sourcePoint[0]) || 0, Number(sourcePoint[1]) || 0))
+            }
+
+            if (targetPath.length > 0)
+                paths.push(targetPath)
+        }
+
+        return paths
     }
 
     function thumbnailSourceForPage(index) {

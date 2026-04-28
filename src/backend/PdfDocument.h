@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QPointF>
 #include <QString>
 #include <QStringList>
 #include <memory>
@@ -19,6 +20,9 @@ class PdfDocument : public QObject {
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool isLoaded READ isLoaded NOTIFY isLoadedChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString selectionText READ selectionText NOTIFY selectionChanged)
+    Q_PROPERTY(QString selectionGeometryJson READ selectionGeometryJson NOTIFY selectionChanged)
+    Q_PROPERTY(int selectionPage READ selectionPage NOTIFY selectionChanged)
 
 public:
     explicit PdfDocument(QObject *parent = nullptr);
@@ -36,6 +40,9 @@ public:
     QString title() const { return m_title; }
     bool isLoaded() const { return m_isLoaded; }
     QString errorMessage() const { return m_errorMessage; }
+    QString selectionText() const { return m_selectionText; }
+    QString selectionGeometryJson() const { return m_selectionGeometryJson; }
+    int selectionPage() const { return m_selectionPage; }
 
 public slots:
     bool load(const QString &source);
@@ -47,6 +54,10 @@ public slots:
     QString extractDocumentText();
     int resolveLinkPage(const QString &uri);
     bool saveRotatedCopy(const QString &source, const QString &target, const QString &rotationsJson);
+    void beginSelection(int pageIndex, const QPointF &point);
+    void updateSelection(int pageIndex, const QPointF &point);
+    void endSelection();
+    void clearSelection();
     void clear();
 
 signals:
@@ -65,11 +76,13 @@ signals:
     void titleChanged();
     void isLoadedChanged();
     void errorMessageChanged();
+    void selectionChanged();
 
 private:
     class PdfEngine;
 
     void rebuildNavigationData();
+    void setSelectionState(const QString &text, const QString &geometryJson, int pageIndex);
 
     QString m_filePath;
     QString m_previewSource;
@@ -80,8 +93,13 @@ private:
     QString m_pageLinksJson;
     QString m_title;
     QString m_errorMessage;
+    QString m_selectionText;
+    QString m_selectionGeometryJson = QStringLiteral("[]");
     int m_pageCount = 0;
+    int m_selectionPage = -1;
     qint64 m_fileSizeBytes = 0;
     bool m_isLoaded = false;
+    bool m_selectionInProgress = false;
+    QPointF m_selectionAnchor;
     std::unique_ptr<PdfEngine> m_engine;
 };

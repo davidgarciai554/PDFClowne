@@ -92,6 +92,7 @@ qt_add_qml_module(PDFClowne
         src/qml/PdfViewer.qml
         src/qml/Theme.qml
     RESOURCES
+        src/qml/ShortcutCatalog.js
         resources/resources.qrc
 )
 

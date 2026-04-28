@@ -31,6 +31,7 @@ public:
     Q_INVOKABLE void requestThumbnailRender(const QString &filePath, int pageIndex, int sessionId);
     Q_INVOKABLE void prunePageCache(const QString &filePath, int centerPage, int radius, int sessionId);
     Q_INVOKABLE void releaseDocument(const QString &filePath, int sessionId);
+    Q_INVOKABLE void releaseDocumentSync(const QString &filePath, int sessionId);
     Q_INVOKABLE void clear();
 
 signals:
