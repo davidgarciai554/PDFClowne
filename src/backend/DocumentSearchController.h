@@ -17,10 +17,10 @@ public:
 
     bool busy() const { return m_busy; }
 
-    Q_INVOKABLE void searchDocument(const QString &filePath, const QString &query, int requestId);
+    Q_INVOKABLE void searchDocument(const QString &filePath, const QString &query, int requestId, const QString &password = QString());
 
 signals:
-    void requestSearch(const QString &filePath, const QString &query, int requestId);
+    void requestSearch(const QString &filePath, const QString &query, int requestId, const QString &password);
     void searchCompleted(const QString &filePath, int requestId, const QString &query, const QString &resultsJson, bool canceled);
     void busyChanged();
 

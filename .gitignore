@@ -20,6 +20,12 @@ build/
 # Local Python runtime cache
 Python/_cache/
 
+# Local workflow / memory state
+.swarm/
+ruvector.db
+agentdb.rvf
+agentdb.rvf.lock
+
 # Common Windows / Qt / CMake local artifacts
 *.obj
 *.pdb

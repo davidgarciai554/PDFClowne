@@ -392,7 +392,7 @@ public:
         close();
     }
 
-    bool open(const QByteArray &pathBytes, QString *error)
+    bool open(const QByteArray &pathBytes, const QString &password, QString *error, bool *passwordRequired)
     {
         close();
 
@@ -404,13 +404,22 @@ public:
         }
 
         QString openError;
+        const QByteArray passwordBytes = password.toUtf8();
         fz_try(m_ctx)
         {
             fz_register_document_handlers(m_ctx);
             m_doc = fz_open_document(m_ctx, pathBytes.constData());
 
-            if (fz_needs_password(m_ctx, m_doc))
-                fz_throw(m_ctx, FZ_ERROR_GENERIC, "password-protected PDFs are not enabled in this reset build");
+            if (fz_needs_password(m_ctx, m_doc)) {
+                if (passwordRequired)
+                    *passwordRequired = true;
+
+                if (passwordBytes.isEmpty()) {
+                    openError = QStringLiteral("password-protected PDF requires a password");
+                } else if (!fz_authenticate_password(m_ctx, m_doc, passwordBytes.constData())) {
+                    openError = QStringLiteral("Incorrect password for password-protected PDF");
+                }
+            }
         }
         fz_catch(m_ctx)
         {
@@ -511,6 +520,15 @@ PdfDocument::PdfDocument(QObject *parent)
 PdfDocument::~PdfDocument()
 = default;
 
+void PdfDocument::setPassword(const QString &password)
+{
+    if (m_password == password)
+        return;
+
+    m_password = password;
+    emit passwordChanged();
+}
+
 void PdfDocument::setSelectionState(const QString &text, const QString &geometryJson, int pageIndex)
 {
     const QString nextGeometry = geometryJson.isEmpty() ? QStringLiteral("[]") : geometryJson;
@@ -608,10 +626,12 @@ void PdfDocument::clear()
     m_outlineJson = QStringLiteral("[]");
     m_pageLinksJson = QStringLiteral("[]");
     m_title.clear();
+    m_password.clear();
     m_errorMessage.clear();
     m_pageCount = 0;
     m_fileSizeBytes = 0;
     m_isLoaded = false;
+    m_passwordRequired = false;
     m_selectionInProgress = false;
     m_selectionAnchor = QPointF();
 
@@ -625,12 +645,14 @@ void PdfDocument::clear()
     emit pageCountChanged();
     emit fileSizeBytesChanged();
     emit titleChanged();
+    emit passwordChanged();
     emit errorMessageChanged();
     emit isLoadedChanged();
+    emit passwordRequiredChanged();
     setSelectionState(QString(), QStringLiteral("[]"), -1);
 }
 
-bool PdfDocument::load(const QString &source)
+bool PdfDocument::load(const QString &source, const QString &password)
 {
     QElapsedTimer timer;
     timer.start();
@@ -643,12 +665,15 @@ bool PdfDocument::load(const QString &source)
     m_pageSizesJson.clear();
     m_outlineJson = QStringLiteral("[]");
     m_pageLinksJson = QStringLiteral("[]");
+    const bool hadPasswordRequired = m_passwordRequired;
+    m_passwordRequired = false;
     m_errorMessage.clear();
     m_pageCount = 0;
     m_fileSizeBytes = 0;
     m_isLoaded = false;
     m_selectionInProgress = false;
     m_selectionAnchor = QPointF();
+    setPassword(QString());
     m_engine->close();
     emit previewSourceChanged();
     emit pageSourcesChanged();
@@ -656,6 +681,8 @@ bool PdfDocument::load(const QString &source)
     emit pageSizesJsonChanged();
     emit outlineJsonChanged();
     emit pageLinksJsonChanged();
+    if (hadPasswordRequired)
+        emit passwordRequiredChanged();
     emit errorMessageChanged();
     emit pageCountChanged();
     emit fileSizeBytesChanged();
@@ -687,12 +714,16 @@ bool PdfDocument::load(const QString &source)
     qInfo().noquote() << QStringLiteral("[pdf-load] start file=\"%1\"").arg(displayNameForPath(canonical));
 
     QString error;
+    bool passwordRequired = false;
     const QByteArray pathBytes = canonical.toUtf8();
 
-    if (!m_engine->open(pathBytes, &error)) {
+    if (!m_engine->open(pathBytes, password, &error, &passwordRequired)) {
+        m_passwordRequired = passwordRequired;
         m_errorMessage = error.startsWith(QStringLiteral("MuPDF could not create"))
             ? error
             : tr("MuPDF failed to open this PDF: %1").arg(error);
+        if (m_passwordRequired)
+            emit passwordRequiredChanged();
         emit errorMessageChanged();
         emit loadFailed(m_errorMessage);
         return false;
@@ -731,6 +762,7 @@ bool PdfDocument::load(const QString &source)
         m_previewSource.clear();
         rebuildNavigationData();
         m_isLoaded = true;
+        setPassword(password);
     }
     fz_catch(ctx)
     {
@@ -748,6 +780,7 @@ bool PdfDocument::load(const QString &source)
         m_pageCount = 0;
         m_fileSizeBytes = 0;
         m_isLoaded = false;
+        m_passwordRequired = false;
         m_errorMessage = tr("MuPDF failed to open this PDF: %1").arg(error);
         emit previewSourceChanged();
         emit pageSourcesChanged();
@@ -759,6 +792,7 @@ bool PdfDocument::load(const QString &source)
         emit fileSizeBytesChanged();
         emit errorMessageChanged();
         emit isLoadedChanged();
+        emit passwordRequiredChanged();
         emit loadFailed(m_errorMessage);
         qWarning().noquote() << QStringLiteral("[pdf-load] failed file=\"%1\" elapsed_ms=%2 error=\"%3\"")
                                     .arg(displayNameForPath(canonical))
@@ -781,6 +815,14 @@ bool PdfDocument::load(const QString &source)
                              .arg(m_pageCount)
                              .arg(timer.elapsed());
     return true;
+}
+
+bool PdfDocument::retryWithPassword(const QString &password)
+{
+    if (m_filePath.isEmpty())
+        return false;
+
+    return load(m_filePath, password);
 }
 
 QString PdfDocument::renderPage(int pageIndex, qreal scale)
@@ -1097,6 +1139,7 @@ bool PdfDocument::saveRotatedCopy(const QString &source, const QString &target, 
 
     const QByteArray sourceBytes = sourceCanonical.toUtf8();
     const QByteArray targetBytes = QDir::toNativeSeparators(savePath).toUtf8();
+    const QByteArray passwordBytes = m_password.toUtf8();
 
     ctx = fz_new_context(nullptr, nullptr, FZ_STORE_UNLIMITED);
     if (!ctx) {
@@ -1110,8 +1153,10 @@ bool PdfDocument::saveRotatedCopy(const QString &source, const QString &target, 
         fz_register_document_handlers(ctx);
         doc = pdf_open_document(ctx, sourceBytes.constData());
 
-        if (pdf_needs_password(ctx, doc))
-            fz_throw(ctx, FZ_ERROR_GENERIC, "password-protected PDFs are not enabled in this reset build");
+        if (pdf_needs_password(ctx, doc)) {
+            if (passwordBytes.isEmpty() || !pdf_authenticate_password(ctx, doc, passwordBytes.constData()))
+                fz_throw(ctx, FZ_ERROR_GENERIC, "Incorrect password for password-protected PDF");
+        }
 
         const int pageCount = pdf_count_pages(ctx, doc);
         const int limit = std::min(pageCount, static_cast<int>(rotations.size()));

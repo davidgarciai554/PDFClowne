@@ -143,7 +143,7 @@ public:
             close();
         }
 
-        bool open(const QString &filePath)
+        bool open(const QString &filePath, const QString &password)
         {
             close();
 
@@ -152,13 +152,16 @@ public:
                 return false;
 
             const QByteArray pathBytes = filePath.toUtf8();
+            const QByteArray passwordBytes = password.toUtf8();
             bool ok = true;
             fz_try(m_ctx)
             {
                 fz_register_document_handlers(m_ctx);
                 m_doc = fz_open_document(m_ctx, pathBytes.constData());
-                if (fz_needs_password(m_ctx, m_doc))
-                    fz_throw(m_ctx, FZ_ERROR_GENERIC, "password-protected PDFs are not enabled in this build");
+                if (fz_needs_password(m_ctx, m_doc)) {
+                    if (passwordBytes.isEmpty() || !fz_authenticate_password(m_ctx, m_doc, passwordBytes.constData()))
+                        fz_throw(m_ctx, FZ_ERROR_GENERIC, "password-protected PDF requires a valid password");
+                }
             }
             fz_catch(m_ctx)
             {
@@ -215,16 +218,18 @@ public:
         QElapsedTimer openTimer;
         QHash<int, DisplayListEntry> displayLists;
         QList<int> displayListOrder;
+        QString password;
         bool firstPageReported = false;
         int activeSessionId = 0;
     };
 
 public slots:
-    void markDocumentOpened(const QString &filePath, int sessionId)
+    void markDocumentOpened(const QString &filePath, int sessionId, const QString &password)
     {
         const QString localPath = toLocalPath(filePath);
         DocumentState &state = ensureDocumentState(localPath);
         state.activeSessionId = sessionId;
+        state.password = password;
         state.openTimer.restart();
         state.firstPageReported = false;
         qInfo().noquote() << QStringLiteral("[render-doc] opened file=\"%1\" session=%2")
@@ -599,7 +604,7 @@ private:
         if (state.engine.context() && state.engine.document())
             return true;
         state.clearDisplayListCache();
-        return state.engine.open(filePath);
+        return state.engine.open(filePath, state.password);
     }
 
     DisplayListEntry *ensureDisplayList(DocumentState &state, int pageIndex)
@@ -902,9 +907,9 @@ DocumentRenderController::~DocumentRenderController()
     }
 }
 
-void DocumentRenderController::markDocumentOpened(const QString &filePath, int sessionId)
+void DocumentRenderController::markDocumentOpened(const QString &filePath, int sessionId, const QString &password)
 {
-    emit requestMarkDocumentOpened(filePath, sessionId);
+    emit requestMarkDocumentOpened(filePath, sessionId, password);
 }
 
 void DocumentRenderController::requestPageRender(const QString &filePath, int pageIndex, qreal scale, int sessionId)

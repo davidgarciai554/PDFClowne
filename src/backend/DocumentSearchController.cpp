@@ -94,7 +94,7 @@ class DocumentSearchWorker : public QObject
     Q_OBJECT
 
 public slots:
-    void search(const QString &filePath, const QString &query, int requestId)
+    void search(const QString &filePath, const QString &query, int requestId, const QString &password)
     {
         QElapsedTimer timer;
         timer.start();
@@ -125,14 +125,17 @@ public slots:
         }
 
         const QByteArray pathBytes = localPath.toUtf8();
+        const QByteArray passwordBytes = password.toUtf8();
 
         fz_try(ctx)
         {
             fz_register_document_handlers(ctx);
             doc = fz_open_document(ctx, pathBytes.constData());
 
-            if (fz_needs_password(ctx, doc))
-                fz_throw(ctx, FZ_ERROR_GENERIC, "password-protected PDFs are not enabled in this build");
+            if (fz_needs_password(ctx, doc)) {
+                if (passwordBytes.isEmpty() || !fz_authenticate_password(ctx, doc, passwordBytes.constData()))
+                    fz_throw(ctx, FZ_ERROR_GENERIC, "password-protected PDF requires a valid password");
+            }
 
             const int pageCount = fz_count_pages(ctx, doc);
             for (int pageIndex = 0; pageIndex < pageCount; ++pageIndex) {
@@ -251,10 +254,10 @@ DocumentSearchController::~DocumentSearchController()
     }
 }
 
-void DocumentSearchController::searchDocument(const QString &filePath, const QString &query, int requestId)
+void DocumentSearchController::searchDocument(const QString &filePath, const QString &query, int requestId, const QString &password)
 {
     setBusy(true);
-    emit requestSearch(filePath, query, requestId);
+    emit requestSearch(filePath, query, requestId, password);
 }
 
 void DocumentSearchController::handleSearchCompleted(const QString &filePath, int requestId, const QString &query, const QString &resultsJson, bool canceled)

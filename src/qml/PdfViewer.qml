@@ -746,7 +746,7 @@ FocusScope {
                                     anchors.fill: parent
                                     enabled: !root.handToolEnabled
                                     hoverEnabled: true
-                                    cursorShape: root.handToolEnabled ? Qt.OpenHandCursor : Qt.PointingHandCursor
+                                    cursorShape: root.handToolEnabled ? Qt.OpenHandCursor : Qt.ArrowCursor
                                     onClicked: {
                                         if (root.linkActivatedAction)
                                             root.linkActivatedAction(modelData.uri || "", modelData.pageIndex)
@@ -832,8 +832,8 @@ FocusScope {
             z: root.handToolEnabled ? 100 : 0
             enabled: root.handToolEnabled
             acceptedButtons: Qt.LeftButton
-            hoverEnabled: true
-            cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+            hoverEnabled: root.handToolEnabled
+            cursorShape: root.handToolEnabled ? (pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor) : Qt.ArrowCursor
             propagateComposedEvents: false
 
             property real pressX: 0

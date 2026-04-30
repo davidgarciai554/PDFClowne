@@ -501,6 +501,8 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+O"; onActivated: fileDialog.open() }
     Shortcut { sequence: "Ctrl+S"; enabled: window.activeDocumentHasRotations(); onActivated: window.saveActiveDocumentRotated() }
     Shortcut { sequence: "Ctrl+Shift+S"; enabled: window.activeDocumentHasRotations(); onActivated: saveRotatedDialog.open() }
+    Shortcut { sequence: "Ctrl+R"; enabled: window.hasActiveDocument; onActivated: window.refreshActiveDocumentFromDisk() }
+    Shortcut { sequence: "Ctrl+H"; onActivated: window.openHomeScreen() }
     Shortcut { sequence: "Ctrl+1"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("single") }
     Shortcut { sequence: "Ctrl+2"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("continuous") }
     Shortcut { sequence: "Ctrl+3"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("twoPage") }
@@ -514,6 +516,10 @@ ApplicationWindow {
     Shortcut { sequence: "F5"; enabled: window.hasActiveDocument; onActivated: window.togglePresentationMode() }
     Shortcut { sequence: "H"; enabled: window.hasActiveDocument && !window.reflowModeEnabled; onActivated: window.setHandToolEnabled(!window.handToolEnabled) }
     Shortcut { sequence: "Ctrl+Shift+R"; enabled: window.hasActiveDocument; onActivated: window.toggleReflowMode() }
+    Shortcut { sequence: "Alt+Left"; enabled: window.hasActiveDocument && window.activeDocumentHistoryBack().length > 0; onActivated: window.goBackInDocument() }
+    Shortcut { sequence: "Alt+Right"; enabled: window.hasActiveDocument && window.activeDocumentHistoryForward().length > 0; onActivated: window.goForwardInDocument() }
+    Shortcut { sequence: "F6"; onActivated: window.cyclePaneFocus(1) }
+    Shortcut { sequence: "Shift+F6"; onActivated: window.cyclePaneFocus(-1) }
     Shortcut { sequence: StandardKey.Copy; context: Qt.ApplicationShortcut; enabled: window.hasActiveDocument && pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0; onActivated: window.copySelectedText() }
     Shortcut { sequence: "Ctrl+C"; context: Qt.ApplicationShortcut; enabled: window.hasActiveDocument && pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0; onActivated: window.copySelectedText() }
     Shortcut { sequence: "Ctrl+Shift+C"; enabled: window.hasActiveDocument; onActivated: window.copyVisibleText() }
@@ -1203,6 +1209,14 @@ ApplicationWindow {
 
     function closeActiveDocument() {
         closeDocumentAt(activeDocumentIndex)
+    }
+
+    function openHomeScreen() {
+        setActiveDocument(-1)
+        Qt.callLater(function() {
+            if (homeOpenButton)
+                homeOpenButton.forceActiveFocus()
+        })
     }
 
     function closeDocumentAt(index) {
@@ -1896,6 +1910,164 @@ ApplicationWindow {
     function toggleNavigationPanel() {
         navigationPanelVisible = !navigationPanelVisible
         syncActiveDocumentState()
+    }
+
+    function itemContainsFocus(item) {
+        if (!item)
+            return false
+
+        var current = window.activeFocusItem
+        while (current) {
+            if (current === item)
+                return true
+            current = current.parent
+        }
+        return false
+    }
+
+    function tabsPaneHasFocus() {
+        if (itemContainsFocus(newTabButton))
+            return true
+
+        var tabChildren = tabsRow && tabsRow.children ? tabsRow.children : []
+        for (var i = 0; i < tabChildren.length; ++i) {
+            var child = tabChildren[i]
+            if (child && child.objectName === "documentTab" && itemContainsFocus(child))
+                return true
+        }
+
+        return false
+    }
+
+    function currentPaneFocusKey() {
+        if (!hasActiveDocument)
+            return itemContainsFocus(homeOpenButton) ? "home" : "toolbar"
+
+        if (itemContainsFocus(homeToolbarButton)
+                || itemContainsFocus(navigationPanelButton)
+                || itemContainsFocus(shortcutsButton)
+                || itemContainsFocus(themeButton)
+                || itemContainsFocus(defaultPdfButton)) {
+            return "toolbar"
+        }
+
+        if (tabsPaneHasFocus())
+            return "tabs"
+
+        if (itemContainsFocus(thumbnailsModeButton)
+                || itemContainsFocus(outlineModeButton)
+                || itemContainsFocus(pageSearchField)) {
+            return "side"
+        }
+
+        if (itemContainsFocus(pdfViewer) || itemContainsFocus(reflowTextArea))
+            return "viewer"
+
+        return "toolbar"
+    }
+
+    function paneFocusOrder() {
+        if (!hasActiveDocument)
+            return ["toolbar", "home"]
+
+        var order = ["toolbar", "tabs"]
+        if (navigationPanelVisible)
+            order.push("side")
+        order.push("viewer")
+        return order
+    }
+
+    function focusPaneByKey(key) {
+        if (key === "home") {
+            if (!hasActiveDocument && homeOpenButton) {
+                homeOpenButton.forceActiveFocus()
+                return true
+            }
+            return false
+        }
+
+        if (key === "toolbar") {
+            if (homeToolbarButton && homeToolbarButton.visible) {
+                homeToolbarButton.forceActiveFocus()
+                return true
+            }
+            if (navigationPanelButton && navigationPanelButton.visible) {
+                navigationPanelButton.forceActiveFocus()
+                return true
+            }
+            if (shortcutsButton) {
+                shortcutsButton.forceActiveFocus()
+                return true
+            }
+            return false
+        }
+
+        if (key === "tabs") {
+            if (hasActiveDocument && newTabButton) {
+                newTabButton.forceActiveFocus()
+                return true
+            }
+            return false
+        }
+
+        if (key === "side") {
+            if (!hasActiveDocument || !navigationPanelVisible)
+                return false
+
+            if (searchOverlayVisible && pageSearchField) {
+                pageSearchField.forceActiveFocus()
+                pageSearchField.selectAll()
+                return true
+            }
+
+            if (navigationSidePanelMode === "outline" && outlineModeButton) {
+                outlineModeButton.forceActiveFocus()
+                return true
+            }
+
+            if (thumbnailsModeButton) {
+                thumbnailsModeButton.forceActiveFocus()
+                return true
+            }
+
+            return false
+        }
+
+        if (key === "viewer") {
+            if (hasActiveDocument && reflowModeEnabled && reflowTextArea) {
+                reflowTextArea.forceActiveFocus()
+                return true
+            }
+
+            if (hasActiveDocument && pdfViewer) {
+                pdfViewer.forceActiveFocus()
+                return true
+            }
+
+            return false
+        }
+
+        return false
+    }
+
+    function cyclePaneFocus(step) {
+        var order = paneFocusOrder()
+        if (order.length === 0)
+            return
+
+        var currentKey = currentPaneFocusKey()
+        var currentIndex = order.indexOf(currentKey)
+        if (currentIndex < 0)
+            currentIndex = 0
+
+        var direction = step < 0 ? -1 : 1
+        for (var offset = 1; offset <= order.length; ++offset) {
+            var nextIndex = (currentIndex + direction * offset + order.length) % order.length
+            if (focusPaneByKey(order[nextIndex]))
+                return
+        }
+
+        focusPaneByKey(order[0])
     }
 
     function saveActiveDocumentRotated() {

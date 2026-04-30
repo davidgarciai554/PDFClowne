@@ -53,10 +53,14 @@ static constexpr auto qt_meta_stringdata_ZN11PdfDocumentE = QtMocHelpers::string
     "fileSizeBytesChanged",
     "titleChanged",
     "isLoadedChanged",
+    "passwordRequiredChanged",
+    "passwordChanged",
     "errorMessageChanged",
     "selectionChanged",
     "load",
     "source",
+    "password",
+    "retryWithPassword",
     "renderPage",
     "pageIndex",
     "scale",
@@ -88,6 +92,7 @@ static constexpr auto qt_meta_stringdata_ZN11PdfDocumentE = QtMocHelpers::string
     "fileSizeBytes",
     "title",
     "isLoaded",
+    "passwordRequired",
     "errorMessage",
     "selectionText",
     "selectionGeometryJson",
@@ -103,46 +108,50 @@ Q_CONSTINIT static const uint qt_meta_data_ZN11PdfDocumentE[] = {
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-      30,   14, // methods
-      15,  260, // properties
+      34,   14, // methods
+      17,  294, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-      15,       // signalCount
+      17,       // signalCount
 
  // signals: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    0,  194,    2, 0x06,   16 /* Public */,
-       3,    1,  195,    2, 0x06,   17 /* Public */,
-       5,    0,  198,    2, 0x06,   19 /* Public */,
-       6,    0,  199,    2, 0x06,   20 /* Public */,
-       7,    0,  200,    2, 0x06,   21 /* Public */,
-       8,    0,  201,    2, 0x06,   22 /* Public */,
-       9,    0,  202,    2, 0x06,   23 /* Public */,
-      10,    0,  203,    2, 0x06,   24 /* Public */,
-      11,    0,  204,    2, 0x06,   25 /* Public */,
-      12,    0,  205,    2, 0x06,   26 /* Public */,
-      13,    0,  206,    2, 0x06,   27 /* Public */,
-      14,    0,  207,    2, 0x06,   28 /* Public */,
-      15,    0,  208,    2, 0x06,   29 /* Public */,
-      16,    0,  209,    2, 0x06,   30 /* Public */,
-      17,    0,  210,    2, 0x06,   31 /* Public */,
+       1,    0,  218,    2, 0x06,   18 /* Public */,
+       3,    1,  219,    2, 0x06,   19 /* Public */,
+       5,    0,  222,    2, 0x06,   21 /* Public */,
+       6,    0,  223,    2, 0x06,   22 /* Public */,
+       7,    0,  224,    2, 0x06,   23 /* Public */,
+       8,    0,  225,    2, 0x06,   24 /* Public */,
+       9,    0,  226,    2, 0x06,   25 /* Public */,
+      10,    0,  227,    2, 0x06,   26 /* Public */,
+      11,    0,  228,    2, 0x06,   27 /* Public */,
+      12,    0,  229,    2, 0x06,   28 /* Public */,
+      13,    0,  230,    2, 0x06,   29 /* Public */,
+      14,    0,  231,    2, 0x06,   30 /* Public */,
+      15,    0,  232,    2, 0x06,   31 /* Public */,
+      16,    0,  233,    2, 0x06,   32 /* Public */,
+      17,    0,  234,    2, 0x06,   33 /* Public */,
+      18,    0,  235,    2, 0x06,   34 /* Public */,
+      19,    0,  236,    2, 0x06,   35 /* Public */,
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-      18,    1,  211,    2, 0x0a,   32 /* Public */,
-      20,    2,  214,    2, 0x0a,   34 /* Public */,
-      20,    1,  219,    2, 0x2a,   37 /* Public | MethodCloned */,
-      23,    1,  222,    2, 0x0a,   39 /* Public */,
-      24,    2,  225,    2, 0x0a,   41 /* Public */,
-      26,    1,  230,    2, 0x0a,   44 /* Public */,
-      27,    1,  233,    2, 0x0a,   46 /* Public */,
-      28,    0,  236,    2, 0x0a,   48 /* Public */,
-      29,    1,  237,    2, 0x0a,   49 /* Public */,
-      31,    3,  240,    2, 0x0a,   51 /* Public */,
-      34,    2,  247,    2, 0x0a,   55 /* Public */,
-      36,    2,  252,    2, 0x0a,   58 /* Public */,
-      37,    0,  257,    2, 0x0a,   61 /* Public */,
-      38,    0,  258,    2, 0x0a,   62 /* Public */,
-      39,    0,  259,    2, 0x0a,   63 /* Public */,
+      20,    2,  237,    2, 0x0a,   36 /* Public */,
+      20,    1,  242,    2, 0x2a,   39 /* Public | MethodCloned */,
+      23,    1,  245,    2, 0x0a,   41 /* Public */,
+      24,    2,  248,    2, 0x0a,   43 /* Public */,
+      24,    1,  253,    2, 0x2a,   46 /* Public | MethodCloned */,
+      27,    1,  256,    2, 0x0a,   48 /* Public */,
+      28,    2,  259,    2, 0x0a,   50 /* Public */,
+      30,    1,  264,    2, 0x0a,   53 /* Public */,
+      31,    1,  267,    2, 0x0a,   55 /* Public */,
+      32,    0,  270,    2, 0x0a,   57 /* Public */,
+      33,    1,  271,    2, 0x0a,   58 /* Public */,
+      35,    3,  274,    2, 0x0a,   60 /* Public */,
+      38,    2,  281,    2, 0x0a,   64 /* Public */,
+      40,    2,  286,    2, 0x0a,   67 /* Public */,
+      41,    0,  291,    2, 0x0a,   70 /* Public */,
+      42,    0,  292,    2, 0x0a,   71 /* Public */,
+      43,    0,  293,    2, 0x0a,   72 /* Public */,
 
  // signals: parameters
     QMetaType::Void,
@@ -160,40 +169,46 @@ Q_CONSTINIT static const uint qt_meta_data_ZN11PdfDocumentE[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
 
  // slots: parameters
-    QMetaType::Bool, QMetaType::QString,   19,
-    QMetaType::QString, QMetaType::Int, QMetaType::QReal,   21,   22,
-    QMetaType::QString, QMetaType::Int,   21,
-    QMetaType::QString, QMetaType::Int,   21,
-    QMetaType::QString, QMetaType::Int, QMetaType::QString,   21,   25,
-    QMetaType::QString, QMetaType::QString,   25,
-    QMetaType::QString, QMetaType::Int,   21,
+    QMetaType::Bool, QMetaType::QString, QMetaType::QString,   21,   22,
+    QMetaType::Bool, QMetaType::QString,   21,
+    QMetaType::Bool, QMetaType::QString,   22,
+    QMetaType::QString, QMetaType::Int, QMetaType::QReal,   25,   26,
+    QMetaType::QString, QMetaType::Int,   25,
+    QMetaType::QString, QMetaType::Int,   25,
+    QMetaType::QString, QMetaType::Int, QMetaType::QString,   25,   29,
+    QMetaType::QString, QMetaType::QString,   29,
+    QMetaType::QString, QMetaType::Int,   25,
     QMetaType::QString,
-    QMetaType::Int, QMetaType::QString,   30,
-    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString,   19,   32,   33,
-    QMetaType::Void, QMetaType::Int, QMetaType::QPointF,   21,   35,
-    QMetaType::Void, QMetaType::Int, QMetaType::QPointF,   21,   35,
+    QMetaType::Int, QMetaType::QString,   34,
+    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString,   21,   36,   37,
+    QMetaType::Void, QMetaType::Int, QMetaType::QPointF,   25,   39,
+    QMetaType::Void, QMetaType::Int, QMetaType::QPointF,   25,   39,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
 
  // properties: name, type, flags, notifyId, revision
-      40, QMetaType::QString, 0x00015001, uint(2), 0,
-      41, QMetaType::QString, 0x00015001, uint(3), 0,
-      42, QMetaType::QStringList, 0x00015001, uint(4), 0,
-      43, QMetaType::QStringList, 0x00015001, uint(5), 0,
-      44, QMetaType::QString, 0x00015001, uint(6), 0,
-      45, QMetaType::QString, 0x00015001, uint(7), 0,
-      46, QMetaType::QString, 0x00015001, uint(8), 0,
-      47, QMetaType::Int, 0x00015001, uint(9), 0,
-      48, QMetaType::LongLong, 0x00015001, uint(10), 0,
-      49, QMetaType::QString, 0x00015001, uint(11), 0,
-      50, QMetaType::Bool, 0x00015001, uint(12), 0,
-      51, QMetaType::QString, 0x00015001, uint(13), 0,
-      52, QMetaType::QString, 0x00015001, uint(14), 0,
-      53, QMetaType::QString, 0x00015001, uint(14), 0,
-      54, QMetaType::Int, 0x00015001, uint(14), 0,
+      44, QMetaType::QString, 0x00015001, uint(2), 0,
+      45, QMetaType::QString, 0x00015001, uint(3), 0,
+      46, QMetaType::QStringList, 0x00015001, uint(4), 0,
+      47, QMetaType::QStringList, 0x00015001, uint(5), 0,
+      48, QMetaType::QString, 0x00015001, uint(6), 0,
+      49, QMetaType::QString, 0x00015001, uint(7), 0,
+      50, QMetaType::QString, 0x00015001, uint(8), 0,
+      51, QMetaType::Int, 0x00015001, uint(9), 0,
+      52, QMetaType::LongLong, 0x00015001, uint(10), 0,
+      53, QMetaType::QString, 0x00015001, uint(11), 0,
+      54, QMetaType::Bool, 0x00015001, uint(12), 0,
+      55, QMetaType::Bool, 0x00015001, uint(13), 0,
+      22, QMetaType::QString, 0x00015103, uint(14), 0,
+      56, QMetaType::QString, 0x00015001, uint(15), 0,
+      57, QMetaType::QString, 0x00015001, uint(16), 0,
+      58, QMetaType::QString, 0x00015001, uint(16), 0,
+      59, QMetaType::Int, 0x00015001, uint(16), 0,
 
        0        // eod
 };
@@ -227,6 +242,10 @@ Q_CONSTINIT const QMetaObject PdfDocument::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<QString, std::true_type>,
         // property 'isLoaded'
         QtPrivate::TypeAndForceComplete<bool, std::true_type>,
+        // property 'passwordRequired'
+        QtPrivate::TypeAndForceComplete<bool, std::true_type>,
+        // property 'password'
+        QtPrivate::TypeAndForceComplete<QString, std::true_type>,
         // property 'errorMessage'
         QtPrivate::TypeAndForceComplete<QString, std::true_type>,
         // property 'selectionText'
@@ -264,11 +283,22 @@ Q_CONSTINIT const QMetaObject PdfDocument::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'isLoadedChanged'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'passwordRequiredChanged'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'passwordChanged'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'errorMessageChanged'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'selectionChanged'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'load'
+        QtPrivate::TypeAndForceComplete<bool, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        // method 'load'
+        QtPrivate::TypeAndForceComplete<bool, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        // method 'retryWithPassword'
         QtPrivate::TypeAndForceComplete<bool, std::false_type>,
         QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
         // method 'renderPage'
@@ -337,33 +367,39 @@ void PdfDocument::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 10: _t->fileSizeBytesChanged(); break;
         case 11: _t->titleChanged(); break;
         case 12: _t->isLoadedChanged(); break;
-        case 13: _t->errorMessageChanged(); break;
-        case 14: _t->selectionChanged(); break;
-        case 15: { bool _r = _t->load((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
+        case 13: _t->passwordRequiredChanged(); break;
+        case 14: _t->passwordChanged(); break;
+        case 15: _t->errorMessageChanged(); break;
+        case 16: _t->selectionChanged(); break;
+        case 17: { bool _r = _t->load((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 16: { QString _r = _t->renderPage((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<qreal>>(_a[2])));
+        case 18: { bool _r = _t->load((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
+        case 19: { bool _r = _t->retryWithPassword((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
+        case 20: { QString _r = _t->renderPage((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<qreal>>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 17: { QString _r = _t->renderPage((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])));
+        case 21: { QString _r = _t->renderPage((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 18: { QString _r = _t->renderThumbnail((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])));
+        case 22: { QString _r = _t->renderThumbnail((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 19: { QString _r = _t->searchPage((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])));
+        case 23: { QString _r = _t->searchPage((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 20: { QString _r = _t->searchDocument((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
+        case 24: { QString _r = _t->searchDocument((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 21: { QString _r = _t->extractPageText((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])));
+        case 25: { QString _r = _t->extractPageText((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 22: { QString _r = _t->extractDocumentText();
+        case 26: { QString _r = _t->extractDocumentText();
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 23: { int _r = _t->resolveLinkPage((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
+        case 27: { int _r = _t->resolveLinkPage((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])));
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = std::move(_r); }  break;
-        case 24: { bool _r = _t->saveRotatedCopy((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])));
+        case 28: { bool _r = _t->saveRotatedCopy((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 25: _t->beginSelection((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QPointF>>(_a[2]))); break;
-        case 26: _t->updateSelection((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QPointF>>(_a[2]))); break;
-        case 27: _t->endSelection(); break;
-        case 28: _t->clearSelection(); break;
-        case 29: _t->clear(); break;
+        case 29: _t->beginSelection((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QPointF>>(_a[2]))); break;
+        case 30: _t->updateSelection((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QPointF>>(_a[2]))); break;
+        case 31: _t->endSelection(); break;
+        case 32: _t->clearSelection(); break;
+        case 33: _t->clear(); break;
         default: ;
         }
     }
@@ -462,15 +498,29 @@ void PdfDocument::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         }
         {
             using _q_method_type = void (PdfDocument::*)();
-            if (_q_method_type _q_method = &PdfDocument::errorMessageChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+            if (_q_method_type _q_method = &PdfDocument::passwordRequiredChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
                 *result = 13;
                 return;
             }
         }
         {
             using _q_method_type = void (PdfDocument::*)();
-            if (_q_method_type _q_method = &PdfDocument::selectionChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+            if (_q_method_type _q_method = &PdfDocument::passwordChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
                 *result = 14;
+                return;
+            }
+        }
+        {
+            using _q_method_type = void (PdfDocument::*)();
+            if (_q_method_type _q_method = &PdfDocument::errorMessageChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+                *result = 15;
+                return;
+            }
+        }
+        {
+            using _q_method_type = void (PdfDocument::*)();
+            if (_q_method_type _q_method = &PdfDocument::selectionChanged; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {
+                *result = 16;
                 return;
             }
         }
@@ -489,10 +539,19 @@ void PdfDocument::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 8: *reinterpret_cast< qint64*>(_v) = _t->fileSizeBytes(); break;
         case 9: *reinterpret_cast< QString*>(_v) = _t->title(); break;
         case 10: *reinterpret_cast< bool*>(_v) = _t->isLoaded(); break;
-        case 11: *reinterpret_cast< QString*>(_v) = _t->errorMessage(); break;
-        case 12: *reinterpret_cast< QString*>(_v) = _t->selectionText(); break;
-        case 13: *reinterpret_cast< QString*>(_v) = _t->selectionGeometryJson(); break;
-        case 14: *reinterpret_cast< int*>(_v) = _t->selectionPage(); break;
+        case 11: *reinterpret_cast< bool*>(_v) = _t->passwordRequired(); break;
+        case 12: *reinterpret_cast< QString*>(_v) = _t->password(); break;
+        case 13: *reinterpret_cast< QString*>(_v) = _t->errorMessage(); break;
+        case 14: *reinterpret_cast< QString*>(_v) = _t->selectionText(); break;
+        case 15: *reinterpret_cast< QString*>(_v) = _t->selectionGeometryJson(); break;
+        case 16: *reinterpret_cast< int*>(_v) = _t->selectionPage(); break;
+        default: break;
+        }
+    }
+    if (_c == QMetaObject::WriteProperty) {
+        void *_v = _a[0];
+        switch (_id) {
+        case 12: _t->setPassword(*reinterpret_cast< QString*>(_v)); break;
         default: break;
         }
     }
@@ -517,20 +576,20 @@ int PdfDocument::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 30)
+        if (_id < 34)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 30;
+        _id -= 34;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 30)
+        if (_id < 34)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 30;
+        _id -= 34;
     }
     if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty
             || _c == QMetaObject::ResetProperty || _c == QMetaObject::BindableProperty
             || _c == QMetaObject::RegisterPropertyMetaType) {
         qt_static_metacall(this, _c, _id, _a);
-        _id -= 15;
+        _id -= 17;
     }
     return _id;
 }
@@ -615,14 +674,26 @@ void PdfDocument::isLoadedChanged()
 }
 
 // SIGNAL 13
-void PdfDocument::errorMessageChanged()
+void PdfDocument::passwordRequiredChanged()
 {
     QMetaObject::activate(this, &staticMetaObject, 13, nullptr);
 }
 
 // SIGNAL 14
-void PdfDocument::selectionChanged()
+void PdfDocument::passwordChanged()
 {
     QMetaObject::activate(this, &staticMetaObject, 14, nullptr);
+}
+
+// SIGNAL 15
+void PdfDocument::errorMessageChanged()
+{
+    QMetaObject::activate(this, &staticMetaObject, 15, nullptr);
+}
+
+// SIGNAL 16
+void PdfDocument::selectionChanged()
+{
+    QMetaObject::activate(this, &staticMetaObject, 16, nullptr);
 }
 QT_WARNING_POP

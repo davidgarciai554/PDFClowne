@@ -15,6 +15,22 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick)
 set(MUPDF_ROOT "" CACHE PATH "MuPDF installation root")
 set(MUPDF_EXTRA_LIBRARIES "" CACHE STRING "Additional MuPDF libraries required by this build")
 
+set(MUPDF_DEBUG_HINTS
+    "${MUPDF_ROOT}/platform/win32/x64/Debug"
+    "$ENV{MUPDF_ROOT}/platform/win32/x64/Debug"
+    "${MUPDF_ROOT}/build/debug"
+    "$ENV{MUPDF_ROOT}/build/debug"
+)
+
+set(MUPDF_RELEASE_HINTS
+    "${MUPDF_ROOT}/platform/win32/x64/Release"
+    "$ENV{MUPDF_ROOT}/platform/win32/x64/Release"
+    "${MUPDF_ROOT}/lib"
+    "$ENV{MUPDF_ROOT}/lib"
+    "${MUPDF_ROOT}/build/release"
+    "$ENV{MUPDF_ROOT}/build/release"
+)
+
 find_path(MUPDF_INCLUDE_DIR
     NAMES mupdf/fitz.h
     HINTS
@@ -22,26 +38,57 @@ find_path(MUPDF_INCLUDE_DIR
         "$ENV{MUPDF_ROOT}/include"
 )
 
-find_library(MUPDF_LIBRARY
+find_library(MUPDF_LIBRARY_DEBUG
     NAMES mupdf libmupdf
-    HINTS
-        "${MUPDF_ROOT}/lib"
-        "$ENV{MUPDF_ROOT}/lib"
-        "${MUPDF_ROOT}/build/release"
-        "$ENV{MUPDF_ROOT}/build/release"
+    HINTS ${MUPDF_DEBUG_HINTS}
 )
 
-find_library(MUPDF_THIRD_LIBRARY
+find_library(MUPDF_LIBRARY_RELEASE
+    NAMES mupdf libmupdf
+    HINTS ${MUPDF_RELEASE_HINTS}
+)
+
+find_library(MUPDF_THIRD_LIBRARY_DEBUG
     NAMES mupdf-third libmupdf-third
-    HINTS
-        "${MUPDF_ROOT}/lib"
-        "$ENV{MUPDF_ROOT}/lib"
-        "${MUPDF_ROOT}/build/release"
-        "$ENV{MUPDF_ROOT}/build/release"
+    HINTS ${MUPDF_DEBUG_HINTS}
 )
 
-if(NOT MUPDF_INCLUDE_DIR OR NOT MUPDF_LIBRARY)
-    message(FATAL_ERROR "MuPDF was not found. Install/build MuPDF and set MUPDF_ROOT to its installation directory.")
+find_library(MUPDF_THIRD_LIBRARY_RELEASE
+    NAMES mupdf-third libmupdf-third
+    HINTS ${MUPDF_RELEASE_HINTS}
+)
+
+if(NOT MUPDF_INCLUDE_DIR)
+    message(FATAL_ERROR "MuPDF headers were not found. Set MUPDF_ROOT to a MuPDF source or install tree that contains include/mupdf/fitz.h.")
+endif()
+
+if(NOT MUPDF_LIBRARY_RELEASE)
+    message(FATAL_ERROR "MuPDF release library was not found. Expected libmupdf under one of: ${MUPDF_RELEASE_HINTS}")
+endif()
+
+set(MUPDF_LIBRARY ${MUPDF_LIBRARY_RELEASE})
+set(MUPDF_THIRD_LIBRARY ${MUPDF_THIRD_LIBRARY_RELEASE})
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(NOT MUPDF_LIBRARY_DEBUG)
+        message(FATAL_ERROR
+            "Debug build requires MuPDF debug libraries compiled with /MDd. "
+            "Build D:/Aplicaciones/mupdf/platform/win32/mupdf.sln for Debug|x64 "
+            "or point MUPDF_ROOT to a MuPDF tree that contains platform/win32/x64/Debug/libmupdf.lib."
+        )
+    endif()
+
+    set(MUPDF_LIBRARY ${MUPDF_LIBRARY_DEBUG})
+
+    if(MUPDF_THIRD_LIBRARY_RELEASE AND NOT MUPDF_THIRD_LIBRARY_DEBUG)
+        message(FATAL_ERROR
+            "Debug build also requires libthirdparty built for Debug|x64. "
+            "Build D:/Aplicaciones/mupdf/platform/win32/mupdf.sln for Debug|x64 "
+            "or provide platform/win32/x64/Debug/libthirdparty.lib under MUPDF_ROOT."
+        )
+    endif()
+
+    set(MUPDF_THIRD_LIBRARY ${MUPDF_THIRD_LIBRARY_DEBUG})
 endif()
 
 set(MUPDF_LIBRARIES ${MUPDF_LIBRARY})

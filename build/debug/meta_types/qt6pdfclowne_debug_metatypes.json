@@ -53,9 +53,30 @@
                             {
                                 "name": "sessionId",
                                 "type": "int"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
                             }
                         ],
                         "index": 11,
+                        "name": "markDocumentOpened",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "sessionId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 12,
+                        "isCloned": true,
                         "name": "markDocumentOpened",
                         "returnType": "void"
                     },
@@ -79,7 +100,7 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 12,
+                        "index": 13,
                         "name": "requestPageRender",
                         "returnType": "void"
                     },
@@ -99,7 +120,7 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 13,
+                        "index": 14,
                         "name": "requestThumbnailRender",
                         "returnType": "void"
                     },
@@ -123,7 +144,7 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 14,
+                        "index": 15,
                         "name": "prunePageCache",
                         "returnType": "void"
                     },
@@ -139,7 +160,7 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 15,
+                        "index": 16,
                         "name": "releaseDocument",
                         "returnType": "void"
                     },
@@ -155,13 +176,13 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 16,
+                        "index": 17,
                         "name": "releaseDocumentSync",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
-                        "index": 17,
+                        "index": 18,
                         "name": "clear",
                         "returnType": "void"
                     }
@@ -251,6 +272,10 @@
                             {
                                 "name": "sessionId",
                                 "type": "int"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
                             }
                         ],
                         "index": 0,
@@ -541,9 +566,34 @@
                             {
                                 "name": "requestId",
                                 "type": "int"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
                             }
                         ],
                         "index": 4,
+                        "name": "searchDocument",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "filePath",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "query",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "requestId",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 5,
+                        "isCloned": true,
                         "name": "searchDocument",
                         "returnType": "void"
                     }
@@ -581,6 +631,10 @@
                             {
                                 "name": "requestId",
                                 "type": "int"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
                             }
                         ],
                         "index": 0,
@@ -829,6 +883,35 @@
                         "designable": true,
                         "final": false,
                         "index": 11,
+                        "name": "passwordRequired",
+                        "notify": "passwordRequiredChanged",
+                        "read": "passwordRequired",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 12,
+                        "name": "password",
+                        "notify": "passwordChanged",
+                        "read": "password",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false,
+                        "write": "setPassword"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 13,
                         "name": "errorMessage",
                         "notify": "errorMessageChanged",
                         "read": "errorMessage",
@@ -842,7 +925,7 @@
                         "constant": false,
                         "designable": true,
                         "final": false,
-                        "index": 12,
+                        "index": 14,
                         "name": "selectionText",
                         "notify": "selectionChanged",
                         "read": "selectionText",
@@ -856,7 +939,7 @@
                         "constant": false,
                         "designable": true,
                         "final": false,
-                        "index": 13,
+                        "index": 15,
                         "name": "selectionGeometryJson",
                         "notify": "selectionChanged",
                         "read": "selectionGeometryJson",
@@ -870,7 +953,7 @@
                         "constant": false,
                         "designable": true,
                         "final": false,
-                        "index": 14,
+                        "index": 16,
                         "name": "selectionPage",
                         "notify": "selectionChanged",
                         "read": "selectionPage",
@@ -970,12 +1053,24 @@
                     {
                         "access": "public",
                         "index": 13,
-                        "name": "errorMessageChanged",
+                        "name": "passwordRequiredChanged",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 14,
+                        "name": "passwordChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 15,
+                        "name": "errorMessageChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 16,
                         "name": "selectionChanged",
                         "returnType": "void"
                     }
@@ -987,10 +1082,39 @@
                             {
                                 "name": "source",
                                 "type": "QString"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
                             }
                         ],
-                        "index": 15,
+                        "index": 17,
                         "name": "load",
+                        "returnType": "bool"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "source",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 18,
+                        "isCloned": true,
+                        "name": "load",
+                        "returnType": "bool"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "password",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 19,
+                        "name": "retryWithPassword",
                         "returnType": "bool"
                     },
                     {
@@ -1005,7 +1129,7 @@
                                 "type": "qreal"
                             }
                         ],
-                        "index": 16,
+                        "index": 20,
                         "name": "renderPage",
                         "returnType": "QString"
                     },
@@ -1017,7 +1141,7 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 17,
+                        "index": 21,
                         "isCloned": true,
                         "name": "renderPage",
                         "returnType": "QString"
@@ -1030,7 +1154,7 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 18,
+                        "index": 22,
                         "name": "renderThumbnail",
                         "returnType": "QString"
                     },
@@ -1046,7 +1170,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 19,
+                        "index": 23,
                         "name": "searchPage",
                         "returnType": "QString"
                     },
@@ -1058,7 +1182,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 20,
+                        "index": 24,
                         "name": "searchDocument",
                         "returnType": "QString"
                     },
@@ -1070,13 +1194,13 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 21,
+                        "index": 25,
                         "name": "extractPageText",
                         "returnType": "QString"
                     },
                     {
                         "access": "public",
-                        "index": 22,
+                        "index": 26,
                         "name": "extractDocumentText",
                         "returnType": "QString"
                     },
@@ -1088,7 +1212,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 23,
+                        "index": 27,
                         "name": "resolveLinkPage",
                         "returnType": "int"
                     },
@@ -1108,7 +1232,7 @@
                                 "type": "QString"
                             }
                         ],
-                        "index": 24,
+                        "index": 28,
                         "name": "saveRotatedCopy",
                         "returnType": "bool"
                     },
@@ -1124,7 +1248,7 @@
                                 "type": "QPointF"
                             }
                         ],
-                        "index": 25,
+                        "index": 29,
                         "name": "beginSelection",
                         "returnType": "void"
                     },
@@ -1140,25 +1264,25 @@
                                 "type": "QPointF"
                             }
                         ],
-                        "index": 26,
+                        "index": 30,
                         "name": "updateSelection",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
-                        "index": 27,
+                        "index": 31,
                         "name": "endSelection",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
-                        "index": 28,
+                        "index": 32,
                         "name": "clearSelection",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
-                        "index": 29,
+                        "index": 33,
                         "name": "clear",
                         "returnType": "void"
                     }
@@ -1282,6 +1406,10 @@
                             {
                                 "name": "sessionId",
                                 "type": "int"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
                             }
                         ],
                         "index": 2,
@@ -1442,6 +1570,10 @@
                             {
                                 "name": "requestId",
                                 "type": "int"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
                             }
                         ],
                         "index": 1,

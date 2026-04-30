@@ -19,6 +19,8 @@ class PdfDocument : public QObject {
     Q_PROPERTY(qint64 fileSizeBytes READ fileSizeBytes NOTIFY fileSizeBytesChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool isLoaded READ isLoaded NOTIFY isLoadedChanged)
+    Q_PROPERTY(bool passwordRequired READ passwordRequired NOTIFY passwordRequiredChanged)
+    Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
     Q_PROPERTY(QString selectionText READ selectionText NOTIFY selectionChanged)
     Q_PROPERTY(QString selectionGeometryJson READ selectionGeometryJson NOTIFY selectionChanged)
@@ -39,13 +41,17 @@ public:
     qint64 fileSizeBytes() const { return m_fileSizeBytes; }
     QString title() const { return m_title; }
     bool isLoaded() const { return m_isLoaded; }
+    bool passwordRequired() const { return m_passwordRequired; }
+    QString password() const { return m_password; }
     QString errorMessage() const { return m_errorMessage; }
     QString selectionText() const { return m_selectionText; }
     QString selectionGeometryJson() const { return m_selectionGeometryJson; }
     int selectionPage() const { return m_selectionPage; }
+    void setPassword(const QString &password);
 
 public slots:
-    bool load(const QString &source);
+    bool load(const QString &source, const QString &password = {});
+    Q_INVOKABLE bool retryWithPassword(const QString &password);
     QString renderPage(int pageIndex, qreal scale = 2.0);
     QString renderThumbnail(int pageIndex);
     QString searchPage(int pageIndex, const QString &query);
@@ -75,6 +81,8 @@ signals:
     void fileSizeBytesChanged();
     void titleChanged();
     void isLoadedChanged();
+    void passwordRequiredChanged();
+    void passwordChanged();
     void errorMessageChanged();
     void selectionChanged();
 
@@ -92,6 +100,7 @@ private:
     QString m_outlineJson;
     QString m_pageLinksJson;
     QString m_title;
+    QString m_password;
     QString m_errorMessage;
     QString m_selectionText;
     QString m_selectionGeometryJson = QStringLiteral("[]");
@@ -99,6 +108,7 @@ private:
     int m_selectionPage = -1;
     qint64 m_fileSizeBytes = 0;
     bool m_isLoaded = false;
+    bool m_passwordRequired = false;
     bool m_selectionInProgress = false;
     QPointF m_selectionAnchor;
     std::unique_ptr<PdfEngine> m_engine;

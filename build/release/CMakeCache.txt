@@ -127,7 +127,7 @@ CMAKE_INTERPROCEDURAL_OPTIMIZATION:UNINITIALIZED=ON
 CMAKE_LINKER:FILEPATH=C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe
 
 //make program
-CMAKE_MAKE_PROGRAM:FILEPATH=C:/PROGRA~1/CMake/bin/ninja.exe
+CMAKE_MAKE_PROGRAM:FILEPATH=C:/Program Files/CMake/bin/ninja.exe
 
 //Flags used by the linker during the creation of modules during
 // all build types.
@@ -153,7 +153,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 CMAKE_MT:FILEPATH=C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/mt.exe
 
 //No help, variable specified on the command line.
-CMAKE_PREFIX_PATH:UNINITIALIZED=
+CMAKE_PREFIX_PATH:UNINITIALIZED=C:\Qt\6.8.3\msvc2022_64
 
 //Value Computed by CMake
 CMAKE_PROJECT_COMPAT_VERSION:STATIC=
@@ -265,11 +265,23 @@ MUPDF_INCLUDE_DIR:PATH=D:/Aplicaciones/mupdf/include
 //Path to a library.
 MUPDF_LIBRARY:FILEPATH=D:/Aplicaciones/mupdf/platform/win32/x64/Release/libmupdf.lib
 
+//Path to a library.
+MUPDF_LIBRARY_DEBUG:FILEPATH=MUPDF_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+MUPDF_LIBRARY_RELEASE:FILEPATH=D:/Aplicaciones/mupdf/platform/win32/x64/Release/libmupdf.lib
+
 //MuPDF installation root
 MUPDF_ROOT:PATH=
 
 //Path to a library.
 MUPDF_THIRD_LIBRARY:FILEPATH=D:/Aplicaciones/mupdf/platform/win32/x64/Release/libthirdparty.lib
+
+//Path to a library.
+MUPDF_THIRD_LIBRARY_DEBUG:FILEPATH=MUPDF_THIRD_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+MUPDF_THIRD_LIBRARY_RELEASE:FILEPATH=MUPDF_THIRD_LIBRARY_RELEASE-NOTFOUND
 
 //Value Computed by CMake
 PDFClowne_BINARY_DIR:STATIC=D:/Aplicaciones/PDFClowne 2/build/release

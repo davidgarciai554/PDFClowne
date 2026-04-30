@@ -26,7 +26,7 @@ public:
     qint64 processMemoryBytes() const { return m_processMemoryBytes; }
     qint64 peakProcessMemoryBytes() const { return m_peakProcessMemoryBytes; }
 
-    Q_INVOKABLE void markDocumentOpened(const QString &filePath, int sessionId);
+    Q_INVOKABLE void markDocumentOpened(const QString &filePath, int sessionId, const QString &password = QString());
     Q_INVOKABLE void requestPageRender(const QString &filePath, int pageIndex, qreal scale, int sessionId);
     Q_INVOKABLE void requestThumbnailRender(const QString &filePath, int pageIndex, int sessionId);
     Q_INVOKABLE void prunePageCache(const QString &filePath, int centerPage, int radius, int sessionId);
@@ -35,7 +35,7 @@ public:
     Q_INVOKABLE void clear();
 
 signals:
-    void requestMarkDocumentOpened(const QString &filePath, int sessionId);
+    void requestMarkDocumentOpened(const QString &filePath, int sessionId, const QString &password);
     void requestPageRenderInternal(const QString &filePath, int pageIndex, qreal scale, int sessionId);
     void requestThumbnailRenderInternal(const QString &filePath, int pageIndex, int sessionId);
     void requestPrunePageCache(const QString &filePath, int centerPage, int radius, int sessionId);

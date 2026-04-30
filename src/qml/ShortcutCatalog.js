@@ -6,7 +6,9 @@ var sections = [
         entries: [
             { kind: "keyboard", trigger: "Ctrl+O", description: "Abrir un PDF.", availability: "Siempre disponible." },
             { kind: "keyboard", trigger: "Ctrl+S", description: "Guardar el PDF activo sobrescribiendo con las rotaciones aplicadas.", availability: "Solo cuando el documento activo tiene rotaciones pendientes." },
-            { kind: "keyboard", trigger: "Ctrl+Shift+S", description: "Guardar una copia rotada del PDF activo.", availability: "Solo cuando el documento activo tiene rotaciones pendientes." }
+            { kind: "keyboard", trigger: "Ctrl+Shift+S", description: "Guardar una copia rotada del PDF activo.", availability: "Solo cuando el documento activo tiene rotaciones pendientes." },
+            { kind: "keyboard", trigger: "Ctrl+R", description: "Recargar el PDF activo desde disco.", availability: "Requiere un PDF abierto." },
+            { kind: "keyboard", trigger: "Ctrl+H", description: "Abrir la pantalla de inicio con los archivos recientes.", availability: "Siempre disponible." }
         ]
     },
     {
@@ -16,6 +18,8 @@ var sections = [
             { kind: "keyboard", trigger: "Ctrl+2", description: "Cambiar a vista continua.", availability: "Requiere un PDF abierto." },
             { kind: "keyboard", trigger: "Ctrl+3", description: "Cambiar a vista de dos paginas.", availability: "Requiere un PDF abierto." },
             { kind: "keyboard", trigger: "Ctrl+4", description: "Cambiar a vista continua de dos paginas.", availability: "Requiere un PDF abierto." },
+            { kind: "keyboard", trigger: "F6", description: "Mover el foco al siguiente panel principal de la interfaz.", availability: "Siempre disponible." },
+            { kind: "keyboard", trigger: "Shift+F6", description: "Mover el foco al panel principal anterior.", availability: "Siempre disponible." },
             { kind: "gesture", trigger: "Arrastrar pestana", description: "Reordenar las pestanas abiertas.", availability: "Requiere dos o mas PDFs abiertos." }
         ]
     },
@@ -36,6 +40,8 @@ var sections = [
             { kind: "keyboard", trigger: "F5", description: "Activar o salir del modo presentacion.", availability: "Requiere un PDF abierto." },
             { kind: "keyboard", trigger: "H", description: "Activar o desactivar la herramienta mano.", availability: "Requiere un PDF abierto y no estar en reflow." },
             { kind: "keyboard", trigger: "Ctrl+Shift+R", description: "Activar o desactivar el modo reflow.", availability: "Requiere un PDF abierto." },
+            { kind: "keyboard", trigger: "Alt+Left", description: "Volver a la pagina anterior del historial interno del documento.", availability: "Requiere historial hacia atras en el PDF activo." },
+            { kind: "keyboard", trigger: "Alt+Right", description: "Avanzar a la pagina siguiente del historial interno del documento.", availability: "Requiere historial hacia delante en el PDF activo." },
             { kind: "keyboard", trigger: "Escape", description: "Salir del modo inmersivo activo.", availability: "Disponible en pantalla completa o presentacion." },
             { kind: "keyboard", trigger: "Right", description: "Ir a la pagina siguiente.", availability: "Disponible en pantalla completa o presentacion." },
             { kind: "keyboard", trigger: "Left", description: "Ir a la pagina anterior.", availability: "Disponible en pantalla completa o presentacion." },

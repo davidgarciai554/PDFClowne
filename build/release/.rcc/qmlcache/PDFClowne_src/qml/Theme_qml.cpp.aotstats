@@ -6,7 +6,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 20,
-                        "durationMicroseconds": 99,
+                        "durationMicroseconds": 97,
                         "errorMessage": "Type (component in D:/Aplicaciones/PDFClowne 2/src/qml/Theme.qml)::_settings with type QObject does not have a property mode for writing",
                         "functionName": "onModeChanged",
                         "line": 29
@@ -14,7 +14,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 5,
-                        "durationMicroseconds": 93,
+                        "durationMicroseconds": 89,
                         "errorMessage": "Type QtObject::styleHints with type QObject does not have a property colorScheme for writing",
                         "functionName": "applyColorScheme",
                         "line": 34
@@ -30,7 +30,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 36,
-                        "durationMicroseconds": 173,
+                        "durationMicroseconds": 183,
                         "errorMessage": "",
                         "functionName": "isDark",
                         "line": 51
@@ -38,7 +38,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 5,
-                        "durationMicroseconds": 153,
+                        "durationMicroseconds": 267,
                         "errorMessage": "",
                         "functionName": "cycleMode",
                         "line": 53
@@ -46,7 +46,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 40,
-                        "durationMicroseconds": 238,
+                        "durationMicroseconds": 242,
                         "errorMessage": "",
                         "functionName": "modeName",
                         "line": 57
@@ -54,7 +54,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 40,
-                        "durationMicroseconds": 201,
+                        "durationMicroseconds": 203,
                         "errorMessage": "",
                         "functionName": "modeIcon",
                         "line": 58
@@ -62,7 +62,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 297,
+                        "durationMicroseconds": 296,
                         "errorMessage": "",
                         "functionName": "background",
                         "line": 61
@@ -70,7 +70,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 266,
+                        "durationMicroseconds": 251,
                         "errorMessage": "",
                         "functionName": "surface",
                         "line": 62
@@ -78,7 +78,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 239,
+                        "durationMicroseconds": 227,
                         "errorMessage": "",
                         "functionName": "surfaceAlt",
                         "line": 63
@@ -86,7 +86,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 231,
+                        "durationMicroseconds": 228,
                         "errorMessage": "",
                         "functionName": "text",
                         "line": 64
@@ -94,7 +94,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 233,
+                        "durationMicroseconds": 223,
                         "errorMessage": "",
                         "functionName": "accent",
                         "line": 65
@@ -102,7 +102,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 222,
+                        "durationMicroseconds": 219,
                         "errorMessage": "",
                         "functionName": "border",
                         "line": 67
@@ -110,7 +110,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 225,
+                        "durationMicroseconds": 228,
                         "errorMessage": "",
                         "functionName": "secondaryText",
                         "line": 68
@@ -118,7 +118,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 222,
+                        "durationMicroseconds": 219,
                         "errorMessage": "",
                         "functionName": "hover",
                         "line": 69
@@ -126,7 +126,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 228,
+                        "durationMicroseconds": 220,
                         "errorMessage": "",
                         "functionName": "tabActive",
                         "line": 70
@@ -134,7 +134,7 @@
                     {
                         "codegenSuccessfull": true,
                         "column": 44,
-                        "durationMicroseconds": 228,
+                        "durationMicroseconds": 237,
                         "errorMessage": "",
                         "functionName": "danger",
                         "line": 71
@@ -142,7 +142,7 @@
                     {
                         "codegenSuccessfull": false,
                         "column": 28,
-                        "durationMicroseconds": 48,
+                        "durationMicroseconds": 39,
                         "errorMessage": "Cannot load property twoModeInitialized from (component in D:/Aplicaciones/PDFClowne 2/src/qml/Theme.qml)::_settings with type QObject.",
                         "functionName": "onCompleted",
                         "line": 11

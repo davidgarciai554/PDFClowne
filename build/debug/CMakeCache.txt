@@ -124,7 +124,7 @@ CMAKE_INSTALL_SYSCONFDIR:PATH=etc
 CMAKE_LINKER:FILEPATH=C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe
 
 //make program
-CMAKE_MAKE_PROGRAM:FILEPATH=C:/PROGRA~1/CMake/bin/ninja.exe
+CMAKE_MAKE_PROGRAM:FILEPATH=C:/Program Files/CMake/bin/ninja.exe
 
 //Flags used by the linker during the creation of modules during
 // all build types.
@@ -262,11 +262,23 @@ MUPDF_INCLUDE_DIR:PATH=D:/Aplicaciones/mupdf/include
 //Path to a library.
 MUPDF_LIBRARY:FILEPATH=D:/Aplicaciones/mupdf/platform/win32/x64/Release/libmupdf.lib
 
+//Path to a library.
+MUPDF_LIBRARY_DEBUG:FILEPATH=D:/Aplicaciones/mupdf/platform/win32/x64/Debug/libmupdf.lib
+
+//Path to a library.
+MUPDF_LIBRARY_RELEASE:FILEPATH=D:/Aplicaciones/mupdf/platform/win32/x64/Release/libmupdf.lib
+
 //MuPDF installation root
 MUPDF_ROOT:PATH=
 
 //Path to a library.
 MUPDF_THIRD_LIBRARY:FILEPATH=D:/Aplicaciones/mupdf/platform/win32/x64/Release/libthirdparty.lib
+
+//Path to a library.
+MUPDF_THIRD_LIBRARY_DEBUG:FILEPATH=MUPDF_THIRD_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+MUPDF_THIRD_LIBRARY_RELEASE:FILEPATH=MUPDF_THIRD_LIBRARY_RELEASE-NOTFOUND
 
 //Value Computed by CMake
 PDFClowne_BINARY_DIR:STATIC=D:/Aplicaciones/PDFClowne 2/build/debug

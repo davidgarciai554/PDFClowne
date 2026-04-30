@@ -39,6 +39,7 @@ ApplicationWindow {
     property bool openInProgress: false
     property string pendingOpenSource: ""
     property string pendingOpenFileName: ""
+    property string pendingProtectedSource: ""
     readonly property var shortcutSections: ShortcutCatalog.sections
     readonly property int pageRenderWindowRadius: 8
     readonly property int pageRenderPruneDelayMs: 240
@@ -333,6 +334,232 @@ ApplicationWindow {
     }
 
     Popup {
+        id: passwordDialog
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        width: Math.min(420, window.width - 48)
+        x: Math.round((window.width - width) / 2)
+        y: Math.round((window.height - height) / 2)
+        padding: 0
+
+        property string source: ""
+        property string fileName: ""
+        property string passwordValue: ""
+        property string inlineError: ""
+
+        Overlay.modal: Rectangle {
+            color: Theme.isDark ? "#AA0F1020" : "#660F1020"
+        }
+
+        background: Rectangle {
+            color: Theme.surface
+            radius: Theme.radius
+            border.color: Theme.border
+            border.width: 1
+        }
+
+        onOpened: {
+            passwordField.forceActiveFocus()
+            passwordField.selectAll()
+        }
+
+        contentItem: ColumnLayout {
+            spacing: 0
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 48
+                Layout.leftMargin: 18
+                Layout.rightMargin: 12
+                spacing: 12
+
+                Rectangle {
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
+                    radius: 12
+                    color: Theme.accent
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "•"
+                        color: Theme.accentText
+                        font.pixelSize: 18
+                        font.weight: Font.DemiBold
+                    }
+                }
+
+                Text {
+                    text: "Introducir contrasena"
+                    color: Theme.text
+                    font.pixelSize: 14
+                    font.weight: Font.DemiBold
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Button {
+                    id: closePasswordIconButton
+                    text: "X"
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: 30
+                    onClicked: passwordDialog.close()
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Cerrar"
+
+                    contentItem: Text {
+                        text: closePasswordIconButton.text
+                        color: Theme.secondaryText
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        color: closePasswordIconButton.down ? Theme.tabActive
+                              : closePasswordIconButton.hovered ? Theme.hover
+                              : "transparent"
+                        radius: Theme.radius
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.border
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 22
+                Layout.rightMargin: 22
+                Layout.topMargin: 18
+                Layout.bottomMargin: 18
+                spacing: 12
+
+                Text {
+                    text: "Este PDF esta protegido. Introduce la contrasena para desbloquearlo."
+                    color: Theme.text
+                    font.pixelSize: 13
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 42
+                    radius: Theme.radius
+                    color: Theme.surfaceAlt
+                    border.color: Theme.border
+
+                    Text {
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                            verticalCenter: parent.verticalCenter
+                            leftMargin: 12
+                            rightMargin: 12
+                        }
+                        text: passwordDialog.fileName
+                        color: Theme.text
+                        font.pixelSize: 12
+                        elide: Text.ElideMiddle
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                TextField {
+                    id: passwordField
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 38
+                    text: passwordDialog.passwordValue
+                    echoMode: TextInput.Password
+                    placeholderText: "Contrasena"
+                    color: Theme.text
+                    selectByMouse: true
+                    onTextChanged: passwordDialog.passwordValue = text
+                    onAccepted: window.openProtectedPdf(passwordDialog.source)
+
+                    background: Rectangle {
+                        color: Theme.surfaceAlt
+                        radius: Theme.radius
+                        border.color: passwordField.activeFocus ? Theme.accent : Theme.border
+                        border.width: passwordField.activeFocus ? 2 : 1
+                    }
+                }
+
+                Text {
+                    visible: passwordDialog.inlineError.length > 0
+                    text: passwordDialog.inlineError
+                    color: Theme.danger
+                    font.pixelSize: 12
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 6
+
+                    Item { Layout.fillWidth: true }
+
+                    Button {
+                        id: cancelPasswordButton
+                        text: "Cancelar"
+                        Layout.preferredWidth: 96
+                        Layout.preferredHeight: 34
+                        onClicked: passwordDialog.close()
+
+                        contentItem: Text {
+                            text: cancelPasswordButton.text
+                            color: Theme.text
+                            font.pixelSize: 13
+                            font.weight: Font.DemiBold
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            color: cancelPasswordButton.down ? Theme.tabActive
+                                  : cancelPasswordButton.hovered ? Theme.hover
+                                  : Theme.surfaceAlt
+                            radius: Theme.radius
+                            border.color: Theme.border
+                        }
+                    }
+
+                    Button {
+                        id: unlockPasswordButton
+                        text: "Abrir"
+                        Layout.preferredWidth: 96
+                        Layout.preferredHeight: 34
+                        onClicked: window.openProtectedPdf(passwordDialog.source)
+
+                        contentItem: Text {
+                            text: unlockPasswordButton.text
+                            color: Theme.accentText
+                            font.pixelSize: 13
+                            font.weight: Font.DemiBold
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            color: unlockPasswordButton.down ? Qt.darker(Theme.accent, 1.12)
+                                  : unlockPasswordButton.hovered ? Qt.lighter(Theme.accent, 1.08)
+                                  : Theme.accent
+                            radius: Theme.radius
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Popup {
         id: shortcutsPopup
         modal: false
         focus: true
@@ -501,6 +728,8 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+O"; onActivated: fileDialog.open() }
     Shortcut { sequence: "Ctrl+S"; enabled: window.activeDocumentHasRotations(); onActivated: window.saveActiveDocumentRotated() }
     Shortcut { sequence: "Ctrl+Shift+S"; enabled: window.activeDocumentHasRotations(); onActivated: saveRotatedDialog.open() }
+    Shortcut { sequence: "Ctrl+R"; enabled: window.hasActiveDocument; onActivated: window.refreshActiveDocumentFromDisk() }
+    Shortcut { sequence: "Ctrl+H"; onActivated: window.openHomeScreen() }
     Shortcut { sequence: "Ctrl+1"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("single") }
     Shortcut { sequence: "Ctrl+2"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("continuous") }
     Shortcut { sequence: "Ctrl+3"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("twoPage") }
@@ -514,6 +743,10 @@ ApplicationWindow {
     Shortcut { sequence: "F5"; enabled: window.hasActiveDocument; onActivated: window.togglePresentationMode() }
     Shortcut { sequence: "H"; enabled: window.hasActiveDocument && !window.reflowModeEnabled; onActivated: window.setHandToolEnabled(!window.handToolEnabled) }
     Shortcut { sequence: "Ctrl+Shift+R"; enabled: window.hasActiveDocument; onActivated: window.toggleReflowMode() }
+    Shortcut { sequence: "Alt+Left"; enabled: window.hasActiveDocument && window.activeDocumentHistoryBack().length > 0; onActivated: window.goBackInDocument() }
+    Shortcut { sequence: "Alt+Right"; enabled: window.hasActiveDocument && window.activeDocumentHistoryForward().length > 0; onActivated: window.goForwardInDocument() }
+    Shortcut { sequence: "F6"; onActivated: window.cyclePaneFocus(1) }
+    Shortcut { sequence: "Shift+F6"; onActivated: window.cyclePaneFocus(-1) }
     Shortcut { sequence: StandardKey.Copy; context: Qt.ApplicationShortcut; enabled: window.hasActiveDocument && pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0; onActivated: window.copySelectedText() }
     Shortcut { sequence: "Ctrl+C"; context: Qt.ApplicationShortcut; enabled: window.hasActiveDocument && pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0; onActivated: window.copySelectedText() }
     Shortcut { sequence: "Ctrl+Shift+C"; enabled: window.hasActiveDocument; onActivated: window.copyVisibleText() }
@@ -1194,7 +1427,7 @@ ApplicationWindow {
         activePageIndex = doc.activePageIndex || 0
 
         if (pdfDocument.filePath !== doc.path)
-            pdfDocument.load(doc.path)
+            loadPdfWithPasswordPrompt(doc.path, doc.password || "")
 
         updateActiveSearchResults()
         if (reflowModeEnabled && activeDocumentReflowText().length === 0)
@@ -1203,6 +1436,14 @@ ApplicationWindow {
 
     function closeActiveDocument() {
         closeDocumentAt(activeDocumentIndex)
+    }
+
+    function openHomeScreen() {
+        setActiveDocument(-1)
+        Qt.callLater(function() {
+            if (homeOpenButton)
+                homeOpenButton.forceActiveFocus()
+        })
     }
 
     function closeDocumentAt(index) {
@@ -1239,10 +1480,98 @@ ApplicationWindow {
 
         pendingOpenSource = source
         pendingOpenFileName = fileNameFromPath(source)
+        pendingProtectedSource = ""
         openInProgress = true
         saveMessage = ""
         openPdfErrorDialog.close()
+        passwordDialog.close()
         openPdfTimer.start()
+    }
+
+    function showPasswordDialog(source, preserveInput) {
+        pendingProtectedSource = source
+        passwordDialog.source = source
+        passwordDialog.fileName = fileNameFromPath(source)
+        if (!preserveInput)
+            passwordDialog.passwordValue = ""
+        passwordDialog.inlineError = ""
+        passwordDialog.open()
+        Qt.callLater(function() {
+            passwordField.forceActiveFocus()
+            if (preserveInput)
+                passwordField.selectAll()
+        })
+    }
+
+    function loadPdfWithPasswordPrompt(source, password) {
+        if (pdfDocument.load(source, password || ""))
+            return true
+
+        if (pdfDocument.passwordRequired) {
+            showPasswordDialog(source, false)
+            return false
+        }
+
+        return false
+    }
+
+    function completeOpenedPdf() {
+        saveMessage = ""
+        window.visibility = Window.Maximized
+
+        for (var i = 0; i < documentModel.count; ++i) {
+            if (documentModel.get(i).path === pdfDocument.filePath) {
+                documentModel.setProperty(i, "password", pdfDocument.password)
+                setActiveDocument(i)
+                addRecentFile(pdfDocument.filePath, pdfDocument.title)
+                return
+            }
+        }
+
+        var sources = loadedPageSources()
+        var thumbnails = loadedThumbnailSources()
+        var savedState = savedViewStateFor(pdfDocument.filePath)
+
+        documentModel.append({
+            path: pdfDocument.filePath,
+            title: pdfDocument.title,
+            password: pdfDocument.password,
+            previewSource: pdfDocument.previewSource,
+            pageSourcesJson: JSON.stringify(sources),
+            thumbnailSourcesJson: JSON.stringify(thumbnails),
+            pageSizesJson: pdfDocument.pageSizesJson,
+            outlineJson: pdfDocument.outlineJson,
+            pageLinksJson: pdfDocument.pageLinksJson,
+            pageCount: pdfDocument.pageCount,
+            fileSizeBytes: pdfDocument.fileSizeBytes,
+            zoom: savedState.zoom,
+            layoutMode: savedState.layoutMode,
+            zoomMode: savedState.zoomMode,
+            navigationPanelVisible: true,
+            sidePanelMode: "thumbnails",
+            snapToPage: false,
+            pageSpacing: 18,
+            activePageIndex: 0,
+            pageRotationsJson: "[]",
+            searchQuery: "",
+            searchResultsJson: "[]",
+            activeSearchResultIndex: -1,
+            searchRequestId: 0,
+            searchInProgress: false,
+            reflowText: "",
+            pageTextCacheJson: "{}",
+            historyBackJson: "[]",
+            historyForwardJson: "[]",
+            renderSessionId: ++renderSessionSerial,
+            firstPageVisibleMs: -1,
+            renderCacheBytes: 0,
+            processMemoryBytes: 0,
+            peakProcessMemoryBytes: 0,
+            pendingRenderCount: 0
+        })
+        documentRenderController.markDocumentOpened(pdfDocument.filePath, renderSessionSerial, pdfDocument.password)
+        setActiveDocument(documentModel.count - 1)
+        addRecentFile(pdfDocument.filePath, pdfDocument.title)
     }
 
     function finishOpenPdf() {
@@ -1253,63 +1582,42 @@ ApplicationWindow {
         pendingOpenFileName = ""
 
         if (opened) {
-            saveMessage = ""
-            window.visibility = Window.Maximized
-
-            for (var i = 0; i < documentModel.count; ++i) {
-                if (documentModel.get(i).path === pdfDocument.filePath) {
-                    setActiveDocument(i)
-                    addRecentFile(pdfDocument.filePath, pdfDocument.title)
-                    return
-                }
-            }
-
-            var sources = loadedPageSources()
-            var thumbnails = loadedThumbnailSources()
-            var savedState = savedViewStateFor(pdfDocument.filePath)
-
-            documentModel.append({
-                path: pdfDocument.filePath,
-                title: pdfDocument.title,
-                previewSource: pdfDocument.previewSource,
-                pageSourcesJson: JSON.stringify(sources),
-                thumbnailSourcesJson: JSON.stringify(thumbnails),
-                pageSizesJson: pdfDocument.pageSizesJson,
-                outlineJson: pdfDocument.outlineJson,
-                pageLinksJson: pdfDocument.pageLinksJson,
-                pageCount: pdfDocument.pageCount,
-                fileSizeBytes: pdfDocument.fileSizeBytes,
-                zoom: savedState.zoom,
-                layoutMode: savedState.layoutMode,
-                zoomMode: savedState.zoomMode,
-                navigationPanelVisible: true,
-                sidePanelMode: "thumbnails",
-                snapToPage: false,
-                pageSpacing: 18,
-                activePageIndex: 0,
-                pageRotationsJson: "[]",
-                searchQuery: "",
-                searchResultsJson: "[]",
-                activeSearchResultIndex: -1,
-                searchRequestId: 0,
-                searchInProgress: false,
-                reflowText: "",
-                pageTextCacheJson: "{}",
-                historyBackJson: "[]",
-                historyForwardJson: "[]",
-                renderSessionId: ++renderSessionSerial,
-                firstPageVisibleMs: -1,
-                renderCacheBytes: 0,
-                processMemoryBytes: 0,
-                peakProcessMemoryBytes: 0,
-                pendingRenderCount: 0
-            })
-            documentRenderController.markDocumentOpened(pdfDocument.filePath, renderSessionSerial)
-            setActiveDocument(documentModel.count - 1)
-            addRecentFile(pdfDocument.filePath, pdfDocument.title)
-        } else {
-            showOpenPdfError(source)
+            completeOpenedPdf()
+            return
         }
+
+        if (pdfDocument.passwordRequired) {
+            showPasswordDialog(source, false)
+            return
+        }
+
+        showOpenPdfError(source)
+    }
+
+    function openProtectedPdf(source) {
+        var targetSource = String(source || pendingProtectedSource || "").trim()
+        if (targetSource.length === 0)
+            return
+
+        passwordDialog.inlineError = ""
+        if (pdfDocument.retryWithPassword(passwordDialog.passwordValue)) {
+            pendingProtectedSource = ""
+            passwordDialog.close()
+            completeOpenedPdf()
+            return
+        }
+
+        if (pdfDocument.passwordRequired) {
+            passwordDialog.inlineError = "La contrasena no es correcta. Prueba de nuevo."
+            passwordDialog.open()
+            passwordField.forceActiveFocus()
+            passwordField.selectAll()
+            return
+        }
+
+        pendingProtectedSource = ""
+        passwordDialog.close()
+        showOpenPdfError(targetSource)
     }
 
     function showOpenPdfError(source) {
@@ -1322,7 +1630,7 @@ ApplicationWindow {
         var raw = String(pdfDocument.errorMessage || "").toLowerCase()
 
         if (raw.indexOf("password") >= 0 || raw.indexOf("contrasena") >= 0)
-            return "El PDF parece protegido con contrasena. Esta version todavia no puede abrir documentos protegidos."
+            return "No se pudo desbloquear el PDF con la contrasena indicada."
 
         if (raw.indexOf("valid pdf") >= 0 || raw.indexOf("no objects") >= 0 ||
             raw.indexOf("cannot recognize") >= 0 || raw.indexOf("corrupt") >= 0)
@@ -1336,6 +1644,17 @@ ApplicationWindow {
             return "No se pudo resolver la ruta del archivo. Prueba a moverlo a otra carpeta y abrirlo de nuevo."
 
         return "Posibles motivos: archivo corrupto, PDF no valido, contrasena, permisos insuficientes o bloqueo por otra aplicacion."
+    }
+
+    function shouldShowGlobalPdfError() {
+        if (pdfDocument.passwordRequired)
+            return false
+
+        var raw = String(pdfDocument.errorMessage || "").toLowerCase()
+        if (raw.indexOf("password") >= 0 || raw.indexOf("contrasena") >= 0)
+            return false
+
+        return pdfDocument.errorMessage.length > 0
     }
 
     function saveActiveDocumentAsRotated(target) {
@@ -1353,7 +1672,7 @@ ApplicationWindow {
                 refreshActiveDocumentFromDisk()
         } else {
             if (overwriteCurrent)
-                documentRenderController.markDocumentOpened(doc.path, doc.renderSessionId || 0)
+                documentRenderController.markDocumentOpened(doc.path, doc.renderSessionId || 0, doc.password || "")
             saveMessage = ""
         }
     }
@@ -1370,7 +1689,7 @@ ApplicationWindow {
         var layout = layoutMode
         var zoomModeValue = zoomMode
 
-        if (!pdfDocument.load(path))
+        if (!loadPdfWithPasswordPrompt(path, documentModel.get(index).password || ""))
             return false
 
         var sources = loadedPageSources()
@@ -1397,7 +1716,8 @@ ApplicationWindow {
         documentModel.setProperty(index, "peakProcessMemoryBytes", 0)
         documentModel.setProperty(index, "pendingRenderCount", 0)
         documentRenderController.releaseDocument(path, oldSessionId)
-        documentRenderController.markDocumentOpened(path, sessionId)
+        documentModel.setProperty(index, "password", pdfDocument.password)
+        documentRenderController.markDocumentOpened(path, sessionId, pdfDocument.password)
         setActiveDocument(index)
         jumpToPageRequested(activePageIndex)
         return true
@@ -1457,7 +1777,7 @@ ApplicationWindow {
         var requestId = ++searchRequestSerial
         documentModel.setProperty(activeDocumentIndex, "searchRequestId", requestId)
         documentModel.setProperty(activeDocumentIndex, "searchInProgress", true)
-        documentSearchController.searchDocument(doc.path, query, requestId)
+        documentSearchController.searchDocument(doc.path, query, requestId, doc.password || "")
     }
 
     function ensureActiveDocumentBackendLoaded() {
@@ -1465,7 +1785,7 @@ ApplicationWindow {
             return false
 
         var doc = documentModel.get(activeDocumentIndex)
-        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
+        if (pdfDocument.filePath !== doc.path && !loadPdfWithPasswordPrompt(doc.path, doc.password || ""))
             return false
 
         return true
@@ -1855,7 +2175,7 @@ ApplicationWindow {
         }
 
         var doc = documentModel.get(activeDocumentIndex)
-        if (pdfDocument.filePath !== doc.path && !pdfDocument.load(doc.path))
+        if (pdfDocument.filePath !== doc.path && !loadPdfWithPasswordPrompt(doc.path, doc.password || ""))
             return
 
         var resolvedPage = pdfDocument.resolveLinkPage(targetUri)
@@ -1898,6 +2218,164 @@ ApplicationWindow {
         syncActiveDocumentState()
     }
 
+    function itemContainsFocus(item) {
+        if (!item)
+            return false
+
+        var current = window.activeFocusItem
+        while (current) {
+            if (current === item)
+                return true
+            current = current.parent
+        }
+        return false
+    }
+
+    function tabsPaneHasFocus() {
+        if (itemContainsFocus(newTabButton))
+            return true
+
+        var tabChildren = tabsRow && tabsRow.children ? tabsRow.children : []
+        for (var i = 0; i < tabChildren.length; ++i) {
+            var child = tabChildren[i]
+            if (child && child.objectName === "documentTab" && itemContainsFocus(child))
+                return true
+        }
+
+        return false
+    }
+
+    function currentPaneFocusKey() {
+        if (!hasActiveDocument)
+            return itemContainsFocus(homeOpenButton) ? "home" : "toolbar"
+
+        if (itemContainsFocus(homeToolbarButton)
+                || itemContainsFocus(navigationPanelButton)
+                || itemContainsFocus(shortcutsButton)
+                || itemContainsFocus(themeButton)
+                || itemContainsFocus(defaultPdfButton)) {
+            return "toolbar"
+        }
+
+        if (tabsPaneHasFocus())
+            return "tabs"
+
+        if (itemContainsFocus(thumbnailsModeButton)
+                || itemContainsFocus(outlineModeButton)
+                || itemContainsFocus(pageSearchField)) {
+            return "side"
+        }
+
+        if (itemContainsFocus(pdfViewer) || itemContainsFocus(reflowTextArea))
+            return "viewer"
+
+        return "toolbar"
+    }
+
+    function paneFocusOrder() {
+        if (!hasActiveDocument)
+            return ["toolbar", "home"]
+
+        var order = ["toolbar", "tabs"]
+        if (navigationPanelVisible)
+            order.push("side")
+        order.push("viewer")
+        return order
+    }
+
+    function focusPaneByKey(key) {
+        if (key === "home") {
+            if (!hasActiveDocument && homeOpenButton) {
+                homeOpenButton.forceActiveFocus()
+                return true
+            }
+            return false
+        }
+
+        if (key === "toolbar") {
+            if (homeToolbarButton && homeToolbarButton.visible) {
+                homeToolbarButton.forceActiveFocus()
+                return true
+            }
+            if (navigationPanelButton && navigationPanelButton.visible) {
+                navigationPanelButton.forceActiveFocus()
+                return true
+            }
+            if (shortcutsButton) {
+                shortcutsButton.forceActiveFocus()
+                return true
+            }
+            return false
+        }
+
+        if (key === "tabs") {
+            if (hasActiveDocument && newTabButton) {
+                newTabButton.forceActiveFocus()
+                return true
+            }
+            return false
+        }
+
+        if (key === "side") {
+            if (!hasActiveDocument || !navigationPanelVisible)
+                return false
+
+            if (searchOverlayVisible && pageSearchField) {
+                pageSearchField.forceActiveFocus()
+                pageSearchField.selectAll()
+                return true
+            }
+
+            if (navigationSidePanelMode === "outline" && outlineModeButton) {
+                outlineModeButton.forceActiveFocus()
+                return true
+            }
+
+            if (thumbnailsModeButton) {
+                thumbnailsModeButton.forceActiveFocus()
+                return true
+            }
+
+            return false
+        }
+
+        if (key === "viewer") {
+            if (hasActiveDocument && reflowModeEnabled && reflowTextArea) {
+                reflowTextArea.forceActiveFocus()
+                return true
+            }
+
+            if (hasActiveDocument && pdfViewer) {
+                pdfViewer.forceActiveFocus()
+                return true
+            }
+
+            return false
+        }
+
+        return false
+    }
+
+    function cyclePaneFocus(step) {
+        var order = paneFocusOrder()
+        if (order.length === 0)
+            return
+
+        var currentKey = currentPaneFocusKey()
+        var currentIndex = order.indexOf(currentKey)
+        if (currentIndex < 0)
+            currentIndex = 0
+
+        var direction = step < 0 ? -1 : 1
+        for (var offset = 1; offset <= order.length; ++offset) {
+            var nextIndex = (currentIndex + direction * offset + order.length) % order.length
+            if (focusPaneByKey(order[nextIndex]))
+                return
+        }
+
+        focusPaneByKey(order[0])
+    }
+
     function saveActiveDocumentRotated() {
         if (!hasActiveDocument)
             return
@@ -1908,7 +2386,7 @@ ApplicationWindow {
             saveMessage = "Guardado: " + doc.title
             refreshActiveDocumentFromDisk()
         } else {
-            documentRenderController.markDocumentOpened(doc.path, doc.renderSessionId || 0)
+            documentRenderController.markDocumentOpened(doc.path, doc.renderSessionId || 0, doc.password || "")
             saveMessage = ""
         }
     }
@@ -3782,7 +4260,7 @@ ApplicationWindow {
                             }
 
                             Label {
-                                visible: pdfDocument.errorMessage.length > 0
+                                visible: window.shouldShowGlobalPdfError()
                                 text: pdfDocument.errorMessage
                                 color: Theme.danger
                                 font.pixelSize: 13
@@ -4067,10 +4545,10 @@ ApplicationWindow {
                 Label {
                     width: statusBar.narrow ? 150 : statusBar.compact ? 220 : 260
                     height: 24
-                    text: pdfDocument.errorMessage.length > 0 ? pdfDocument.errorMessage
+                    text: window.shouldShowGlobalPdfError() ? pdfDocument.errorMessage
                           : saveMessage.length > 0 ? saveMessage
                           : "PDF"
-                    color: pdfDocument.errorMessage.length > 0 ? Theme.danger : Theme.secondaryText
+                    color: window.shouldShowGlobalPdfError() ? Theme.danger : Theme.secondaryText
                     font.pixelSize: 11
                     elide: Text.ElideRight
                     verticalAlignment: Text.AlignVCenter
