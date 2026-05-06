@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:39
-- **Última acción**: Cerrada la tarea de dependencias en el diario de Fase 5
-- **Próxima acción planificada**: Configurar `CMakeLists.txt` con `find_package(unofficial-pdfium)`
+- **Última actualización**: 2026-05-06 15:42
+- **Última acción**: Configurado CMake con dependencias de edición PDFium bajo opción explícita
+- **Próxima acción planificada**: Verificar que el paquete pdfium de vcpkg expone `fpdf_edit.h` y `fpdf_text.h`
 
 ---
 
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Configurar `CMakeLists.txt` con `find_package(unofficial-pdfium)`
+(ninguna tarea iniciada todavía)
 
 ---
 
@@ -132,6 +132,14 @@
 **Trade-off aceptado:** `qtwebengine[pdf]` puede hacer el bootstrap más pesado que una instalación manual de Qt.
 **Reversible:** sí, si el proyecto adopta un registro/overlay que exponga puertos `qt6-*` o si se decide mantener Qt fuera de vcpkg.
 
+### 2026-05-06 — Mantener dependencias PDFium detrás de opción CMake
+**Contexto:** al añadir `find_package(unofficial-pdfium)` como requerido, la configuración local falló porque vcpkg/PDFium no está instalado en `CMAKE_PREFIX_PATH`.
+**Opciones consideradas:** dejar las dependencias como requeridas inmediatamente, no tocar CMake hasta instalar vcpkg, o añadir una opción explícita para activar Fase 5 cuando el entorno esté listo.
+**Decisión:** crear `PDFCLOWNE_ENABLE_PDFIUM_EDITING`, desactivada por defecto, y envolver ahí `Qt6::Pdf`, PDFium, QPDF, PoDoFo y spdlog.
+**Razón:** preserva la compilación del visor Fase 1 mientras se prepara el toolchain de Fase 5.
+**Trade-off aceptado:** la edición PDFium no queda enlazada hasta configurar con `-DPDFCLOWNE_ENABLE_PDFIUM_EDITING=ON`.
+**Reversible:** sí, cuando vcpkg esté instalado y verificado se puede activar por defecto o en el preset de desarrollo de Fase 5.
+
 ---
 
 ## ⚠️ Bloqueos / issues abiertos
@@ -139,7 +147,13 @@
 > Problemas encontrados que requieren resolución antes de avanzar.
 > Mover a "Histórico" cuando se resuelvan.
 
-(sin bloqueos)
+### #001 — 2026-05-06 — vcpkg/PDFium no instalado en el entorno local
+**Contexto:** se intentó validar CMake con las dependencias PDFium requeridas.
+**Síntoma:** `cmake --preset debug-msvc` falló buscando `unofficial-pdfiumConfig.cmake`; `VCPKG_ROOT` y `vcpkg` no están disponibles en PATH.
+**Hipótesis:** la máquina todavía no tiene vcpkg instalado o el preset no apunta al toolchain/prefix de vcpkg.
+**Workaround temporal:** `PDFCLOWNE_ENABLE_PDFIUM_EDITING` queda desactivado por defecto para que Fase 1 siga configurando.
+**Acción requerida:** instalar o localizar vcpkg, instalar `pdfium`, `podofo`, `qpdf`, `spdlog` y activar el toolchain/prefix antes de verificar headers y enlazado real.
+**Pausa cascada en:** verificación de headers PDFium, hello world PDFium y validación final de build con Fase 5 activada.
 
 ---
 
@@ -148,6 +162,7 @@
 > Una línea por tarea completada. Formato: `YYYY-MM-DD — [Sub-fase X.Y] descripción breve — commit-hash`
 
 2026-05-06 — [Sub-fase 5.0] añadido manifest vcpkg con dependencias base — 49180cc
+2026-05-06 — [Sub-fase 5.0] configurado CMake para dependencias PDFium bajo opción explícita — 84ae98c
 
 ---
 
