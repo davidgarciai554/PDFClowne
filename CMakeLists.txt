@@ -125,12 +125,15 @@ set(CPP_SOURCES
     src/backend/PdfRenderImageProvider.cpp
     src/backend/PdfDocument.cpp
     src/core/editing/PdfExtractionDebugRenderer.cpp
+    src/core/editing/TextBlockBuilder.cpp
+    src/core/editing/TextBlockModel.cpp
     src/core/pdf/PdfiumInitializer.cpp
 )
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     list(APPEND CPP_SOURCES
         src/core/editing/PdfPageObjectExtractor.cpp
+        src/core/editing/EditingController.cpp
     )
 endif()
 
@@ -146,15 +149,19 @@ set(CPP_HEADERS
     src/backend/PdfRenderImageProvider.h
     src/backend/PdfDocument.h
     src/core/editing/EditingHeuristics.h
+    src/core/editing/PdfCoordTransform.h
     src/core/editing/PdfExtractionDebugRenderer.h
     src/core/editing/PdfTextBlock.h
     src/core/editing/PdfTextLine.h
     src/core/editing/PdfTextRun.h
+    src/core/editing/TextBlockBuilder.h
+    src/core/editing/TextBlockModel.h
     src/core/pdf/PdfiumInitializer.h
 )
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     list(APPEND CPP_HEADERS
+        src/core/editing/EditingController.h
         src/core/editing/PdfPageObjectExtractor.h
     )
 endif()
@@ -174,6 +181,7 @@ qt_add_qml_module(PDFClowne
         src/qml/main.qml
         src/qml/PdfViewer.qml
         src/qml/Theme.qml
+        src/qml/EditableTextBox.qml
     RESOURCES
         src/qml/ShortcutCatalog.js
         resources/resources.qrc
@@ -205,38 +213,64 @@ if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     )
 endif()
 
+enable_testing()
+
+# TextBlockBuilder test — pure Qt, no PDFium required
+add_executable(TextBlockBuilderTest
+    tests/cpp/TextBlockBuilderTest.cpp
+    src/core/editing/TextBlockBuilder.cpp
+)
+
+target_include_directories(TextBlockBuilderTest PRIVATE
+    src/core/editing
+)
+
+target_link_libraries(TextBlockBuilderTest PRIVATE
+    Qt6::Core
+    Qt6::Gui
+)
+
+add_test(NAME TextBlockBuilder COMMAND TextBlockBuilderTest)
+
+# PDFium-dependent tests
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
-    enable_testing()
+    cmake_path(GET PDFium_LIBRARY PARENT_PATH _PDFium_BIN_DIR)
+    get_target_property(_spdlog_dll spdlog::spdlog IMPORTED_LOCATION_DEBUG)
+    if(_spdlog_dll)
+        cmake_path(GET _spdlog_dll PARENT_PATH _VCPKG_DEBUG_BIN_DIR)
+    else()
+        get_target_property(_spdlog_dll spdlog::spdlog IMPORTED_LOCATION_RELEASE)
+        cmake_path(GET _spdlog_dll PARENT_PATH _VCPKG_DEBUG_BIN_DIR)
+    endif()
+    set(_PDFIUM_TEST_ENVMOD
+        "PATH=path_list_prepend:$<TARGET_FILE_DIR:Qt6::Core>;PATH=path_list_prepend:${_PDFium_BIN_DIR};PATH=path_list_prepend:${_VCPKG_DEBUG_BIN_DIR}"
+    )
 
-    add_executable(PdfPageObjectExtractorSimpleParagraphTest
+    function(add_pdfium_test target_name source_file test_name)
+        add_executable(${target_name}
+            ${source_file}
+            src/core/editing/PdfPageObjectExtractor.cpp
+            src/core/pdf/PdfiumInitializer.cpp
+        )
+        target_include_directories(${target_name} PRIVATE src/core/editing src/core/pdf)
+        target_link_libraries(${target_name} PRIVATE
+            Qt6::Core Qt6::Gui ${PDFCLOWNE_PDFIUM_TARGET} spdlog::spdlog)
+        target_compile_definitions(${target_name} PRIVATE PDFCLOWNE_ENABLE_PDFIUM_EDITING=1)
+        add_test(NAME ${test_name} COMMAND ${target_name})
+        set_tests_properties(${test_name} PROPERTIES ENVIRONMENT_MODIFICATION "${_PDFIUM_TEST_ENVMOD}")
+    endfunction()
+
+    add_pdfium_test(PdfPageObjectExtractorSimpleParagraphTest
         tests/cpp/PdfPageObjectExtractorSimpleParagraphTest.cpp
-        src/core/editing/PdfPageObjectExtractor.cpp
-        src/core/pdf/PdfiumInitializer.cpp
-    )
+        PdfPageObjectExtractorSimpleParagraph)
 
-    target_include_directories(PdfPageObjectExtractorSimpleParagraphTest PRIVATE
-        src/core/editing
-        src/core/pdf
-    )
+    add_pdfium_test(PdfPageObjectExtractorMixedFontsTest
+        tests/cpp/PdfPageObjectExtractorMixedFontsTest.cpp
+        PdfPageObjectExtractorMixedFonts)
 
-    target_link_libraries(PdfPageObjectExtractorSimpleParagraphTest PRIVATE
-        Qt6::Core
-        Qt6::Gui
-        ${PDFCLOWNE_PDFIUM_TARGET}
-        spdlog::spdlog
-    )
-
-    target_compile_definitions(PdfPageObjectExtractorSimpleParagraphTest PRIVATE
-        PDFCLOWNE_ENABLE_PDFIUM_EDITING=1
-    )
-
-    add_test(NAME PdfPageObjectExtractorSimpleParagraph
-             COMMAND PdfPageObjectExtractorSimpleParagraphTest)
-
-    set_tests_properties(PdfPageObjectExtractorSimpleParagraph PROPERTIES
-        ENVIRONMENT_MODIFICATION
-            "PATH=path_list_prepend:$<TARGET_FILE_DIR:Qt6::Core>;PATH=path_list_prepend:$ENV{PDFium_DIR}/bin;PATH=path_list_prepend:$ENV{VCPKG_ROOT}/installed/x64-windows/debug/bin;PATH=path_list_prepend:$ENV{VCPKG_ROOT}/installed/x64-windows/bin"
-    )
+    add_pdfium_test(PdfPageObjectExtractorScannedTest
+        tests/cpp/PdfPageObjectExtractorScannedTest.cpp
+        PdfPageObjectExtractorScanned)
 endif()
 
 set_target_properties(PDFClowne PROPERTIES

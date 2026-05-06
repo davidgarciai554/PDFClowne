@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:56
-- **Última acción**: Añadido test CTest de extractor con PDF simple generado por PDFium
-- **Próxima acción planificada**: Test unitario con `mixed_fonts.pdf`
+- **Última actualización**: 2026-05-06 21:15
+- **Última acción**: Tests MixedFonts y Scanned pasando (fix PATH vcpkg/PDFium en CTest)
+- **Próxima acción planificada**: Sub-fase 5.2 — implementar `groupRunsIntoLines`
 
 ---
 
@@ -27,8 +27,7 @@
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
-- [ ] Test unitario con `mixed_fonts.pdf`
-- [ ] Test unitario con `scanned.pdf` (debe retornar lista vacía)
+*(completada)*
 
 ## 📋 Pendientes — Sub-fase 5.2: Agrupación
 
@@ -178,6 +177,7 @@
 2026-05-06 — [Sub-fase 5.2] creado `EditingHeuristics.h` con constantes iniciales — 7e1c94f
 2026-05-06 — [Sub-fase 5.1] añadido renderer core de bboxes rojos para debug de extracción — b240a2d
 2026-05-06 — [Sub-fase 5.1] añadido test CTest de extractor con PDF simple generado por PDFium — e5f6940
+2026-05-06 — [Sub-fase 5.1] tests MixedFonts y Scanned pasando; fix PATH vcpkg+PDFium en CTest — (pendiente commit)
 
 ---
 
