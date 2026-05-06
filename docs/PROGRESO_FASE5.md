@@ -9,10 +9,10 @@
 
 ## 📍 Estado actual
 
-- **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:55
-- **Última acción**: Ejecutado hello world directo de PDFium contra `PDFTest/01-base.pdf` (2 páginas)
-- **Próxima acción planificada**: Revisar Sub-fase 5.0 antes de avanzar a 5.1
+- **Sub-fase activa**: 5.1 (Extracción de page objects)
+- **Última actualización**: 2026-05-06 16:22
+- **Última acción**: Verificado configure/build con `PDFCLOWNE_ENABLE_PDFIUM_EDITING=ON` usando vcpkg y `D:\Aplicaciones\pdfium`
+- **Próxima acción planificada**: Definir structs `PdfTextRun`, `PdfTextLine`, `PdfTextBlock`
 
 ---
 
@@ -145,13 +145,7 @@
 > Problemas encontrados que requieren resolución antes de avanzar.
 > Mover a "Histórico" cuando se resuelvan.
 
-### #001 — 2026-05-06 — dependencias vcpkg restantes no instaladas en el entorno local
-**Contexto:** se intentó validar CMake con las dependencias PDFium requeridas.
-**Síntoma:** `vcpkg` y `VCPKG_ROOT` no están disponibles en PATH/entorno; PDFium quedó cubierto temporalmente por `C:\tmp\pdfium-fase5`.
-**Hipótesis:** la máquina todavía no tiene vcpkg instalado o el preset no apunta al toolchain/prefix correspondiente.
-**Workaround temporal:** `PDFCLOWNE_ENABLE_PDFIUM_EDITING` queda desactivado por defecto para que Fase 1 siga configurando.
-**Acción requerida:** instalar o localizar vcpkg para `podofo`, `qpdf`, `spdlog` y Qt PDF, y configurar el preset de Fase 5 con ese toolchain; mantener `PDFium_DIR=C:\tmp\pdfium-fase5` o reemplazarlo por un SDK definitivo.
-**Pausa cascada en:** validación final de build con `PDFCLOWNE_ENABLE_PDFIUM_EDITING=ON`.
+(sin bloqueos)
 
 ---
 
@@ -167,6 +161,7 @@
 2026-05-06 — [Sub-fase 5.0] implementado macro `PDFIUM_LOCK()` — ddf78f7
 2026-05-06 — [Sub-fase 5.0] verificada compilación debug y arranque básico de Fase 1 — 33d3890
 2026-05-06 — [Sub-fase 5.0] añadido y ejecutado smoke test hello world de PDFium — 61e1bc1
+2026-05-06 — [Sub-fase 5.0] resuelto bloqueo de dependencias y validado build con edición PDFium activada — pendiente
 
 ---
 
