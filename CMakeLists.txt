@@ -127,6 +127,12 @@ set(CPP_SOURCES
     src/core/pdf/PdfiumInitializer.cpp
 )
 
+if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
+    list(APPEND CPP_SOURCES
+        src/core/editing/PdfPageObjectExtractor.cpp
+    )
+endif()
+
 if(WIN32)
     list(APPEND CPP_SOURCES resources/app.rc)
 endif()
@@ -143,6 +149,12 @@ set(CPP_HEADERS
     src/core/editing/PdfTextRun.h
     src/core/pdf/PdfiumInitializer.h
 )
+
+if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
+    list(APPEND CPP_HEADERS
+        src/core/editing/PdfPageObjectExtractor.h
+    )
+endif()
 
 qt_add_executable(PDFClowne ${CPP_SOURCES} ${CPP_HEADERS})
 
