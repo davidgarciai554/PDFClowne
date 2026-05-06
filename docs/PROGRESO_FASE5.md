@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:36
-- **Última acción**: Creado el diario inicial de seguimiento de Fase 5
-- **Próxima acción planificada**: Añadir dependencias a `vcpkg.json` (pdfium, podofo, qpdf, spdlog)
+- **Última actualización**: 2026-05-06 15:39
+- **Última acción**: Añadido `vcpkg.json` con dependencias de Qt/PDFium/PoDoFo/QPDF/spdlog
+- **Próxima acción planificada**: Configurar `CMakeLists.txt` con `find_package(unofficial-pdfium)`
 
 ---
 
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Añadir dependencias a `vcpkg.json` (pdfium, podofo, qpdf, spdlog)
+(ninguna tarea iniciada todavía)
 
 ---
 
@@ -125,7 +125,13 @@
 > Cada vez que tomes una decisión arquitectónica o de implementación que NO
 > esté ya resuelta en el prompt, anótala aquí con fecha, contexto y razón.
 
-(sin decisiones registradas todavía)
+### 2026-05-06 — Usar nombres reales de puertos vcpkg para Qt 6
+**Contexto:** el prompt usa nombres descriptivos `qt6-base`, `qt6-declarative`, `qt6-quick` y `qt6-pdf`, pero el registro oficial de vcpkg publica los módulos Qt 6 con nombres como `qtbase` y `qtdeclarative`.
+**Opciones consideradas:** copiar literalmente los nombres del prompt, usar los puertos oficiales de vcpkg, o aplazar Qt a la instalación manual existente.
+**Decisión:** usar `qtbase`, `qtdeclarative` y `qtwebengine` con feature `pdf`, además de `pdfium`, `podofo`, `qpdf` y `spdlog`.
+**Razón:** evita un manifest que no resuelva en vcpkg estándar; `Qt Quick` lo aporta `qtdeclarative` y `Qt PDF` está empaquetado como feature `pdf` de `qtwebengine`.
+**Trade-off aceptado:** `qtwebengine[pdf]` puede hacer el bootstrap más pesado que una instalación manual de Qt.
+**Reversible:** sí, si el proyecto adopta un registro/overlay que exponga puertos `qt6-*` o si se decide mantener Qt fuera de vcpkg.
 
 ---
 
@@ -142,7 +148,7 @@
 
 > Una línea por tarea completada. Formato: `YYYY-MM-DD — [Sub-fase X.Y] descripción breve — commit-hash`
 
-(vacío — el proyecto acaba de empezar)
+2026-05-06 — [Sub-fase 5.0] añadido manifest vcpkg con dependencias base — 49180cc
 
 ---
 
