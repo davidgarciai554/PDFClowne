@@ -10,8 +10,8 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:50
-- **Última acción**: Implementados `PdfiumInitializer` y `PDFIUM_LOCK()` con test de contrato
+- **Última actualización**: 2026-05-06 15:51
+- **Última acción**: Cerrada implementación de `PdfiumInitializer` en el diario de Fase 5
 - **Próxima acción planificada**: Confirmar que la app sigue compilando sin regresiones de Fase 1
 
 ---
@@ -21,14 +21,13 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Confirmar que la app sigue compilando y arrancando sin regresiones de Fase 1
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.0: Setup
 
 - [ ] Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
-- [ ] Confirmar que la app sigue compilando y arrancando sin regresiones de Fase 1
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
