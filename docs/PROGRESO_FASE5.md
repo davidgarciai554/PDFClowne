@@ -11,7 +11,7 @@
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
 - **Última actualización**: 2026-05-06 16:33
-- **Última acción**: Aplicados filtros de runs no editables y centralizadas heurísticas
+- **Última acción**: Cerrados filtros de runs no editables
 - **Próxima acción planificada**: Visualización debug de bboxes de extracción
 
 ---
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Visualización debug: dibujar bboxes en rojo sobre el render
 
 ---
 
