@@ -10,8 +10,8 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:22
-- **Última acción**: Verificado configure/build con `PDFCLOWNE_ENABLE_PDFIUM_EDITING=ON` usando vcpkg y `D:\Aplicaciones\pdfium`
+- **Última actualización**: 2026-05-06 16:23
+- **Última acción**: Cerrada Sub-fase 5.0 y resuelto bloqueo de dependencias
 - **Próxima acción planificada**: Definir structs `PdfTextRun`, `PdfTextLine`, `PdfTextBlock`
 
 ---
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Definir structs `PdfTextRun`, `PdfTextLine`, `PdfTextBlock` (§4.1)
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
-- [ ] Definir structs `PdfTextRun`, `PdfTextLine`, `PdfTextBlock` (§4.1)
 - [ ] Implementar `PdfPageObjectExtractor::extractTextRunsFromPage` (§4.2)
 - [ ] Implementar `readUnicodeString` con conversión UTF-16 → QString (§4.3)
 - [ ] Aplicar filtros de runs no editables (§4.4)
