@@ -138,6 +138,9 @@ set(CPP_HEADERS
     src/backend/Logger.h
     src/backend/PdfRenderImageProvider.h
     src/backend/PdfDocument.h
+    src/core/editing/PdfTextBlock.h
+    src/core/editing/PdfTextLine.h
+    src/core/editing/PdfTextRun.h
     src/core/pdf/PdfiumInitializer.h
 )
 
@@ -163,6 +166,7 @@ qt_add_qml_module(PDFClowne
 
 target_include_directories(PDFClowne PRIVATE
     src/backend
+    src/core/editing
     src/core/pdf
     ${MUPDF_INCLUDE_DIR}
 )
