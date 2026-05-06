@@ -205,6 +205,40 @@ if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     )
 endif()
 
+if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
+    enable_testing()
+
+    add_executable(PdfPageObjectExtractorSimpleParagraphTest
+        tests/cpp/PdfPageObjectExtractorSimpleParagraphTest.cpp
+        src/core/editing/PdfPageObjectExtractor.cpp
+        src/core/pdf/PdfiumInitializer.cpp
+    )
+
+    target_include_directories(PdfPageObjectExtractorSimpleParagraphTest PRIVATE
+        src/core/editing
+        src/core/pdf
+    )
+
+    target_link_libraries(PdfPageObjectExtractorSimpleParagraphTest PRIVATE
+        Qt6::Core
+        Qt6::Gui
+        ${PDFCLOWNE_PDFIUM_TARGET}
+        spdlog::spdlog
+    )
+
+    target_compile_definitions(PdfPageObjectExtractorSimpleParagraphTest PRIVATE
+        PDFCLOWNE_ENABLE_PDFIUM_EDITING=1
+    )
+
+    add_test(NAME PdfPageObjectExtractorSimpleParagraph
+             COMMAND PdfPageObjectExtractorSimpleParagraphTest)
+
+    set_tests_properties(PdfPageObjectExtractorSimpleParagraph PROPERTIES
+        ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:Qt6::Core>;PATH=path_list_prepend:$ENV{PDFium_DIR}/bin;PATH=path_list_prepend:$ENV{VCPKG_ROOT}/installed/x64-windows/debug/bin;PATH=path_list_prepend:$ENV{VCPKG_ROOT}/installed/x64-windows/bin"
+    )
+endif()
+
 set_target_properties(PDFClowne PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
