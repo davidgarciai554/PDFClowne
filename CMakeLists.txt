@@ -124,6 +124,7 @@ set(CPP_SOURCES
     src/backend/DocumentSearchController.cpp
     src/backend/PdfRenderImageProvider.cpp
     src/backend/PdfDocument.cpp
+    src/core/pdf/PdfiumInitializer.cpp
 )
 
 if(WIN32)
@@ -137,6 +138,7 @@ set(CPP_HEADERS
     src/backend/Logger.h
     src/backend/PdfRenderImageProvider.h
     src/backend/PdfDocument.h
+    src/core/pdf/PdfiumInitializer.h
 )
 
 qt_add_executable(PDFClowne ${CPP_SOURCES} ${CPP_HEADERS})
@@ -161,6 +163,7 @@ qt_add_qml_module(PDFClowne
 
 target_include_directories(PDFClowne PRIVATE
     src/backend
+    src/core/pdf
     ${MUPDF_INCLUDE_DIR}
 )
 
@@ -172,6 +175,8 @@ target_link_libraries(PDFClowne PRIVATE
 )
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_PDFIUM_EDITING=1)
+
     target_link_libraries(PDFClowne PRIVATE
         Qt6::Pdf
         ${PDFCLOWNE_PDFIUM_TARGET}
