@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: YYYY-MM-DD HH:MM
-- **Última acción**: (sin acciones aún)
-- **Próxima acción planificada**: Crear estructura de carpetas según §2.3 del prompt
+- **Última actualización**: 2026-05-06 15:36
+- **Última acción**: Creado el diario inicial de seguimiento de Fase 5
+- **Próxima acción planificada**: Añadir dependencias a `vcpkg.json` (pdfium, podofo, qpdf, spdlog)
 
 ---
 
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Añadir dependencias a `vcpkg.json` (pdfium, podofo, qpdf, spdlog)
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.0: Setup
 
-- [ ] Añadir dependencias a `vcpkg.json` (pdfium, podofo, qpdf, spdlog)
 - [ ] Configurar `CMakeLists.txt` con `find_package(unofficial-pdfium)`
 - [ ] Verificar que el paquete pdfium de vcpkg expone `fpdf_edit.h` y `fpdf_text.h`
       (si no, decidir entre compilar PDFium desde fuente o usar pdfium-binaries)
