@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:43
-- **Última acción**: Cerrada la tarea de configuración CMake en el diario de Fase 5
-- **Próxima acción planificada**: Verificar que el paquete pdfium de vcpkg expone `fpdf_edit.h` y `fpdf_text.h`
+- **Última actualización**: 2026-05-06 15:45
+- **Última acción**: Verificado que no hay port oficial `pdfium` en vcpkg y preparado fallback a SDK externo PDFium
+- **Próxima acción planificada**: Crear estructura de carpetas según §2.3 del prompt
 
 ---
 
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Verificar que el paquete pdfium de vcpkg expone `fpdf_edit.h` y `fpdf_text.h`
+(ninguna tarea iniciada todavía)
 
 ---
 
@@ -138,6 +138,14 @@
 **Trade-off aceptado:** la edición PDFium no queda enlazada hasta configurar con `-DPDFCLOWNE_ENABLE_PDFIUM_EDITING=ON`.
 **Reversible:** sí, cuando vcpkg esté instalado y verificado se puede activar por defecto o en el preset de desarrollo de Fase 5.
 
+### 2026-05-06 — Usar SDK externo de PDFium si no existe overlay vcpkg
+**Contexto:** la búsqueda en el repositorio oficial `microsoft/vcpkg` no encontró `ports/pdfium`; los headers oficiales `public/fpdf_edit.h` y `public/fpdf_text.h` sí existen en `pdfium.googlesource.com`.
+**Opciones consideradas:** mantener `"pdfium"` como dependencia esperando un overlay no configurado, compilar PDFium desde fuente, o usar `pdfium-binaries` como SDK externo.
+**Decisión:** quitar `pdfium` del manifest estándar y permitir dos rutas en CMake: `unofficial::pdfium::pdfium` si existe un overlay, o `find_package(PDFium)` para un SDK tipo `pdfium-binaries`.
+**Razón:** evita que `vcpkg install` falle con un port inexistente y mantiene una vía práctica para obtener `fpdf_edit.h`/`fpdf_text.h` sin compilar Chromium/PDFium desde fuente.
+**Trade-off aceptado:** PDFium queda fuera de la resolución estándar de vcpkg hasta que se configure `PDFium_DIR` o un overlay.
+**Reversible:** sí, si se añade un overlay oficial del proyecto o un registro privado con port `pdfium`.
+
 ---
 
 ## ⚠️ Bloqueos / issues abiertos
@@ -147,11 +155,11 @@
 
 ### #001 — 2026-05-06 — vcpkg/PDFium no instalado en el entorno local
 **Contexto:** se intentó validar CMake con las dependencias PDFium requeridas.
-**Síntoma:** `cmake --preset debug-msvc` falló buscando `unofficial-pdfiumConfig.cmake`; `VCPKG_ROOT` y `vcpkg` no están disponibles en PATH.
-**Hipótesis:** la máquina todavía no tiene vcpkg instalado o el preset no apunta al toolchain/prefix de vcpkg.
+**Síntoma:** `cmake --preset debug-msvc` falló buscando `unofficial-pdfiumConfig.cmake`; `VCPKG_ROOT`, `vcpkg` y `PDFium_DIR` no están disponibles en PATH/entorno.
+**Hipótesis:** la máquina todavía no tiene vcpkg ni SDK externo de PDFium instalados o el preset no apunta al toolchain/prefix correspondiente.
 **Workaround temporal:** `PDFCLOWNE_ENABLE_PDFIUM_EDITING` queda desactivado por defecto para que Fase 1 siga configurando.
-**Acción requerida:** instalar o localizar vcpkg, instalar `pdfium`, `podofo`, `qpdf`, `spdlog` y activar el toolchain/prefix antes de verificar headers y enlazado real.
-**Pausa cascada en:** verificación de headers PDFium, hello world PDFium y validación final de build con Fase 5 activada.
+**Acción requerida:** instalar o localizar vcpkg para `podofo`, `qpdf`, `spdlog` y Qt PDF, y además configurar `PDFium_DIR` apuntando a un SDK con `fpdf_edit.h`/`fpdf_text.h` o proporcionar un overlay `unofficial-pdfium`.
+**Pausa cascada en:** hello world PDFium y validación final de build con Fase 5 activada.
 
 ---
 
@@ -161,6 +169,7 @@
 
 2026-05-06 — [Sub-fase 5.0] añadido manifest vcpkg con dependencias base — 49180cc
 2026-05-06 — [Sub-fase 5.0] configurado CMake para dependencias PDFium bajo opción explícita — 84ae98c
+2026-05-06 — [Sub-fase 5.0] verificado packaging PDFium y añadido fallback a SDK externo — eca5f36
 
 ---
 
