@@ -10,8 +10,8 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:45
-- **Última acción**: Verificado que no hay port oficial `pdfium` en vcpkg y preparado fallback a SDK externo PDFium
+- **Última actualización**: 2026-05-06 15:46
+- **Última acción**: Cerrada la verificación de packaging PDFium en el diario de Fase 5
 - **Próxima acción planificada**: Crear estructura de carpetas según §2.3 del prompt
 
 ---
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Crear estructura de carpetas según §2.3 del prompt
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.0: Setup
 
-- [ ] Crear estructura de carpetas según §2.3 del prompt
 - [ ] Implementar `PdfiumInitializer` con `std::call_once` y `std::recursive_mutex`
 - [ ] Implementar macro `PDFIUM_LOCK()` en header global
 - [ ] Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
