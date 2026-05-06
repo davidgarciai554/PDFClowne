@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "pdfclowne",
+  "version-semver": "2.0.0",
+  "dependencies": [
+    "qtbase",
+    "qtdeclarative",
+    {
+      "name": "qtwebengine",
+      "features": [
+        "pdf"
+      ]
+    },
+    "qpdf",
+    "podofo",
+    "pdfium",
+    "spdlog"
+  ]
+}
