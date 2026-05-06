@@ -10,8 +10,8 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:47
-- **Última acción**: Creada estructura local de directorios para Fase 5 sin archivos placeholder
+- **Última actualización**: 2026-05-06 15:48
+- **Última acción**: Cerrada la creación de estructura local de directorios en el diario de Fase 5
 - **Próxima acción planificada**: Implementar `PdfiumInitializer` con `std::call_once` y `std::recursive_mutex`
 
 ---
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Implementar `PdfiumInitializer` con `std::call_once` y `std::recursive_mutex`
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.0: Setup
 
-- [ ] Implementar `PdfiumInitializer` con `std::call_once` y `std::recursive_mutex`
 - [ ] Implementar macro `PDFIUM_LOCK()` en header global
 - [ ] Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
 - [ ] Confirmar que la app sigue compilando y arrancando sin regresiones de Fase 1
