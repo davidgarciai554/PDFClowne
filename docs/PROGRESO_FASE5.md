@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:31
-- **Última acción**: Cerrado extractor PDFium de objetos de texto
-- **Próxima acción planificada**: Aplicar filtros de runs no editables (§4.4)
+- **Última actualización**: 2026-05-06 16:33
+- **Última acción**: Aplicados filtros de runs no editables y centralizadas heurísticas
+- **Próxima acción planificada**: Visualización debug de bboxes de extracción
 
 ---
 
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Aplicar filtros de runs no editables (§4.4)
+(ninguna tarea iniciada todavía)
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
-- [ ] Aplicar filtros de runs no editables (§4.4)
 - [ ] Visualización debug: dibujar bboxes en rojo sobre el render
 - [ ] Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
 - [ ] Test unitario con `mixed_fonts.pdf`
@@ -38,7 +37,6 @@
 - [ ] Implementar `groupRunsIntoLines` (§5.1)
 - [ ] Implementar `groupLinesIntoBlocks` (§5.2)
 - [ ] Implementar `finalizeBlock` con dominantes y alineación (§5.3)
-- [ ] Crear `EditingHeuristics.h` con todas las constantes (§5.4)
 - [ ] Visualización debug: bloques en azul, líneas en verde
 - [ ] Test unitario `TestTextBlockBuilder` cubriendo: 1 línea / 2 líneas
       mismo bloque / 2 líneas distintos bloques / multi-columna
@@ -170,6 +168,8 @@
 2026-05-06 — [Sub-fase 5.1] definidos modelos planos de texto PDF — 4ed88b2
 2026-05-06 — [Sub-fase 5.1] implementado extractor PDFium de runs de texto por página — 17fea57
 2026-05-06 — [Sub-fase 5.1] implementada lectura Unicode UTF-16 de objetos de texto — 17fea57
+2026-05-06 — [Sub-fase 5.1] aplicados filtros de runs vacíos, sin bbox e invisibles — 7e1c94f
+2026-05-06 — [Sub-fase 5.2] creado `EditingHeuristics.h` con constantes iniciales — 7e1c94f
 
 ---
 
@@ -183,7 +183,7 @@
 
 ## 📊 Métricas de salud del módulo (actualizar cuando aplique)
 
-- LOC del módulo de edición: 219
+- LOC del módulo de edición: 247
 - Tiempo de extracción en `large_doc_500pages.pdf`: (sin medir)
 - Memoria pico durante edición: (sin medir)
 - Latencia de reflow por keystroke: (sin medir)
