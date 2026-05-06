@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:54
-- **Última acción**: Descargado SDK local de PDFium en `C:\tmp\pdfium-fase5` con headers de edición
-- **Próxima acción planificada**: Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
+- **Última actualización**: 2026-05-06 15:55
+- **Última acción**: Ejecutado hello world directo de PDFium contra `PDFTest/01-base.pdf` (2 páginas)
+- **Próxima acción planificada**: Revisar Sub-fase 5.0 antes de avanzar a 5.1
 
 ---
 
@@ -21,12 +21,9 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
+(ninguna tarea iniciada todavía)
 
 ---
-
-## 📋 Pendientes — Sub-fase 5.0: Setup
-
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
@@ -120,8 +117,8 @@
 ### 2026-05-06 — Usar nombres reales de puertos vcpkg para Qt 6
 **Contexto:** el prompt usa nombres descriptivos `qt6-base`, `qt6-declarative`, `qt6-quick` y `qt6-pdf`, pero el registro oficial de vcpkg publica los módulos Qt 6 con nombres como `qtbase` y `qtdeclarative`.
 **Opciones consideradas:** copiar literalmente los nombres del prompt, usar los puertos oficiales de vcpkg, o aplazar Qt a la instalación manual existente.
-**Decisión:** usar `qtbase`, `qtdeclarative` y `qtwebengine` con feature `pdf`, además de `pdfium`, `podofo`, `qpdf` y `spdlog`.
-**Razón:** evita un manifest que no resuelva en vcpkg estándar; `Qt Quick` lo aporta `qtdeclarative` y `Qt PDF` está empaquetado como feature `pdf` de `qtwebengine`.
+**Decisión:** usar `qtbase`, `qtdeclarative` y `qtwebengine` con feature `pdf`, además de `podofo`, `qpdf` y `spdlog`; PDFium queda gestionado por SDK externo u overlay.
+**Razón:** evita un manifest que no resuelva en vcpkg estándar; `Qt Quick` lo aporta `qtdeclarative`, `Qt PDF` está empaquetado como feature `pdf` de `qtwebengine`, y el port oficial `pdfium` no existe en `microsoft/vcpkg`.
 **Trade-off aceptado:** `qtwebengine[pdf]` puede hacer el bootstrap más pesado que una instalación manual de Qt.
 **Reversible:** sí, si el proyecto adopta un registro/overlay que exponga puertos `qt6-*` o si se decide mantener Qt fuera de vcpkg.
 
@@ -148,13 +145,13 @@
 > Problemas encontrados que requieren resolución antes de avanzar.
 > Mover a "Histórico" cuando se resuelvan.
 
-### #001 — 2026-05-06 — vcpkg/PDFium no instalado en el entorno local
+### #001 — 2026-05-06 — dependencias vcpkg restantes no instaladas en el entorno local
 **Contexto:** se intentó validar CMake con las dependencias PDFium requeridas.
-**Síntoma:** `cmake --preset debug-msvc` falló buscando `unofficial-pdfiumConfig.cmake`; `VCPKG_ROOT`, `vcpkg` y `PDFium_DIR` no están disponibles en PATH/entorno.
-**Hipótesis:** la máquina todavía no tiene vcpkg ni SDK externo de PDFium instalados o el preset no apunta al toolchain/prefix correspondiente.
+**Síntoma:** `vcpkg` y `VCPKG_ROOT` no están disponibles en PATH/entorno; PDFium quedó cubierto temporalmente por `C:\tmp\pdfium-fase5`.
+**Hipótesis:** la máquina todavía no tiene vcpkg instalado o el preset no apunta al toolchain/prefix correspondiente.
 **Workaround temporal:** `PDFCLOWNE_ENABLE_PDFIUM_EDITING` queda desactivado por defecto para que Fase 1 siga configurando.
-**Acción requerida:** instalar o localizar vcpkg para `podofo`, `qpdf`, `spdlog` y Qt PDF, y además configurar `PDFium_DIR` apuntando a un SDK con `fpdf_edit.h`/`fpdf_text.h` o proporcionar un overlay `unofficial-pdfium`.
-**Pausa cascada en:** hello world PDFium y validación final de build con Fase 5 activada.
+**Acción requerida:** instalar o localizar vcpkg para `podofo`, `qpdf`, `spdlog` y Qt PDF, y configurar el preset de Fase 5 con ese toolchain; mantener `PDFium_DIR=C:\tmp\pdfium-fase5` o reemplazarlo por un SDK definitivo.
+**Pausa cascada en:** validación final de build con `PDFCLOWNE_ENABLE_PDFIUM_EDITING=ON`.
 
 ---
 
@@ -169,12 +166,13 @@
 2026-05-06 — [Sub-fase 5.0] implementado `PdfiumInitializer` thread-safe — ddf78f7
 2026-05-06 — [Sub-fase 5.0] implementado macro `PDFIUM_LOCK()` — ddf78f7
 2026-05-06 — [Sub-fase 5.0] verificada compilación debug y arranque básico de Fase 1 — 33d3890
+2026-05-06 — [Sub-fase 5.0] añadido y ejecutado smoke test hello world de PDFium — 61e1bc1
 
 ---
 
 ## 🧪 Estado de tests
 
-- Tests unitarios: 1 / ~25 estimados
+- Tests unitarios: 2 / ~25 estimados
 - Tests de integración: 0 / 5 estimados
 - PDFs de corpus en `tests/pdfs/`: 0 / 9
 
