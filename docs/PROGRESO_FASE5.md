@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:52
-- **Última acción**: Verificada compilación debug y arranque de la app sin regresión visible de Fase 1
-- **Próxima acción planificada**: Resolver bloqueo #001 para ejecutar el hello world directo de PDFium
+- **Última actualización**: 2026-05-06 15:54
+- **Última acción**: Descargado SDK local de PDFium en `C:\tmp\pdfium-fase5` con headers de edición
+- **Próxima acción planificada**: Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
 
 ---
 
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.0: Setup
 
-- [ ] Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
