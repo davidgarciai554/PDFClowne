@@ -13,7 +13,6 @@
     },
     "qpdf",
     "podofo",
-    "pdfium",
     "spdlog"
   ]
 }

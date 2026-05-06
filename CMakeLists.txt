@@ -16,7 +16,13 @@ option(PDFCLOWNE_ENABLE_PDFIUM_EDITING "Enable direct PDFium-backed PDF text edi
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     find_package(Qt6 REQUIRED COMPONENTS Pdf)
-    find_package(unofficial-pdfium CONFIG REQUIRED)
+    find_package(unofficial-pdfium CONFIG QUIET)
+    if(TARGET unofficial::pdfium::pdfium)
+        set(PDFCLOWNE_PDFIUM_TARGET unofficial::pdfium::pdfium)
+    else()
+        find_package(PDFium REQUIRED)
+        set(PDFCLOWNE_PDFIUM_TARGET pdfium)
+    endif()
     find_package(qpdf CONFIG REQUIRED)
     find_package(podofo CONFIG REQUIRED)
     find_package(spdlog CONFIG REQUIRED)
@@ -166,13 +172,9 @@ target_link_libraries(PDFClowne PRIVATE
 )
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
-    target_include_directories(PDFClowne PRIVATE
-        ${PDFIUM_INCLUDE_DIRS}
-    )
-
     target_link_libraries(PDFClowne PRIVATE
         Qt6::Pdf
-        unofficial::pdfium::pdfium
+        ${PDFCLOWNE_PDFIUM_TARGET}
         qpdf::libqpdf
         podofo::podofo
         spdlog::spdlog
