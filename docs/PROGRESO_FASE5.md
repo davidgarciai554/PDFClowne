@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:51
-- **Última acción**: Cerrada implementación de `PdfiumInitializer` en el diario de Fase 5
-- **Próxima acción planificada**: Confirmar que la app sigue compilando sin regresiones de Fase 1
+- **Última actualización**: 2026-05-06 15:52
+- **Última acción**: Verificada compilación debug y arranque de la app sin regresión visible de Fase 1
+- **Próxima acción planificada**: Resolver bloqueo #001 para ejecutar el hello world directo de PDFium
 
 ---
 
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Confirmar que la app sigue compilando y arrancando sin regresiones de Fase 1
+(ninguna tarea iniciada todavía)
 
 ---
 
@@ -169,6 +169,7 @@
 2026-05-06 — [Sub-fase 5.0] creada estructura local de directorios sin placeholders — de0499e
 2026-05-06 — [Sub-fase 5.0] implementado `PdfiumInitializer` thread-safe — ddf78f7
 2026-05-06 — [Sub-fase 5.0] implementado macro `PDFIUM_LOCK()` — ddf78f7
+2026-05-06 — [Sub-fase 5.0] verificada compilación debug y arranque básico de Fase 1 — 33d3890
 
 ---
 
