@@ -10,8 +10,8 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:42
-- **Última acción**: Configurado CMake con dependencias de edición PDFium bajo opción explícita
+- **Última actualización**: 2026-05-06 15:43
+- **Última acción**: Cerrada la tarea de configuración CMake en el diario de Fase 5
 - **Próxima acción planificada**: Verificar que el paquete pdfium de vcpkg expone `fpdf_edit.h` y `fpdf_text.h`
 
 ---
@@ -21,14 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Verificar que el paquete pdfium de vcpkg expone `fpdf_edit.h` y `fpdf_text.h`
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.0: Setup
 
-- [ ] Verificar que el paquete pdfium de vcpkg expone `fpdf_edit.h` y `fpdf_text.h`
-      (si no, decidir entre compilar PDFium desde fuente o usar pdfium-binaries)
 - [ ] Crear estructura de carpetas según §2.3 del prompt
 - [ ] Implementar `PdfiumInitializer` con `std::call_once` y `std::recursive_mutex`
 - [ ] Implementar macro `PDFIUM_LOCK()` en header global
