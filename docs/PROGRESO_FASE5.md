@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:37
-- **Última acción**: Cerrado renderer core para visualización debug de bboxes
-- **Próxima acción planificada**: Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
+- **Última actualización**: 2026-05-06 16:56
+- **Última acción**: Añadido test CTest de extractor con PDF simple generado por PDFium
+- **Próxima acción planificada**: Test unitario con `mixed_fonts.pdf`
 
 ---
 
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
+(ninguna tarea iniciada todavía)
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
-- [ ] Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
 - [ ] Test unitario con `mixed_fonts.pdf`
 - [ ] Test unitario con `scanned.pdf` (debe retornar lista vacía)
 
@@ -178,12 +177,13 @@
 2026-05-06 — [Sub-fase 5.1] aplicados filtros de runs vacíos, sin bbox e invisibles — 7e1c94f
 2026-05-06 — [Sub-fase 5.2] creado `EditingHeuristics.h` con constantes iniciales — 7e1c94f
 2026-05-06 — [Sub-fase 5.1] añadido renderer core de bboxes rojos para debug de extracción — b240a2d
+2026-05-06 — [Sub-fase 5.1] añadido test CTest de extractor con PDF simple generado por PDFium — e5f6940
 
 ---
 
 ## 🧪 Estado de tests
 
-- Tests unitarios: 5 / ~25 estimados
+- Tests unitarios: 6 / ~25 estimados
 - Tests de integración: 0 / 5 estimados
 - PDFs de corpus en `tests/pdfs/`: 0 / 9
 
