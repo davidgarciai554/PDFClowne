@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:48
-- **Última acción**: Cerrada la creación de estructura local de directorios en el diario de Fase 5
-- **Próxima acción planificada**: Implementar `PdfiumInitializer` con `std::call_once` y `std::recursive_mutex`
+- **Última actualización**: 2026-05-06 15:50
+- **Última acción**: Implementados `PdfiumInitializer` y `PDFIUM_LOCK()` con test de contrato
+- **Próxima acción planificada**: Confirmar que la app sigue compilando sin regresiones de Fase 1
 
 ---
 
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Implementar `PdfiumInitializer` con `std::call_once` y `std::recursive_mutex`
+(ninguna tarea iniciada todavía)
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.0: Setup
 
-- [ ] Implementar macro `PDFIUM_LOCK()` en header global
 - [ ] Test "hello world" de PDFium: cargar PDF, contar páginas, imprimir
 - [ ] Confirmar que la app sigue compilando y arrancando sin regresiones de Fase 1
 
@@ -169,12 +168,14 @@
 2026-05-06 — [Sub-fase 5.0] configurado CMake para dependencias PDFium bajo opción explícita — 84ae98c
 2026-05-06 — [Sub-fase 5.0] verificado packaging PDFium y añadido fallback a SDK externo — eca5f36
 2026-05-06 — [Sub-fase 5.0] creada estructura local de directorios sin placeholders — de0499e
+2026-05-06 — [Sub-fase 5.0] implementado `PdfiumInitializer` thread-safe — ddf78f7
+2026-05-06 — [Sub-fase 5.0] implementado macro `PDFIUM_LOCK()` — ddf78f7
 
 ---
 
 ## 🧪 Estado de tests
 
-- Tests unitarios: 0 / ~25 estimados
+- Tests unitarios: 1 / ~25 estimados
 - Tests de integración: 0 / 5 estimados
 - PDFs de corpus en `tests/pdfs/`: 0 / 9
 
