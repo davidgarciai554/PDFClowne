@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:26
-- **Última acción**: Cerrada definición de modelos planos de texto PDF
-- **Próxima acción planificada**: Implementar `PdfPageObjectExtractor::extractTextRunsFromPage`
+- **Última actualización**: 2026-05-06 16:30
+- **Última acción**: Implementado extractor PDFium de objetos de texto y lectura Unicode
+- **Próxima acción planificada**: Aplicar filtros de runs no editables (§4.4)
 
 ---
 
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Implementar `PdfPageObjectExtractor::extractTextRunsFromPage` (§4.2)
+(ninguna tarea iniciada todavía)
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
-- [ ] Implementar `readUnicodeString` con conversión UTF-16 → QString (§4.3)
 - [ ] Aplicar filtros de runs no editables (§4.4)
 - [ ] Visualización debug: dibujar bboxes en rojo sobre el render
 - [ ] Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
@@ -136,6 +135,14 @@
 **Trade-off aceptado:** PDFium queda fuera de la resolución estándar de vcpkg hasta que se configure `PDFium_DIR` o un overlay.
 **Reversible:** sí, si se añade un overlay oficial del proyecto o un registro privado con port `pdfium`.
 
+### 2026-05-06 — Adaptar extractor a la API real del SDK PDFium instalado
+**Contexto:** el prompt citaba `FPDFPageObj_GetBBox`, `FPDFTextObj_GetTextMatrix` y `FPDFFont_GetFontName`, pero el SDK instalado en `D:\Aplicaciones\pdfium\include` expone los equivalentes disponibles `FPDFPageObj_GetBounds`, `FPDFPageObj_GetMatrix` y `FPDFFont_GetBaseFontName`.
+**Opciones consideradas:** bloquear la tarea esperando otro build de PDFium, envolver ambas variantes con detección compleja, o usar directamente las APIs estables presentes en el SDK instalado.
+**Decisión:** usar `FPDFPageObj_GetBounds`, `FPDFPageObj_GetMatrix` y `FPDFFont_GetBaseFontName` en `PdfPageObjectExtractor`.
+**Razón:** permite compilar contra el PDFium disponible sin perder la información necesaria para bbox, matriz y nombre de fuente.
+**Trade-off aceptado:** el código queda documentado contra los nombres reales del SDK actual, no contra los nombres del pseudocódigo del prompt.
+**Reversible:** sí, si se cambia de SDK y se necesita compatibilidad condicional por versión.
+
 ---
 
 ## ⚠️ Bloqueos / issues abiertos
@@ -161,12 +168,14 @@
 2026-05-06 — [Sub-fase 5.0] añadido y ejecutado smoke test hello world de PDFium — 61e1bc1
 2026-05-06 — [Sub-fase 5.0] resuelto bloqueo de dependencias y validado build con edición PDFium activada — 4f4fa0b
 2026-05-06 — [Sub-fase 5.1] definidos modelos planos de texto PDF — 4ed88b2
+2026-05-06 — [Sub-fase 5.1] implementado extractor PDFium de runs de texto por página — 17fea57
+2026-05-06 — [Sub-fase 5.1] implementada lectura Unicode UTF-16 de objetos de texto — 17fea57
 
 ---
 
 ## 🧪 Estado de tests
 
-- Tests unitarios: 3 / ~25 estimados
+- Tests unitarios: 4 / ~25 estimados
 - Tests de integración: 0 / 5 estimados
 - PDFs de corpus en `tests/pdfs/`: 0 / 9
 
@@ -174,7 +183,7 @@
 
 ## 📊 Métricas de salud del módulo (actualizar cuando aplique)
 
-- LOC del módulo de edición: 48
+- LOC del módulo de edición: 219
 - Tiempo de extracción en `large_doc_500pages.pdf`: (sin medir)
 - Memoria pico durante edición: (sin medir)
 - Latencia de reflow por keystroke: (sin medir)
