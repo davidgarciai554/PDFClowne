@@ -161,7 +161,7 @@
 2026-05-06 — [Sub-fase 5.0] implementado macro `PDFIUM_LOCK()` — ddf78f7
 2026-05-06 — [Sub-fase 5.0] verificada compilación debug y arranque básico de Fase 1 — 33d3890
 2026-05-06 — [Sub-fase 5.0] añadido y ejecutado smoke test hello world de PDFium — 61e1bc1
-2026-05-06 — [Sub-fase 5.0] resuelto bloqueo de dependencias y validado build con edición PDFium activada — pendiente
+2026-05-06 — [Sub-fase 5.0] resuelto bloqueo de dependencias y validado build con edición PDFium activada — 4f4fa0b
 
 ---
 
