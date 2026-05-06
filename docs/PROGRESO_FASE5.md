@@ -10,8 +10,8 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:30
-- **Última acción**: Implementado extractor PDFium de objetos de texto y lectura Unicode
+- **Última actualización**: 2026-05-06 16:31
+- **Última acción**: Cerrado extractor PDFium de objetos de texto
 - **Próxima acción planificada**: Aplicar filtros de runs no editables (§4.4)
 
 ---
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Aplicar filtros de runs no editables (§4.4)
 
 ---
 
