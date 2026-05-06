@@ -12,6 +12,16 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick)
 
+option(PDFCLOWNE_ENABLE_PDFIUM_EDITING "Enable direct PDFium-backed PDF text editing" OFF)
+
+if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
+    find_package(Qt6 REQUIRED COMPONENTS Pdf)
+    find_package(unofficial-pdfium CONFIG REQUIRED)
+    find_package(qpdf CONFIG REQUIRED)
+    find_package(podofo CONFIG REQUIRED)
+    find_package(spdlog CONFIG REQUIRED)
+endif()
+
 set(MUPDF_ROOT "" CACHE PATH "MuPDF installation root")
 set(MUPDF_EXTRA_LIBRARIES "" CACHE STRING "Additional MuPDF libraries required by this build")
 
@@ -154,6 +164,20 @@ target_link_libraries(PDFClowne PRIVATE
     Qt6::Quick
     ${MUPDF_LIBRARIES}
 )
+
+if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
+    target_include_directories(PDFClowne PRIVATE
+        ${PDFIUM_INCLUDE_DIRS}
+    )
+
+    target_link_libraries(PDFClowne PRIVATE
+        Qt6::Pdf
+        unofficial::pdfium::pdfium
+        qpdf::libqpdf
+        podofo::podofo
+        spdlog::spdlog
+    )
+endif()
 
 set_target_properties(PDFClowne PROPERTIES
     WIN32_EXECUTABLE TRUE
