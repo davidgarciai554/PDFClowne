@@ -10,8 +10,8 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:36
-- **Última acción**: Añadido renderer core para visualización debug de bboxes de extracción
+- **Última actualización**: 2026-05-06 16:37
+- **Última acción**: Cerrado renderer core para visualización debug de bboxes
 - **Próxima acción planificada**: Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
 
 ---
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
 
 ---
 
