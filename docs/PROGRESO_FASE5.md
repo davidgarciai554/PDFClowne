@@ -10,8 +10,8 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:25
-- **Última acción**: Definidos structs `PdfTextRun`, `PdfTextLine`, `PdfTextBlock` con test de contrato
+- **Última actualización**: 2026-05-06 16:26
+- **Última acción**: Cerrada definición de modelos planos de texto PDF
 - **Próxima acción planificada**: Implementar `PdfPageObjectExtractor::extractTextRunsFromPage`
 
 ---
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Implementar `PdfPageObjectExtractor::extractTextRunsFromPage` (§4.2)
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
-- [ ] Implementar `PdfPageObjectExtractor::extractTextRunsFromPage` (§4.2)
 - [ ] Implementar `readUnicodeString` con conversión UTF-16 → QString (§4.3)
 - [ ] Aplicar filtros de runs no editables (§4.4)
 - [ ] Visualización debug: dibujar bboxes en rojo sobre el render
