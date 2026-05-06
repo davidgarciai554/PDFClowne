@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 21:15
-- **Última acción**: Tests MixedFonts y Scanned pasando (fix PATH vcpkg/PDFium en CTest)
-- **Próxima acción planificada**: Sub-fase 5.2 — implementar `groupRunsIntoLines`
+- **Última actualización**: 2026-05-06 21:30
+- **Última acción**: Sub-fase 5.2 completa — TextBlockBuilder + DebugRenderer verificados
+- **Próxima acción planificada**: Sub-fase 5.3 — `PdfCoordTransform` + `TextBlockModel` + `EditableTextBox.qml`
 
 ---
 
@@ -31,13 +31,7 @@
 
 ## 📋 Pendientes — Sub-fase 5.2: Agrupación
 
-- [ ] Implementar `groupRunsIntoLines` (§5.1)
-- [ ] Implementar `groupLinesIntoBlocks` (§5.2)
-- [ ] Implementar `finalizeBlock` con dominantes y alineación (§5.3)
-- [ ] Visualización debug: bloques en azul, líneas en verde
-- [ ] Test unitario `TestTextBlockBuilder` cubriendo: 1 línea / 2 líneas
-      mismo bloque / 2 líneas distintos bloques / multi-columna
-- [ ] Tunear thresholds con corpus de PDFs reales
+*(completada)*
 
 ## 📋 Pendientes — Sub-fase 5.3: UI básica QML
 
@@ -177,7 +171,8 @@
 2026-05-06 — [Sub-fase 5.2] creado `EditingHeuristics.h` con constantes iniciales — 7e1c94f
 2026-05-06 — [Sub-fase 5.1] añadido renderer core de bboxes rojos para debug de extracción — b240a2d
 2026-05-06 — [Sub-fase 5.1] añadido test CTest de extractor con PDF simple generado por PDFium — e5f6940
-2026-05-06 — [Sub-fase 5.1] tests MixedFonts y Scanned pasando; fix PATH vcpkg+PDFium en CTest — (pendiente commit)
+2026-05-06 — [Sub-fase 5.1] tests MixedFonts y Scanned pasando; fix PATH vcpkg+PDFium en CTest — d89fc6d
+2026-05-06 — [Sub-fase 5.2] TextBlockBuilder + DebugRenderer (runs/lines/blocks) verificados; 8 unit tests pasan — (pendiente commit)
 
 ---
 
