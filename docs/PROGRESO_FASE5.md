@@ -11,7 +11,7 @@
 
 - **Sub-fase activa**: 5.0 (Setup)
 - **Última actualización**: 2026-05-06 15:39
-- **Última acción**: Añadido `vcpkg.json` con dependencias de Qt/PDFium/PoDoFo/QPDF/spdlog
+- **Última acción**: Cerrada la tarea de dependencias en el diario de Fase 5
 - **Próxima acción planificada**: Configurar `CMakeLists.txt` con `find_package(unofficial-pdfium)`
 
 ---
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-(ninguna tarea iniciada todavía)
+- [ ] Configurar `CMakeLists.txt` con `find_package(unofficial-pdfium)`
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.0: Setup
 
-- [ ] Configurar `CMakeLists.txt` con `find_package(unofficial-pdfium)`
 - [ ] Verificar que el paquete pdfium de vcpkg expone `fpdf_edit.h` y `fpdf_text.h`
       (si no, decidir entre compilar PDFium desde fuente o usar pdfium-binaries)
 - [ ] Crear estructura de carpetas según §2.3 del prompt
