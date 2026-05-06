@@ -124,6 +124,7 @@ set(CPP_SOURCES
     src/backend/DocumentSearchController.cpp
     src/backend/PdfRenderImageProvider.cpp
     src/backend/PdfDocument.cpp
+    src/core/editing/PdfExtractionDebugRenderer.cpp
     src/core/pdf/PdfiumInitializer.cpp
 )
 
@@ -145,6 +146,7 @@ set(CPP_HEADERS
     src/backend/PdfRenderImageProvider.h
     src/backend/PdfDocument.h
     src/core/editing/EditingHeuristics.h
+    src/core/editing/PdfExtractionDebugRenderer.h
     src/core/editing/PdfTextBlock.h
     src/core/editing/PdfTextLine.h
     src/core/editing/PdfTextRun.h
