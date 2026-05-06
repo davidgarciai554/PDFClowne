@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:23
-- **Última acción**: Cerrada Sub-fase 5.0 y resuelto bloqueo de dependencias
-- **Próxima acción planificada**: Definir structs `PdfTextRun`, `PdfTextLine`, `PdfTextBlock`
+- **Última actualización**: 2026-05-06 16:25
+- **Última acción**: Definidos structs `PdfTextRun`, `PdfTextLine`, `PdfTextBlock` con test de contrato
+- **Próxima acción planificada**: Implementar `PdfPageObjectExtractor::extractTextRunsFromPage`
 
 ---
 
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Definir structs `PdfTextRun`, `PdfTextLine`, `PdfTextBlock` (§4.1)
+(ninguna tarea iniciada todavía)
 
 ---
 
@@ -161,12 +161,13 @@
 2026-05-06 — [Sub-fase 5.0] verificada compilación debug y arranque básico de Fase 1 — 33d3890
 2026-05-06 — [Sub-fase 5.0] añadido y ejecutado smoke test hello world de PDFium — 61e1bc1
 2026-05-06 — [Sub-fase 5.0] resuelto bloqueo de dependencias y validado build con edición PDFium activada — 4f4fa0b
+2026-05-06 — [Sub-fase 5.1] definidos modelos planos de texto PDF — 4ed88b2
 
 ---
 
 ## 🧪 Estado de tests
 
-- Tests unitarios: 2 / ~25 estimados
+- Tests unitarios: 3 / ~25 estimados
 - Tests de integración: 0 / 5 estimados
 - PDFs de corpus en `tests/pdfs/`: 0 / 9
 
@@ -174,7 +175,7 @@
 
 ## 📊 Métricas de salud del módulo (actualizar cuando aplique)
 
-- LOC del módulo de edición: 0
+- LOC del módulo de edición: 48
 - Tiempo de extracción en `large_doc_500pages.pdf`: (sin medir)
 - Memoria pico durante edición: (sin medir)
 - Latencia de reflow por keystroke: (sin medir)
