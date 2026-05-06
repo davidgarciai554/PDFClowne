@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 16:33
-- **Última acción**: Cerrados filtros de runs no editables
-- **Próxima acción planificada**: Visualización debug de bboxes de extracción
+- **Última actualización**: 2026-05-06 16:36
+- **Última acción**: Añadido renderer core para visualización debug de bboxes de extracción
+- **Próxima acción planificada**: Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
 
 ---
 
@@ -21,13 +21,12 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Visualización debug: dibujar bboxes en rojo sobre el render
+(ninguna tarea iniciada todavía)
 
 ---
 
 ## 📋 Pendientes — Sub-fase 5.1: Extracción de page objects
 
-- [ ] Visualización debug: dibujar bboxes en rojo sobre el render
 - [ ] Test unitario `TestPdfPageObjectExtractor` con `simple_paragraph.pdf`
 - [ ] Test unitario con `mixed_fonts.pdf`
 - [ ] Test unitario con `scanned.pdf` (debe retornar lista vacía)
@@ -141,6 +140,14 @@
 **Trade-off aceptado:** el código queda documentado contra los nombres reales del SDK actual, no contra los nombres del pseudocódigo del prompt.
 **Reversible:** sí, si se cambia de SDK y se necesita compatibilidad condicional por versión.
 
+### 2026-05-06 — Mantener la visualización debug desacoplada de la UI actual
+**Contexto:** `PdfViewer.qml` ya contiene una capa de edición basada en MuPDF y además tenía cambios de trabajo ajenos sin commitear.
+**Opciones consideradas:** modificar directamente `PdfViewer.qml`, esperar a `EditingController`, o crear una utilidad core que pinte bboxes sobre una imagen renderizada.
+**Decisión:** crear `PdfExtractionDebugRenderer` como utilidad core, sin tocar la UI sucia.
+**Razón:** permite verificar la conversión PDF Y-up → imagen Y-down y reutilizar el overlay cuando exista el controlador PDFium de Fase 5.
+**Trade-off aceptado:** la conexión visible en QML queda para la integración con `EditingController`/workers.
+**Reversible:** sí, cuando la UI de Fase 5 esté lista se conecta el renderer o se reemplaza por una capa QML equivalente.
+
 ---
 
 ## ⚠️ Bloqueos / issues abiertos
@@ -170,12 +177,13 @@
 2026-05-06 — [Sub-fase 5.1] implementada lectura Unicode UTF-16 de objetos de texto — 17fea57
 2026-05-06 — [Sub-fase 5.1] aplicados filtros de runs vacíos, sin bbox e invisibles — 7e1c94f
 2026-05-06 — [Sub-fase 5.2] creado `EditingHeuristics.h` con constantes iniciales — 7e1c94f
+2026-05-06 — [Sub-fase 5.1] añadido renderer core de bboxes rojos para debug de extracción — b240a2d
 
 ---
 
 ## 🧪 Estado de tests
 
-- Tests unitarios: 4 / ~25 estimados
+- Tests unitarios: 5 / ~25 estimados
 - Tests de integración: 0 / 5 estimados
 - PDFs de corpus en `tests/pdfs/`: 0 / 9
 
@@ -183,7 +191,7 @@
 
 ## 📊 Métricas de salud del módulo (actualizar cuando aplique)
 
-- LOC del módulo de edición: 247
+- LOC del módulo de edición: 296
 - Tiempo de extracción en `large_doc_500pages.pdf`: (sin medir)
 - Memoria pico durante edición: (sin medir)
 - Latencia de reflow por keystroke: (sin medir)
