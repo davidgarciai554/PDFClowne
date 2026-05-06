@@ -144,6 +144,7 @@ set(CPP_HEADERS
     src/backend/Logger.h
     src/backend/PdfRenderImageProvider.h
     src/backend/PdfDocument.h
+    src/core/editing/EditingHeuristics.h
     src/core/editing/PdfTextBlock.h
     src/core/editing/PdfTextLine.h
     src/core/editing/PdfTextRun.h

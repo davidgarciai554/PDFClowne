@@ -1,5 +1,6 @@
 #include "PdfPageObjectExtractor.h"
 
+#include "EditingHeuristics.h"
 #include "PdfiumInitializer.h"
 
 #include <QVector>
@@ -70,6 +71,21 @@ bool looksLikeSubsetFont(const QString& fontName)
     return true;
 }
 
+bool shouldDiscardRun(const PdfTextRun& run)
+{
+    return run.text.trimmed().isEmpty()
+        || run.bboxPdf.isEmpty()
+        || run.renderMode == FPDF_TEXTRENDERMODE_INVISIBLE;
+}
+
+void applyEditabilityFlags(PdfTextRun& run)
+{
+    if (std::abs(run.rotation) > PDFClowne::Heuristics::TEXT_ROTATION_EDITABLE_MAX_DEGREES) {
+        run.isEditable = false;
+        run.nonEditableReason = QStringLiteral("Texto rotado");
+    }
+}
+
 } // namespace
 
 PdfPageObjectExtractor::PdfPageObjectExtractor(FPDF_DOCUMENT doc)
@@ -107,7 +123,8 @@ QList<PdfTextRun> PdfPageObjectExtractor::extractTextRunsFromPage(int pageNumber
         }
 
         PdfTextRun run = extractRun(obj, textPage.get(), i);
-        if (!run.text.trimmed().isEmpty() && !run.bboxPdf.isEmpty()) {
+        applyEditabilityFlags(run);
+        if (!shouldDiscardRun(run)) {
             result.append(run);
         }
     }

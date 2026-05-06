@@ -27,6 +27,7 @@ function Assert-Matches {
 
 $header = Read-ProjectFile 'src/core/editing/PdfPageObjectExtractor.h'
 $source = Read-ProjectFile 'src/core/editing/PdfPageObjectExtractor.cpp'
+$heuristics = Read-ProjectFile 'src/core/editing/EditingHeuristics.h'
 $cmake = Read-ProjectFile 'CMakeLists.txt'
 
 Assert-Matches $header 'class\s+PdfPageObjectExtractor' 'PdfPageObjectExtractor.h must declare the extractor class.'
@@ -55,8 +56,16 @@ Assert-Matches $source 'FPDFPageObj_GetFillColor\(obj,' 'extractRun must read fi
 Assert-Matches $source 'FPDFPageObj_GetMatrix\(obj,' 'extractRun must read the object matrix.'
 Assert-Matches $source 'std::atan2' 'extractRun must derive text rotation from the matrix.'
 Assert-Matches $source 'FPDFTextObj_GetTextRenderMode\(obj\)' 'extractRun must read text render mode.'
+Assert-Matches $source '#include\s+"EditingHeuristics\.h"' 'Extractor filters must use EditingHeuristics.h instead of hardcoded thresholds.'
+Assert-Matches $source 'shouldDiscardRun\(run\)' 'Extractor must centralize discard filtering before appending runs.'
+Assert-Matches $source 'run\.text\.trimmed\(\)\.isEmpty\(\)' 'Extractor must discard empty or whitespace-only text runs.'
+Assert-Matches $source 'run\.bboxPdf\.isEmpty\(\)' 'Extractor must discard runs with empty bounds.'
+Assert-Matches $source 'run\.renderMode\s*==\s*FPDF_TEXTRENDERMODE_INVISIBLE' 'Extractor must discard invisible OCR text runs.'
+Assert-Matches $source 'std::abs\(run\.rotation\)\s*>\s*PDFClowne::Heuristics::TEXT_ROTATION_EDITABLE_MAX_DEGREES' 'Extractor must mark rotated text using the configured rotation threshold.'
+Assert-Matches $heuristics 'constexpr\s+double\s+TEXT_ROTATION_EDITABLE_MAX_DEGREES\s*=\s*5\.0' 'EditingHeuristics.h must expose the editable rotation threshold.'
 
 Assert-Matches $cmake 'src/core/editing/PdfPageObjectExtractor\.cpp' 'CMakeLists.txt must compile PdfPageObjectExtractor.cpp.'
 Assert-Matches $cmake 'src/core/editing/PdfPageObjectExtractor\.h' 'CMakeLists.txt must list PdfPageObjectExtractor.h.'
+Assert-Matches $cmake 'src/core/editing/EditingHeuristics\.h' 'CMakeLists.txt must list EditingHeuristics.h.'
 
 Write-Output 'PDF page object extractor contract checks passed.'
