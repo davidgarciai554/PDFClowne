@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.0 (Setup)
-- **Última actualización**: 2026-05-06 15:46
-- **Última acción**: Cerrada la verificación de packaging PDFium en el diario de Fase 5
-- **Próxima acción planificada**: Crear estructura de carpetas según §2.3 del prompt
+- **Última actualización**: 2026-05-06 15:47
+- **Última acción**: Creada estructura local de directorios para Fase 5 sin archivos placeholder
+- **Próxima acción planificada**: Implementar `PdfiumInitializer` con `std::call_once` y `std::recursive_mutex`
 
 ---
 
@@ -21,7 +21,7 @@
 > Solo UNA tarea aquí a la vez. Si tienes que pausar para investigar algo,
 > anótalo y vuelve a esta tarea.
 
-- [ ] Crear estructura de carpetas según §2.3 del prompt
+(ninguna tarea iniciada todavía)
 
 ---
 
@@ -169,6 +169,7 @@
 2026-05-06 — [Sub-fase 5.0] añadido manifest vcpkg con dependencias base — 49180cc
 2026-05-06 — [Sub-fase 5.0] configurado CMake para dependencias PDFium bajo opción explícita — 84ae98c
 2026-05-06 — [Sub-fase 5.0] verificado packaging PDFium y añadido fallback a SDK externo — eca5f36
+2026-05-06 — [Sub-fase 5.0] creada estructura local de directorios sin placeholders — de0499e
 
 ---
 
