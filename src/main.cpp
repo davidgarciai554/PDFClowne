@@ -16,6 +16,11 @@
 #include "Logger.h"
 #include "PdfDocument.h"
 #include "PdfRenderImageProvider.h"
+#include "TextBlockModel.h"
+
+#ifdef PDFCLOWNE_ENABLE_PDFIUM_EDITING
+#include "EditingController.h"
+#endif
 
 namespace {
 QString normalizeStartupSource(const QString &argument)
@@ -53,6 +58,10 @@ int main(int argc, char *argv[])
     const QStringList startupFiles = parser.positionalArguments();
 
     qmlRegisterType<PdfDocument>("PDFClowne.Backend", 1, 0, "PdfDocument");
+    qmlRegisterType<PDFClowne::Editing::TextBlockModel>("PDFClowne.Editing", 1, 0, "TextBlockModel");
+#ifdef PDFCLOWNE_ENABLE_PDFIUM_EDITING
+    qmlRegisterType<PDFClowne::Editing::EditingController>("PDFClowne.Editing", 1, 0, "EditingController");
+#endif
 
     QQmlApplicationEngine engine;
     auto *pdfRenderImageProvider = new PdfRenderImageProvider;

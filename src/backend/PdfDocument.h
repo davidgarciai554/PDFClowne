@@ -56,9 +56,18 @@ public slots:
     QString renderThumbnail(int pageIndex);
     QString searchPage(int pageIndex, const QString &query);
     QString searchDocument(const QString &query);
+    Q_INVOKABLE QString textElementsForPage(int pageIndex);
+    Q_INVOKABLE QString textBlocksForPage(int pageIndex);
+    Q_INVOKABLE QString textEditAt(int pageIndex, const QPointF &point);
     QString extractPageText(int pageIndex);
     QString extractDocumentText();
     int resolveLinkPage(const QString &uri);
+    bool saveEditedCopy(const QString &source,
+                        const QString &target,
+                        const QString &pageOrderJson,
+                        const QString &rotationsJson,
+                        const QString &password = {},
+                        const QString &annotationsJson = {});
     bool saveRotatedCopy(const QString &source, const QString &target, const QString &rotationsJson);
     void beginSelection(int pageIndex, const QPointF &point);
     void updateSelection(int pageIndex, const QPointF &point);

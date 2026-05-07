@@ -5,8 +5,8 @@ var sections = [
         title: "Archivo",
         entries: [
             { kind: "keyboard", trigger: "Ctrl+O", description: "Abrir un PDF.", availability: "Siempre disponible." },
-            { kind: "keyboard", trigger: "Ctrl+S", description: "Guardar el PDF activo sobrescribiendo con las rotaciones aplicadas.", availability: "Solo cuando el documento activo tiene rotaciones pendientes." },
-            { kind: "keyboard", trigger: "Ctrl+Shift+S", description: "Guardar una copia rotada del PDF activo.", availability: "Solo cuando el documento activo tiene rotaciones pendientes." },
+            { kind: "keyboard", trigger: "Ctrl+S", description: "Guardar el PDF activo sobrescribiendo con las ediciones aplicadas.", availability: "Solo cuando el documento activo tiene cambios pendientes." },
+            { kind: "keyboard", trigger: "Ctrl+Shift+S", description: "Guardar una copia editada del PDF activo.", availability: "Solo cuando el documento activo tiene cambios pendientes." },
             { kind: "keyboard", trigger: "Ctrl+R", description: "Recargar el PDF activo desde disco.", availability: "Requiere un PDF abierto." },
             { kind: "keyboard", trigger: "Ctrl+H", description: "Abrir la pantalla de inicio con los archivos recientes.", availability: "Siempre disponible." }
         ]
@@ -47,6 +47,13 @@ var sections = [
             { kind: "keyboard", trigger: "Left", description: "Ir a la pagina anterior.", availability: "Disponible en pantalla completa o presentacion." },
             { kind: "keyboard", trigger: "Space", description: "Ir a la pagina siguiente.", availability: "Disponible en pantalla completa o presentacion." },
             { kind: "keyboard", trigger: "Backspace", description: "Ir a la pagina anterior.", availability: "Disponible en pantalla completa o presentacion." }
+        ]
+    },
+    {
+        title: "Edicion",
+        entries: [
+            { kind: "keyboard", trigger: "Ctrl+Z", description: "Deshacer la ultima edicion del documento activo.", availability: "Requiere cambios editables previos en el PDF activo." },
+            { kind: "keyboard", trigger: "Ctrl+Y", description: "Rehacer la ultima edicion deshecha del documento activo.", availability: "Requiere cambios deshechos en el PDF activo." }
         ]
     },
     {

@@ -182,6 +182,8 @@ qt_add_qml_module(PDFClowne
         src/qml/PdfViewer.qml
         src/qml/Theme.qml
         src/qml/EditableTextBox.qml
+        src/qml/ResizeHandles.qml
+        src/qml/EditingToolbar.qml
     RESOURCES
         src/qml/ShortcutCatalog.js
         resources/resources.qrc

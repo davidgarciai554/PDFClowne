@@ -34,12 +34,30 @@ ApplicationWindow {
     property bool reflowLoading: false
     property string readingPanelText: ""
     property bool readingPanelTextLoading: false
-    property bool readingToolsMenuVisible: false
+    property string topToolbarMenu: "view"
     property bool searchOverlayVisible: false
     property bool openInProgress: false
     property string pendingOpenSource: ""
     property string pendingOpenFileName: ""
     property string pendingProtectedSource: ""
+    property var pendingSessionDocumentState: null
+    property string activeEditTool: "text"
+    property string editFontFamily: "Helv"
+    property int editFontSize: 12
+    property string editTextColor: "#1C1C2E"
+    property string editHighlightColor: "#FFE45A"
+    property bool editBoldEnabled: false
+    property bool editItalicEnabled: false
+    property bool editUnderlineEnabled: false
+    property bool syncingPdfTextStyle: false
+    property int editAnnotationSerial: 0
+    readonly property var editTextColorOptions: ["#1C1C2E", "#C83040", "#1F7A4D", "#2463B6", "#7A3E9D"]
+    readonly property var editHighlightColorOptions: ["#FFE45A", "#9BFFD0", "#8ED4FF", "#FFB3C7", "#D8B4FE"]
+    property var sessionRestoreQueue: []
+    property int sessionRestoreTargetIndex: -1
+    property bool sessionRestoreInProgress: false
+    property bool allowImmediateWindowClose: false
+    property var saveInProgressPaths: ({})
     readonly property var shortcutSections: ShortcutCatalog.sections
     readonly property int pageRenderWindowRadius: 8
     readonly property int pageRenderPruneDelayMs: 240
@@ -76,6 +94,19 @@ ApplicationWindow {
     signal internalLinkRequested(string uri, int pageIndex)
 
     onVisibleChanged: if (visible) Theme.applyColorScheme()
+    onClosing: function(close) {
+        if (allowImmediateWindowClose) {
+            allowImmediateWindowClose = false
+            close.accepted = true
+            return
+        }
+
+        if (hasActiveDocument) {
+            close.accepted = false
+            requestCloseDocumentAt(activeDocumentIndex)
+            return
+        }
+    }
     onActiveDocumentIndexChanged: {
         if (typeof pageSearchField !== "undefined")
             pageSearchField.text = activeDocumentSearchQuery()
@@ -92,7 +123,8 @@ ApplicationWindow {
             renderWindowMaintenanceTimer.stop()
             readingPanelText = ""
             readingPanelTextLoading = false
-            readingToolsMenuVisible = false
+            topToolbarMenu = "view"
+            activeEditTool = "text"
             searchOverlayVisible = false
             pendingSearchFocusResult = null
         }
@@ -112,6 +144,12 @@ ApplicationWindow {
         id: documentViewSettings
         category: "DocumentViewState"
         property string statesJson: "{}"
+    }
+
+    Settings {
+        id: sessionRestoreSettings
+        category: "SessionRestore"
+        property string sessionJson: "{\"activeDocumentIndex\":-1,\"documents\":[]}"
     }
 
     Timer {
@@ -143,7 +181,10 @@ ApplicationWindow {
         id: documentModel
     }
 
-    Component.onCompleted: loadRecentFiles()
+    Component.onCompleted: {
+        loadRecentFiles()
+        restorePreviousSession()
+    }
 
     FileDialog {
         id: fileDialog
@@ -154,10 +195,207 @@ ApplicationWindow {
 
     FileDialog {
         id: saveRotatedDialog
-        title: "Guardar como PDF rotado"
+        title: "Guardar como PDF editado"
         fileMode: FileDialog.SaveFile
         nameFilters: ["PDF Files (*.pdf)", "All Files (*)"]
         onAccepted: window.saveActiveDocumentAsRotated(selectedFile.toString())
+    }
+
+    Popup {
+        id: pendingEditsDialog
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        width: Math.min(440, window.width - 48)
+        x: Math.round((window.width - width) / 2)
+        y: Math.round((window.height - height) / 2)
+        padding: 0
+
+        property string closeMode: ""
+        property int documentIndex: -1
+
+        Overlay.modal: Rectangle {
+            color: Theme.isDark ? "#AA0F1020" : "#660F1020"
+        }
+
+        background: Rectangle {
+            color: Theme.surface
+            radius: Theme.radius
+            border.color: Theme.border
+            border.width: 1
+        }
+
+        contentItem: ColumnLayout {
+            spacing: 0
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 48
+                Layout.leftMargin: 18
+                Layout.rightMargin: 12
+                spacing: 12
+
+                Rectangle {
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
+                    radius: 12
+                    color: Theme.accent
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "?"
+                        color: Theme.accentText
+                        font.pixelSize: 15
+                        font.weight: Font.DemiBold
+                    }
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    text: pendingEditsDialog.closeMode === "application"
+                          ? "Hay cambios pendientes"
+                          : "Guardar cambios pendientes"
+                    color: Theme.text
+                    font.pixelSize: 15
+                    font.weight: Font.DemiBold
+                    elide: Text.ElideRight
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.border
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 18
+                Layout.rightMargin: 18
+                Layout.topMargin: 16
+                Layout.bottomMargin: 18
+                spacing: 14
+
+                Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    color: Theme.secondaryText
+                    text: pendingEditsDialog.closeMode === "application"
+                          ? "Hay PDFs con cambios sin guardar. Puedes guardar antes de salir, salir sin guardar o cancelar."
+                          : "Este PDF tiene cambios pendientes. Puedes guardarlos antes de cerrar la pestana, salir sin guardar o cancelar."
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    Item { Layout.fillWidth: true }
+
+                    Button {
+                        id: cancelPendingEditsButton
+                        text: "Cancelar"
+                        onClicked: pendingEditsDialog.close()
+
+                        contentItem: Text {
+                            text: cancelPendingEditsButton.text
+                            color: Theme.text
+                            font.pixelSize: 13
+                            font.weight: Font.DemiBold
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            color: cancelPendingEditsButton.down ? Theme.tabActive
+                                  : cancelPendingEditsButton.hovered ? Theme.hover
+                                  : Theme.surfaceAlt
+                            radius: Theme.radius
+                            border.color: cancelPendingEditsButton.activeFocus ? Theme.accent : Theme.border
+                            border.width: cancelPendingEditsButton.activeFocus ? 2 : 1
+                        }
+                    }
+
+                    Button {
+                        id: discardPendingEditsButton
+                        text: "Salir sin guardar"
+                        onClicked: {
+                            var closeMode = pendingEditsDialog.closeMode
+                            var closeIndex = pendingEditsDialog.documentIndex
+                            pendingEditsDialog.close()
+                            if (closeMode === "application") {
+                                allowImmediateWindowClose = true
+                                Qt.quit()
+                            } else {
+                                performCloseDocumentAt(closeIndex)
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: discardPendingEditsButton.text
+                            color: Theme.text
+                            font.pixelSize: 13
+                            font.weight: Font.DemiBold
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            color: discardPendingEditsButton.down ? Qt.darker(Theme.surfaceAlt, 1.08)
+                                  : discardPendingEditsButton.hovered ? Theme.hover
+                                  : Theme.surface
+                            radius: Theme.radius
+                            border.color: discardPendingEditsButton.activeFocus ? Theme.accent : Theme.border
+                            border.width: discardPendingEditsButton.activeFocus ? 2 : 1
+                        }
+                    }
+
+                    Button {
+                        id: savePendingEditsButton
+                        text: "Guardar"
+                        onClicked: {
+                            var closeMode = pendingEditsDialog.closeMode
+                            var closeIndex = pendingEditsDialog.documentIndex
+                            pendingEditsDialog.close()
+                            if (closeMode === "application") {
+                                var allSaved = true
+                                for (var i = 0; i < documentModel.count; ++i) {
+                                    if (documentHasPendingChanges(i) && !saveDocumentChanges(i, documentModel.get(i).path, false)) {
+                                        allSaved = false
+                                        break
+                                    }
+                                }
+                                if (allSaved) {
+                                    allowImmediateWindowClose = true
+                                    Qt.quit()
+                                }
+                            } else if (saveDocumentChanges(closeIndex,
+                                                            documentModel.get(closeIndex).path,
+                                                            false)) {
+                                performCloseDocumentAt(closeIndex)
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: savePendingEditsButton.text
+                            color: Theme.accentText
+                            font.pixelSize: 13
+                            font.weight: Font.DemiBold
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            color: savePendingEditsButton.down ? Qt.darker(Theme.accent, 1.12)
+                                  : savePendingEditsButton.hovered ? Qt.lighter(Theme.accent, 1.08)
+                                  : Theme.accent
+                            radius: Theme.radius
+                            border.color: savePendingEditsButton.activeFocus ? Theme.text : Theme.accent
+                            border.width: savePendingEditsButton.activeFocus ? 2 : 1
+                        }
+                    }
+                }
+            }
+        }
     }
 
     Popup {
@@ -363,6 +601,7 @@ ApplicationWindow {
             passwordField.forceActiveFocus()
             passwordField.selectAll()
         }
+        onClosed: window.handlePasswordDialogClosed()
 
         contentItem: ColumnLayout {
             spacing: 0
@@ -726,8 +965,8 @@ ApplicationWindow {
     }
 
     Shortcut { sequence: "Ctrl+O"; onActivated: fileDialog.open() }
-    Shortcut { sequence: "Ctrl+S"; enabled: window.activeDocumentHasRotations(); onActivated: window.saveActiveDocumentRotated() }
-    Shortcut { sequence: "Ctrl+Shift+S"; enabled: window.activeDocumentHasRotations(); onActivated: saveRotatedDialog.open() }
+    Shortcut { sequence: "Ctrl+S"; enabled: window.activeDocumentHasPendingChanges(); onActivated: window.saveActiveDocumentRotated() }
+    Shortcut { sequence: "Ctrl+Shift+S"; enabled: window.activeDocumentHasPendingChanges(); onActivated: saveRotatedDialog.open() }
     Shortcut { sequence: "Ctrl+R"; enabled: window.hasActiveDocument; onActivated: window.refreshActiveDocumentFromDisk() }
     Shortcut { sequence: "Ctrl+H"; onActivated: window.openHomeScreen() }
     Shortcut { sequence: "Ctrl+1"; enabled: window.hasActiveDocument; onActivated: window.setLayoutMode("single") }
@@ -750,6 +989,8 @@ ApplicationWindow {
     Shortcut { sequence: StandardKey.Copy; context: Qt.ApplicationShortcut; enabled: window.hasActiveDocument && pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0; onActivated: window.copySelectedText() }
     Shortcut { sequence: "Ctrl+C"; context: Qt.ApplicationShortcut; enabled: window.hasActiveDocument && pdfViewer && String(pdfViewer.selectedText || "").trim().length > 0; onActivated: window.copySelectedText() }
     Shortcut { sequence: "Ctrl+Shift+C"; enabled: window.hasActiveDocument; onActivated: window.copyVisibleText() }
+    Shortcut { sequence: "Ctrl+Z"; enabled: (!pdfViewer || !pdfViewer.inlineTextEditingActive) && window.activeDocumentCanUndoEdits(); onActivated: window.undoActiveDocumentEdit() }
+    Shortcut { sequence: "Ctrl+Y"; enabled: (!pdfViewer || !pdfViewer.inlineTextEditingActive) && window.activeDocumentCanRedoEdits(); onActivated: window.redoActiveDocumentEdit() }
     Shortcut { sequence: "Escape"; enabled: window.readingFullscreenEnabled || window.presentationModeEnabled; onActivated: window.exitImmersiveModes() }
     Shortcut { sequence: "Right"; enabled: window.hasActiveDocument && (window.readingFullscreenEnabled || window.presentationModeEnabled); onActivated: window.goToNextPage() }
     Shortcut { sequence: "Left"; enabled: window.hasActiveDocument && (window.readingFullscreenEnabled || window.presentationModeEnabled); onActivated: window.goToPreviousPage() }
@@ -792,6 +1033,28 @@ ApplicationWindow {
         return normalizedLeft.length > 0 && normalizedLeft === normalizedRight
     }
 
+    function isDocumentSaveInProgress(path) {
+        var key = pathToFileUrl(path)
+        return key.length > 0 && !!saveInProgressPaths[key]
+    }
+
+    function setDocumentSaveInProgress(path, inProgress) {
+        var key = pathToFileUrl(path)
+        if (key.length === 0)
+            return
+
+        var next = {}
+        for (var existing in saveInProgressPaths)
+            next[existing] = saveInProgressPaths[existing]
+
+        if (inProgress)
+            next[key] = true
+        else
+            delete next[key]
+
+        saveInProgressPaths = next
+    }
+
     function readDocumentViewStates() {
         try {
             var parsed = JSON.parse(documentViewSettings.statesJson || "{}")
@@ -803,6 +1066,162 @@ ApplicationWindow {
 
     function writeDocumentViewStates(states) {
         documentViewSettings.statesJson = JSON.stringify(states || {})
+    }
+
+    function readSavedSession() {
+        try {
+            var parsed = JSON.parse(sessionRestoreSettings.sessionJson || "{\"activeDocumentIndex\":-1,\"documents\":[]}")
+            if (!parsed || typeof parsed !== "object")
+                return { activeDocumentIndex: -1, documents: [] }
+            if (!Array.isArray(parsed.documents))
+                parsed.documents = []
+            return parsed
+        } catch(e) {
+            return { activeDocumentIndex: -1, documents: [] }
+        }
+    }
+
+    function writeSavedSession(sessionState) {
+        var normalized = sessionState && typeof sessionState === "object" ? sessionState : {}
+        if (!Array.isArray(normalized.documents))
+            normalized.documents = []
+        if (!isFinite(Number(normalized.activeDocumentIndex)))
+            normalized.activeDocumentIndex = -1
+        sessionRestoreSettings.sessionJson = JSON.stringify(normalized)
+    }
+
+    function parseHistoryEntries(value) {
+        try {
+            var parsed = JSON.parse(String(value || "[]"))
+            return Array.isArray(parsed) ? parsed : []
+        } catch(e) {
+            return []
+        }
+    }
+
+    function serializeDocumentSessionState(doc) {
+        var pageSpacing = Number(doc.pageSpacing)
+        if (!isFinite(pageSpacing))
+            pageSpacing = 18
+
+        return {
+            path: String(doc.path || ""),
+            title: String(doc.title || ""),
+            zoom: normalizedZoom(doc.zoom),
+            layoutMode: doc.layoutMode || "continuous",
+            zoomMode: doc.zoomMode || "fitPage",
+            navigationPanelVisible: doc.navigationPanelVisible === undefined ? true : !!doc.navigationPanelVisible,
+            sidePanelMode: doc.sidePanelMode || "thumbnails",
+            snapToPage: doc.snapToPage === undefined ? false : !!doc.snapToPage,
+            pageSpacing: Math.max(0, Math.min(48, pageSpacing)),
+            activePageIndex: Math.max(0, Number(doc.activePageIndex) || 0),
+            searchQuery: String(doc.searchQuery || ""),
+            historyBack: trimHistoryEntries(parseHistoryEntries(doc.historyBackJson)),
+            historyForward: trimHistoryEntries(parseHistoryEntries(doc.historyForwardJson))
+        }
+    }
+
+    function normalizedRestoredDocumentState(state, fallbackViewState) {
+        var fallback = fallbackViewState || defaultDocumentViewState()
+        var restored = state && typeof state === "object" ? state : {}
+        var sidePanelMode = restored.sidePanelMode || "thumbnails"
+        if (sidePanelMode !== "thumbnails" && sidePanelMode !== "outline" && sidePanelMode !== "search")
+            sidePanelMode = "thumbnails"
+
+        return {
+            zoom: normalizedZoom(restored.zoom !== undefined ? restored.zoom : fallback.zoom),
+            layoutMode: restored.layoutMode || fallback.layoutMode || "continuous",
+            zoomMode: restored.zoomMode || fallback.zoomMode || "fitPage",
+            navigationPanelVisible: restored.navigationPanelVisible === undefined ? true : !!restored.navigationPanelVisible,
+            sidePanelMode: sidePanelMode,
+            snapToPage: restored.snapToPage === undefined ? false : !!restored.snapToPage,
+            pageSpacing: Math.max(0, Math.min(48, Number(restored.pageSpacing !== undefined ? restored.pageSpacing : 18))) || 18,
+            activePageIndex: Math.max(0, Number(restored.activePageIndex) || 0),
+            searchQuery: String(restored.searchQuery || ""),
+            historyBack: trimHistoryEntries(Array.isArray(restored.historyBack) ? restored.historyBack : []),
+            historyForward: trimHistoryEntries(Array.isArray(restored.historyForward) ? restored.historyForward : [])
+        }
+    }
+
+    function saveCurrentSession(skipSync) {
+        if (!skipSync && hasActiveDocument)
+            syncActiveDocumentState(true)
+
+        var documents = []
+        for (var i = 0; i < documentModel.count; ++i)
+            documents.push(serializeDocumentSessionState(documentModel.get(i)))
+
+        writeSavedSession({
+            activeDocumentIndex: documentModel.count > 0 && activeDocumentIndex >= 0
+                ? Math.min(activeDocumentIndex, documentModel.count - 1)
+                : -1,
+            documents: documents
+        })
+    }
+
+    function restorePreviousSession() {
+        if (documentModel.count > 0 || sessionRestoreInProgress)
+            return
+
+        var sessionState = readSavedSession()
+        if (!sessionState.documents || sessionState.documents.length === 0)
+            return
+
+        sessionRestoreQueue = sessionState.documents.slice()
+        sessionRestoreTargetIndex = Number(sessionState.activeDocumentIndex)
+        sessionRestoreInProgress = true
+        restoreNextSessionDocument()
+    }
+
+    function restoreNextSessionDocument() {
+        if (!sessionRestoreInProgress)
+            return
+
+        while (sessionRestoreQueue.length > 0) {
+            var entry = sessionRestoreQueue.shift()
+            if (!entry || String(entry.path || "").trim().length === 0)
+                continue
+
+            pendingSessionDocumentState = entry
+            if (pdfDocument.load(entry.path)) {
+                completeOpenedPdf(entry)
+                return
+            }
+
+            if (pdfDocument.passwordRequired) {
+                showPasswordDialog(entry.path, false)
+                return
+            }
+
+            pendingSessionDocumentState = null
+        }
+
+        finishSessionRestore()
+    }
+
+    function finishSessionRestore() {
+        sessionRestoreInProgress = false
+        sessionRestoreQueue = []
+        pendingSessionDocumentState = null
+
+        if (documentModel.count <= 0) {
+            sessionRestoreTargetIndex = -1
+            saveCurrentSession(true)
+            return
+        }
+
+        var targetIndex = Number(sessionRestoreTargetIndex)
+        sessionRestoreTargetIndex = -1
+        if (isFinite(targetIndex) && targetIndex >= 0) {
+            setActiveDocument(Math.min(targetIndex, documentModel.count - 1))
+            Qt.callLater(function() {
+                if (hasActiveDocument)
+                    jumpToPageRequested(activePageIndex)
+            })
+        } else {
+            setActiveDocument(-1)
+        }
+        saveCurrentSession(true)
     }
 
     function defaultDocumentViewState() {
@@ -952,8 +1371,97 @@ ApplicationWindow {
         return -1
     }
 
+    function parseJsonArray(raw, fallback) {
+        try {
+            var parsed = JSON.parse(raw || JSON.stringify(fallback || []))
+            return parsed && parsed.length !== undefined ? parsed : (fallback || [])
+        } catch(e) {
+            return fallback || []
+        }
+    }
+
+    function parseJsonObject(raw, fallback) {
+        try {
+            var parsed = JSON.parse(raw || JSON.stringify(fallback || {}))
+            return parsed && typeof parsed === "object" ? parsed : (fallback || {})
+        } catch(e) {
+            return fallback || {}
+        }
+    }
+
+    function identityPageOrder(pageCount) {
+        var order = []
+        for (var page = 0; page < Math.max(0, Number(pageCount) || 0); ++page)
+            order.push(page)
+        return order
+    }
+
+    function normalizedDocumentPageOrder(doc) {
+        if (!doc)
+            return []
+
+        var totalPages = Math.max(0, Number(doc.pageCount) || 0)
+        var raw = parseJsonArray(doc.pageOrderJson || "[]", [])
+        if (raw.length === 0)
+            return identityPageOrder(totalPages)
+
+        var normalized = []
+        var seen = {}
+        for (var i = 0; i < raw.length; ++i) {
+            var page = Number(raw[i])
+            if (!isFinite(page) || page < 0 || page >= totalPages || seen[page])
+                continue
+            seen[page] = true
+            normalized.push(page)
+        }
+
+        return normalized
+    }
+
+    function sourcePageForDocumentIndex(doc, visiblePageIndex) {
+        var order = normalizedDocumentPageOrder(doc)
+        var target = Number(visiblePageIndex)
+        if (!isFinite(target) || target < 0 || target >= order.length)
+            return -1
+        return Number(order[target])
+    }
+
+    function sourcePageForActivePage(visiblePageIndex) {
+        if (!hasActiveDocument)
+            return -1
+        return sourcePageForDocumentIndex(documentModel.get(activeDocumentIndex), visiblePageIndex)
+    }
+
+    function visibleIndexForSourcePage(doc, sourcePageIndex) {
+        var target = Number(sourcePageIndex)
+        if (!isFinite(target) || !doc)
+            return -1
+
+        var order = normalizedDocumentPageOrder(doc)
+        for (var i = 0; i < order.length; ++i) {
+            if (Number(order[i]) === target)
+                return i
+        }
+
+        return -1
+    }
+
+    function remapArrayByDocumentOrder(doc, sourceItems) {
+        var order = normalizedDocumentPageOrder(doc)
+        var remapped = []
+        for (var i = 0; i < order.length; ++i) {
+            var sourcePage = Number(order[i])
+            remapped.push(sourcePage >= 0 && sourcePage < sourceItems.length ? sourceItems[sourcePage] : "")
+        }
+        return remapped
+    }
+
     function activeDocumentPageCount() {
-        return hasActiveDocument ? Math.max(1, documentModel.get(activeDocumentIndex).pageCount || 1) : 0
+        if (!hasActiveDocument)
+            return 0
+
+        var doc = documentModel.get(activeDocumentIndex)
+        return Math.max(0, normalizedDocumentPageOrder(doc).length)
     }
 
     function activeDocumentUsesProgressiveRendering() {
@@ -1112,11 +1620,26 @@ ApplicationWindow {
             }
         }
 
-        if (changed)
+        var order = normalizedDocumentPageOrder(doc)
+        var orderIsIdentity = order.length === Number(doc.pageCount || 0)
+        if (orderIsIdentity) {
+            for (var orderIndex = 0; orderIndex < order.length; ++orderIndex) {
+                if (Number(order[orderIndex]) !== orderIndex) {
+                    orderIsIdentity = false
+                    break
+                }
+            }
+        }
+
+        if (changed && orderIsIdentity)
             documentModel.setProperty(activeDocumentIndex, "pageSourcesJson", JSON.stringify(pruned))
 
+        var sourcePage = sourcePageForDocumentIndex(doc, activePageIndex)
+        if (sourcePage < 0)
+            sourcePage = 0
+
         documentRenderController.prunePageCache(doc.path,
-                                                activePageIndex,
+                                                sourcePage,
                                                 pageRenderWindowRadius,
                                                 Number(doc.renderSessionId || 0))
     }
@@ -1157,55 +1680,78 @@ ApplicationWindow {
             return []
 
         var doc = documentModel.get(activeDocumentIndex)
-        var sources = []
-        try {
-            sources = JSON.parse(doc.pageSourcesJson || "[]")
-        } catch(e) {
-            sources = []
-        }
+        var sources = parseJsonArray(doc.pageSourcesJson || "[]", [])
 
         if (sources.length === 0 && doc.previewSource && doc.previewSource.length > 0)
             sources = [doc.previewSource]
 
-        return sources
+        return remapArrayByDocumentOrder(doc, sources)
     }
 
     function activeDocumentThumbnailSources() {
         if (!hasActiveDocument)
             return []
 
-        try {
-            return JSON.parse(documentModel.get(activeDocumentIndex).thumbnailSourcesJson || "[]")
-        } catch(e) {
-            return []
-        }
+        var doc = documentModel.get(activeDocumentIndex)
+        return remapArrayByDocumentOrder(doc, parseJsonArray(doc.thumbnailSourcesJson || "[]", []))
     }
 
     function activeDocumentPageSizesJson() {
-        return hasActiveDocument ? documentModel.get(activeDocumentIndex).pageSizesJson || "[]" : "[]"
+        if (!hasActiveDocument)
+            return "[]"
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var pageSizes = parseJsonArray(doc.pageSizesJson || "[]", [])
+        return JSON.stringify(remapArrayByDocumentOrder(doc, pageSizes))
     }
 
     function activeDocumentPageRotations() {
         if (!hasActiveDocument)
             return []
 
-        try {
-            return JSON.parse(documentModel.get(activeDocumentIndex).pageRotationsJson || "[]")
-        } catch(e) {
-            return []
+        var doc = documentModel.get(activeDocumentIndex)
+        var rotations = parseJsonArray(doc.pageRotationsJson || "[]", [])
+        while (rotations.length < Number(doc.pageCount || 0))
+            rotations.push(0)
+
+        var order = normalizedDocumentPageOrder(doc)
+        var visibleRotations = []
+        for (var i = 0; i < order.length; ++i) {
+            var sourcePage = Number(order[i])
+            visibleRotations.push(sourcePage >= 0 && sourcePage < rotations.length ? Number(rotations[sourcePage] || 0) : 0)
         }
+
+        return visibleRotations
+    }
+
+    function activeDocumentEditAnnotations() {
+        if (!hasActiveDocument)
+            return []
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var annotations = parseJsonArray(doc.editAnnotationsJson || "[]", [])
+        var visibleAnnotations = []
+        for (var i = 0; i < annotations.length; ++i) {
+            var sourcePage = Number(annotations[i].pageIndex)
+            var visiblePage = visibleIndexForSourcePage(doc, sourcePage)
+            if (visiblePage < 0)
+                continue
+
+            var item = JSON.parse(JSON.stringify(annotations[i]))
+            item.sourcePageIndex = sourcePage
+            item.pageIndex = visiblePage
+            visibleAnnotations.push(item)
+        }
+
+        return visibleAnnotations
     }
 
     function activeDocumentOutlineEntries() {
         if (!hasActiveDocument)
             return []
 
-        var raw = []
-        try {
-            raw = JSON.parse(documentModel.get(activeDocumentIndex).outlineJson || "[]")
-        } catch(e) {
-            raw = []
-        }
+        var doc = documentModel.get(activeDocumentIndex)
+        var raw = parseJsonArray(doc.outlineJson || "[]", [])
 
         var flattened = []
 
@@ -1215,9 +1761,10 @@ ApplicationWindow {
 
             for (var i = 0; i < items.length; ++i) {
                 var item = items[i] || {}
+                var mappedPageIndex = item.pageIndex !== undefined ? visibleIndexForSourcePage(doc, item.pageIndex) : -1
                 flattened.push({
                     title: item.title || ("Bookmark " + String(flattened.length + 1)),
-                    pageIndex: item.pageIndex !== undefined ? item.pageIndex : -1,
+                    pageIndex: mappedPageIndex,
                     uri: item.uri || "",
                     depth: depth,
                     isOpen: item.isOpen === undefined ? true : item.isOpen
@@ -1234,11 +1781,34 @@ ApplicationWindow {
         if (!hasActiveDocument)
             return []
 
-        try {
-            return JSON.parse(documentModel.get(activeDocumentIndex).pageLinksJson || "[]")
-        } catch(e) {
-            return []
+        var doc = documentModel.get(activeDocumentIndex)
+        var sourcePages = parseJsonArray(doc.pageLinksJson || "[]", [])
+        var order = normalizedDocumentPageOrder(doc)
+        var remappedPages = []
+
+        for (var i = 0; i < order.length; ++i) {
+            var sourcePage = Number(order[i])
+            var sourceLinks = sourcePage >= 0 && sourcePage < sourcePages.length ? sourcePages[sourcePage] : []
+            var targetLinks = []
+            if (sourceLinks && sourceLinks.length !== undefined) {
+                for (var linkIndex = 0; linkIndex < sourceLinks.length; ++linkIndex) {
+                    var link = sourceLinks[linkIndex] || {}
+                    var targetPage = link.pageIndex !== undefined ? visibleIndexForSourcePage(doc, link.pageIndex) : -1
+                    var mappedLink = {
+                        uri: link.uri || "",
+                        external: !!link.external,
+                        pageIndex: targetPage,
+                        targetX: link.targetX !== undefined ? link.targetX : 0,
+                        targetY: link.targetY !== undefined ? link.targetY : 0,
+                        rect: link.rect || {}
+                    }
+                    targetLinks.push(mappedLink)
+                }
+            }
+            remappedPages.push(targetLinks)
         }
+
+        return remappedPages
     }
 
     function activeDocumentSearchResults() {
@@ -1250,6 +1820,30 @@ ApplicationWindow {
         } catch(e) {
             return []
         }
+    }
+
+    function remapSearchResultsForDocument(index, resultsJson) {
+        if (index < 0 || index >= documentModel.count)
+            return "[]"
+
+        var doc = documentModel.get(index)
+        var parsed = parseJsonArray(resultsJson || "[]", [])
+        var mapped = []
+        for (var i = 0; i < parsed.length; ++i) {
+            var item = parsed[i] || {}
+            var visiblePage = visibleIndexForSourcePage(doc, item.pageIndex)
+            if (visiblePage < 0)
+                continue
+
+            var mappedItem = {
+                pageIndex: visiblePage,
+                rect: item.rect || {},
+                text: item.text || ""
+            }
+            mapped.push(mappedItem)
+        }
+
+        return JSON.stringify(mapped)
     }
 
     function activeDocumentSearchResultCount() {
@@ -1333,17 +1927,69 @@ ApplicationWindow {
         return copy
     }
 
-    function activeDocumentHasRotations() {
-        var rotations = activeDocumentPageRotations()
-        for (var i = 0; i < rotations.length; ++i) {
-            if ((rotations[i] || 0) !== 0)
+    function captureDocumentEditState(doc) {
+        return {
+            pageOrder: normalizedDocumentPageOrder(doc),
+            pageRotations: parseJsonArray(doc.pageRotationsJson || "[]", []),
+            editAnnotations: parseJsonArray(doc.editAnnotationsJson || "[]", [])
+        }
+    }
+
+    function documentEditStateSignature(state) {
+        return JSON.stringify({
+            pageOrder: state && state.pageOrder ? state.pageOrder : [],
+            pageRotations: state && state.pageRotations ? state.pageRotations : [],
+            editAnnotations: state && state.editAnnotations ? state.editAnnotations : []
+        })
+    }
+
+    function documentHasPendingChanges(index) {
+        if (index < 0 || index >= documentModel.count)
+            return false
+
+        var doc = documentModel.get(index)
+        var order = normalizedDocumentPageOrder(doc)
+        if (order.length !== Number(doc.pageCount || 0))
+            return true
+
+        for (var page = 0; page < order.length; ++page) {
+            if (Number(order[page]) !== page)
                 return true
         }
+
+        var rotations = parseJsonArray(doc.pageRotationsJson || "[]", [])
+        for (var i = 0; i < rotations.length; ++i) {
+            if ((Number(rotations[i]) || 0) !== 0)
+                return true
+        }
+
+        if (parseJsonArray(doc.editAnnotationsJson || "[]", []).length > 0)
+            return true
 
         return false
     }
 
-    function syncActiveDocumentState() {
+    function activeDocumentHasPendingChanges() {
+        return documentHasPendingChanges(activeDocumentIndex)
+    }
+
+    function activeDocumentCanUndoEdits() {
+        if (!hasActiveDocument)
+            return false
+        return parseJsonArray(documentModel.get(activeDocumentIndex).editUndoJson || "[]", []).length > 0
+    }
+
+    function activeDocumentCanRedoEdits() {
+        if (!hasActiveDocument)
+            return false
+        return parseJsonArray(documentModel.get(activeDocumentIndex).editRedoJson || "[]", []).length > 0
+    }
+
+    function activeDocumentHasRotations() {
+        return activeDocumentHasPendingChanges()
+    }
+
+    function syncActiveDocumentState(skipSessionSave) {
         if (!hasActiveDocument)
             return
 
@@ -1361,6 +2007,107 @@ ApplicationWindow {
             layoutMode: layoutMode,
             zoomMode: zoomMode
         })
+        if (!skipSessionSave)
+            saveCurrentSession(true)
+    }
+
+    function applyDocumentEditState(index, state, preferredSourcePage) {
+        if (index < 0 || index >= documentModel.count || !state)
+            return false
+
+        var doc = documentModel.get(index)
+        var nextOrder = state.pageOrder && state.pageOrder.length !== undefined
+            ? state.pageOrder.slice()
+            : identityPageOrder(doc.pageCount)
+        var nextRotations = state.pageRotations && state.pageRotations.length !== undefined
+            ? state.pageRotations.slice()
+            : []
+        var nextAnnotations = state.editAnnotations && state.editAnnotations.length !== undefined
+            ? state.editAnnotations.slice()
+            : []
+
+        documentModel.setProperty(index, "pageOrderJson", JSON.stringify(nextOrder))
+        documentModel.setProperty(index, "pageRotationsJson", JSON.stringify(nextRotations))
+        documentModel.setProperty(index, "editAnnotationsJson", JSON.stringify(nextAnnotations))
+        documentModel.setProperty(index, "pageTextCacheJson", "{}")
+        documentModel.setProperty(index, "searchResultsJson", "[]")
+        documentModel.setProperty(index, "activeSearchResultIndex", -1)
+        documentModel.setProperty(index, "searchInProgress", false)
+
+        var sourcePage = Number(preferredSourcePage)
+        if (!isFinite(sourcePage))
+            sourcePage = sourcePageForDocumentIndex(doc, Number(doc.activePageIndex || 0))
+
+        var refreshedDoc = documentModel.get(index)
+        var nextVisiblePage = visibleIndexForSourcePage(refreshedDoc, sourcePage)
+        if (nextVisiblePage < 0)
+            nextVisiblePage = Math.max(0, Math.min(Number(doc.activePageIndex || 0), Math.max(0, nextOrder.length - 1)))
+
+        documentModel.setProperty(index, "activePageIndex", nextVisiblePage)
+        if (index === activeDocumentIndex) {
+            activePageIndex = nextVisiblePage
+            pdfDocument.clearSelection()
+            syncActiveDocumentState()
+            Qt.callLater(function() {
+                jumpToPageRequested(activePageIndex)
+            })
+        }
+
+        saveMessage = ""
+        return true
+    }
+
+    function commitDocumentEdit(index, nextState, preferredSourcePage) {
+        if (index < 0 || index >= documentModel.count || !nextState)
+            return false
+
+        var doc = documentModel.get(index)
+        var currentState = captureDocumentEditState(doc)
+        if (documentEditStateSignature(currentState) === documentEditStateSignature(nextState))
+            return false
+
+        var undoStack = parseJsonArray(doc.editUndoJson || "[]", [])
+        undoStack.push(currentState)
+        if (undoStack.length > 100)
+            undoStack.shift()
+
+        documentModel.setProperty(index, "editUndoJson", JSON.stringify(undoStack))
+        documentModel.setProperty(index, "editRedoJson", "[]")
+        return applyDocumentEditState(index, nextState, preferredSourcePage)
+    }
+
+    function undoActiveDocumentEdit() {
+        if (!hasActiveDocument)
+            return
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var undoStack = parseJsonArray(doc.editUndoJson || "[]", [])
+        if (undoStack.length <= 0)
+            return
+
+        var previousState = undoStack.pop()
+        var redoStack = parseJsonArray(doc.editRedoJson || "[]", [])
+        redoStack.push(captureDocumentEditState(doc))
+        documentModel.setProperty(activeDocumentIndex, "editUndoJson", JSON.stringify(undoStack))
+        documentModel.setProperty(activeDocumentIndex, "editRedoJson", JSON.stringify(redoStack))
+        applyDocumentEditState(activeDocumentIndex, previousState, sourcePageForActivePage(activePageIndex))
+    }
+
+    function redoActiveDocumentEdit() {
+        if (!hasActiveDocument)
+            return
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var redoStack = parseJsonArray(doc.editRedoJson || "[]", [])
+        if (redoStack.length <= 0)
+            return
+
+        var nextState = redoStack.pop()
+        var undoStack = parseJsonArray(doc.editUndoJson || "[]", [])
+        undoStack.push(captureDocumentEditState(doc))
+        documentModel.setProperty(activeDocumentIndex, "editUndoJson", JSON.stringify(undoStack))
+        documentModel.setProperty(activeDocumentIndex, "editRedoJson", JSON.stringify(redoStack))
+        applyDocumentEditState(activeDocumentIndex, nextState, sourcePageForActivePage(activePageIndex))
     }
 
     function normalizedZoom(value) {
@@ -1411,6 +2158,7 @@ ApplicationWindow {
             zoomMode = "fitPage"
             activePageIndex = 0
             reflowModeEnabled = false
+            saveCurrentSession(true)
             return
         }
 
@@ -1432,6 +2180,7 @@ ApplicationWindow {
         updateActiveSearchResults()
         if (reflowModeEnabled && activeDocumentReflowText().length === 0)
             Qt.callLater(function() { ensureActiveDocumentReflowText(false) })
+        saveCurrentSession(true)
     }
 
     function closeActiveDocument() {
@@ -1446,7 +2195,7 @@ ApplicationWindow {
         })
     }
 
-    function closeDocumentAt(index) {
+    function performCloseDocumentAt(index) {
         if (index < 0 || index >= documentModel.count)
             return
 
@@ -1472,6 +2221,25 @@ ApplicationWindow {
         } else {
             setActiveDocument(Math.max(0, Math.min(nextActiveIndex, documentModel.count - 1)))
         }
+        saveCurrentSession(true)
+    }
+
+    function requestCloseDocumentAt(index) {
+        if (index < 0 || index >= documentModel.count)
+            return
+
+        if (!documentHasPendingChanges(index)) {
+            performCloseDocumentAt(index)
+            return
+        }
+
+        pendingEditsDialog.closeMode = "document"
+        pendingEditsDialog.documentIndex = index
+        pendingEditsDialog.open()
+    }
+
+    function closeDocumentAt(index) {
+        requestCloseDocumentAt(index)
     }
 
     function openPdf(source) {
@@ -1481,6 +2249,7 @@ ApplicationWindow {
         pendingOpenSource = source
         pendingOpenFileName = fileNameFromPath(source)
         pendingProtectedSource = ""
+        pendingSessionDocumentState = null
         openInProgress = true
         saveMessage = ""
         openPdfErrorDialog.close()
@@ -1515,7 +2284,7 @@ ApplicationWindow {
         return false
     }
 
-    function completeOpenedPdf() {
+    function completeOpenedPdf(restoredSessionState) {
         saveMessage = ""
         window.visibility = Window.Maximized
 
@@ -1524,6 +2293,8 @@ ApplicationWindow {
                 documentModel.setProperty(i, "password", pdfDocument.password)
                 setActiveDocument(i)
                 addRecentFile(pdfDocument.filePath, pdfDocument.title)
+                if (sessionRestoreInProgress)
+                    restoreNextSessionDocument()
                 return
             }
         }
@@ -1531,6 +2302,8 @@ ApplicationWindow {
         var sources = loadedPageSources()
         var thumbnails = loadedThumbnailSources()
         var savedState = savedViewStateFor(pdfDocument.filePath)
+        var restoredState = normalizedRestoredDocumentState(restoredSessionState, savedState)
+        var restoredPageIndex = Math.max(0, Math.min(restoredState.activePageIndex, Math.max(0, pdfDocument.pageCount - 1)))
 
         documentModel.append({
             path: pdfDocument.filePath,
@@ -1544,24 +2317,28 @@ ApplicationWindow {
             pageLinksJson: pdfDocument.pageLinksJson,
             pageCount: pdfDocument.pageCount,
             fileSizeBytes: pdfDocument.fileSizeBytes,
-            zoom: savedState.zoom,
-            layoutMode: savedState.layoutMode,
-            zoomMode: savedState.zoomMode,
-            navigationPanelVisible: true,
-            sidePanelMode: "thumbnails",
-            snapToPage: false,
-            pageSpacing: 18,
-            activePageIndex: 0,
+            zoom: restoredState.zoom,
+            layoutMode: restoredState.layoutMode,
+            zoomMode: restoredState.zoomMode,
+            navigationPanelVisible: restoredState.navigationPanelVisible,
+            sidePanelMode: restoredState.sidePanelMode,
+            snapToPage: restoredState.snapToPage,
+            pageSpacing: restoredState.pageSpacing,
+            activePageIndex: restoredPageIndex,
+            pageOrderJson: "[]",
             pageRotationsJson: "[]",
-            searchQuery: "",
+            editAnnotationsJson: "[]",
+            editUndoJson: "[]",
+            editRedoJson: "[]",
+            searchQuery: restoredState.searchQuery,
             searchResultsJson: "[]",
             activeSearchResultIndex: -1,
             searchRequestId: 0,
             searchInProgress: false,
             reflowText: "",
             pageTextCacheJson: "{}",
-            historyBackJson: "[]",
-            historyForwardJson: "[]",
+            historyBackJson: JSON.stringify(restoredState.historyBack),
+            historyForwardJson: JSON.stringify(restoredState.historyForward),
             renderSessionId: ++renderSessionSerial,
             firstPageVisibleMs: -1,
             renderCacheBytes: 0,
@@ -1572,6 +2349,10 @@ ApplicationWindow {
         documentRenderController.markDocumentOpened(pdfDocument.filePath, renderSessionSerial, pdfDocument.password)
         setActiveDocument(documentModel.count - 1)
         addRecentFile(pdfDocument.filePath, pdfDocument.title)
+        saveCurrentSession(true)
+        pendingSessionDocumentState = null
+        if (sessionRestoreInProgress)
+            restoreNextSessionDocument()
     }
 
     function finishOpenPdf() {
@@ -1582,7 +2363,7 @@ ApplicationWindow {
         pendingOpenFileName = ""
 
         if (opened) {
-            completeOpenedPdf()
+            completeOpenedPdf(pendingSessionDocumentState)
             return
         }
 
@@ -1602,8 +2383,10 @@ ApplicationWindow {
         passwordDialog.inlineError = ""
         if (pdfDocument.retryWithPassword(passwordDialog.passwordValue)) {
             pendingProtectedSource = ""
+            var restoredSessionState = pendingSessionDocumentState
+            pendingSessionDocumentState = null
             passwordDialog.close()
-            completeOpenedPdf()
+            completeOpenedPdf(restoredSessionState)
             return
         }
 
@@ -1618,6 +2401,15 @@ ApplicationWindow {
         pendingProtectedSource = ""
         passwordDialog.close()
         showOpenPdfError(targetSource)
+    }
+
+    function handlePasswordDialogClosed() {
+        if (!sessionRestoreInProgress || !pendingSessionDocumentState)
+            return
+
+        pendingProtectedSource = ""
+        pendingSessionDocumentState = null
+        restoreNextSessionDocument()
     }
 
     function showOpenPdfError(source) {
@@ -1657,24 +2449,61 @@ ApplicationWindow {
         return pdfDocument.errorMessage.length > 0
     }
 
+    function performDocumentSaveTransaction(index, target, refreshAfterSave) {
+        if (index < 0 || index >= documentModel.count)
+            return false
+
+        var doc = documentModel.get(index)
+        var overwriteCurrent = isSameFilePath(doc.path, target)
+        var sessionId = Number(doc.renderSessionId || 0)
+        var password = doc.password || ""
+        var saved = false
+
+        documentSearchController.cancelSearchSync()
+        if (overwriteCurrent) {
+            setDocumentSaveInProgress(doc.path, true)
+            documentRenderController.releaseDocumentSync(doc.path, sessionId)
+        }
+
+        try {
+            saved = pdfDocument.saveEditedCopy(doc.path,
+                                               target,
+                                               doc.pageOrderJson || "[]",
+                                               doc.pageRotationsJson || "[]",
+                                               password,
+                                               doc.editAnnotationsJson || "[]")
+        } finally {
+            if (overwriteCurrent)
+                setDocumentSaveInProgress(doc.path, false)
+        }
+
+        if (saved) {
+            saveMessage = "Guardado: " + fileNameFromPath(target)
+            if (overwriteCurrent && refreshAfterSave && index === activeDocumentIndex) {
+                if (!refreshActiveDocumentFromDisk()) {
+                    restoreDocumentAfterFailedSave(index, password, sessionId)
+                    saveMessage = ""
+                    return false
+                }
+            }
+            return true
+        }
+
+        if (overwriteCurrent)
+            restoreDocumentAfterFailedSave(index, password, sessionId)
+        saveMessage = ""
+        return false
+    }
+
+    function saveDocumentChanges(index, target, refreshAfterSave) {
+        return performDocumentSaveTransaction(index, target, refreshAfterSave)
+    }
+
     function saveActiveDocumentAsRotated(target) {
         if (!hasActiveDocument)
             return
 
-        var doc = documentModel.get(activeDocumentIndex)
-        var overwriteCurrent = isSameFilePath(doc.path, target)
-        if (overwriteCurrent)
-            documentRenderController.releaseDocumentSync(doc.path, doc.renderSessionId || 0)
-
-        if (pdfDocument.saveRotatedCopy(doc.path, target, doc.pageRotationsJson || "[]")) {
-            saveMessage = "Guardado: " + fileNameFromPath(target)
-            if (overwriteCurrent)
-                refreshActiveDocumentFromDisk()
-        } else {
-            if (overwriteCurrent)
-                documentRenderController.markDocumentOpened(doc.path, doc.renderSessionId || 0, doc.password || "")
-            saveMessage = ""
-        }
+        saveDocumentChanges(activeDocumentIndex, target, isSameFilePath(documentModel.get(activeDocumentIndex).path, target))
     }
 
     function refreshActiveDocumentFromDisk() {
@@ -1704,7 +2533,11 @@ ApplicationWindow {
         documentModel.setProperty(index, "pageLinksJson", pdfDocument.pageLinksJson)
         documentModel.setProperty(index, "pageCount", pdfDocument.pageCount)
         documentModel.setProperty(index, "fileSizeBytes", pdfDocument.fileSizeBytes)
+        documentModel.setProperty(index, "pageOrderJson", "[]")
         documentModel.setProperty(index, "pageRotationsJson", "[]")
+        documentModel.setProperty(index, "editAnnotationsJson", "[]")
+        documentModel.setProperty(index, "editUndoJson", "[]")
+        documentModel.setProperty(index, "editRedoJson", "[]")
         documentModel.setProperty(index, "zoom", zoom)
         documentModel.setProperty(index, "layoutMode", layout)
         documentModel.setProperty(index, "zoomMode", zoomModeValue)
@@ -1723,12 +2556,40 @@ ApplicationWindow {
         return true
     }
 
+    function restoreDocumentAfterFailedSave(index, password, sessionId) {
+        if (index < 0 || index >= documentModel.count)
+            return
+
+        var doc = documentModel.get(index)
+        documentRenderController.markDocumentOpened(doc.path, sessionId, password)
+
+        if (index !== activeDocumentIndex)
+            return
+
+        var restoredPage = Math.max(0, Math.min(activePageIndex, Math.max(0, activeDocumentPageCount() - 1)))
+        if (!loadPdfWithPasswordPrompt(doc.path, password))
+            return
+
+        documentModel.setProperty(index, "password", pdfDocument.password)
+        documentModel.setProperty(index, "activePageIndex", restoredPage)
+        activePageIndex = restoredPage
+        pdfDocument.clearSelection()
+        Qt.callLater(function() {
+            jumpToPageRequested(activePageIndex)
+        })
+    }
+
     function requestActivePageRender(pageIndex, scale) {
         if (!hasActiveDocument)
             return
 
         var doc = documentModel.get(activeDocumentIndex)
-        documentRenderController.requestPageRender(doc.path, pageIndex, scale, doc.renderSessionId || 0)
+        if (isDocumentSaveInProgress(doc.path))
+            return
+        var sourcePage = sourcePageForDocumentIndex(doc, pageIndex)
+        if (sourcePage < 0)
+            return
+        documentRenderController.requestPageRender(doc.path, sourcePage, scale, doc.renderSessionId || 0)
     }
 
     function requestActiveThumbnailRender(pageIndex) {
@@ -1736,7 +2597,12 @@ ApplicationWindow {
             return
 
         var doc = documentModel.get(activeDocumentIndex)
-        documentRenderController.requestThumbnailRender(doc.path, pageIndex, doc.renderSessionId || 0)
+        if (isDocumentSaveInProgress(doc.path))
+            return
+        var sourcePage = sourcePageForDocumentIndex(doc, pageIndex)
+        if (sourcePage < 0)
+            return
+        documentRenderController.requestThumbnailRender(doc.path, sourcePage, doc.renderSessionId || 0)
     }
 
     function updateActiveSearchResults() {
@@ -1791,6 +2657,278 @@ ApplicationWindow {
         return true
     }
 
+    function activeSelectionVisualPageIndex() {
+        if (!hasActiveDocument)
+            return -1
+        return visibleIndexForSourcePage(documentModel.get(activeDocumentIndex), pdfDocument.selectionPage)
+    }
+
+    function normalizeEditFontFamily(fontFamily) {
+        var value = String(fontFamily || "").toLowerCase()
+        if (value.indexOf("cour") >= 0)
+            return "Cour"
+        if (value.indexOf("times") >= 0 || value.indexOf("tiro") >= 0 || value.indexOf("serif") >= 0)
+            return "TiRo"
+        return "Helv"
+    }
+
+    function displayEditFontFamily(fontFamily) {
+        var value = normalizeEditFontFamily(fontFamily)
+        if (value === "Cour")
+            return "Courier New"
+        if (value === "TiRo")
+            return "Times New Roman"
+        return "Arial"
+    }
+
+    function nextPaletteColor(current, palette) {
+        if (!palette || palette.length <= 0)
+            return current
+
+        var normalized = String(current || "").toUpperCase()
+        for (var i = 0; i < palette.length; ++i) {
+            if (String(palette[i]).toUpperCase() === normalized)
+                return palette[(i + 1) % palette.length]
+        }
+
+        return palette[0]
+    }
+
+    function nextEditAnnotationId(prefix) {
+        editAnnotationSerial += 1
+        return String(prefix || "edit") + "-" + String(Date.now()) + "-" + String(editAnnotationSerial)
+    }
+
+    function activeTextBlocksForPage(pageIndex) {
+        if (!hasActiveDocument || topToolbarMenu !== "edit" || activeEditTool !== "text")
+            return "[]"
+
+        var sourcePage = sourcePageForActivePage(pageIndex)
+        if (sourcePage < 0)
+            return "[]"
+
+        return pdfDocument.textBlocksForPage(sourcePage)
+    }
+
+    function activeTextElementsForPage(pageIndex) {
+        if (!hasActiveDocument || topToolbarMenu !== "edit" || activeEditTool !== "text")
+            return "[]"
+
+        var sourcePage = sourcePageForActivePage(pageIndex)
+        if (sourcePage < 0)
+            return "[]"
+
+        return pdfDocument.textElementsForPage(sourcePage)
+    }
+
+    function prepareActiveTextEdit(pageIndex, point) {
+        if (!hasActiveDocument || topToolbarMenu !== "edit" || activeEditTool !== "text")
+            return null
+
+        var sourcePage = sourcePageForActivePage(pageIndex)
+        if (sourcePage < 0)
+            return null
+
+        var seed = {}
+        try {
+            seed = JSON.parse(pdfDocument.textEditAt(sourcePage, point) || "{}")
+        } catch(e) {
+            seed = {}
+        }
+
+        syncingPdfTextStyle = true
+        seed.pdfFontFamily = String(seed.fontFaceName || seed.fontFamily || "")
+        editFontFamily = normalizeEditFontFamily(seed.fontFamily || editFontFamily)
+        editFontSize = Math.max(6, Math.min(144, Math.round(Number(seed.fontSize || editFontSize || 12))))
+        editTextColor = seed.color || editTextColor
+        editBoldEnabled = !!seed.bold
+        editItalicEnabled = !!seed.italic
+        editUnderlineEnabled = !!seed.underline
+        syncingPdfTextStyle = false
+
+        seed.id = nextEditAnnotationId("text")
+        seed.pageIndex = pageIndex
+        seed.sourcePageIndex = sourcePage
+        seed.blockKey = seed.blockKey || String(sourcePage) + ":" + JSON.stringify(seed.originalRect || seed.rect || {})
+        if (!seed.fontFamily)
+            seed.fontFamily = editFontFamily
+        if (!seed.fontSize)
+            seed.fontSize = editFontSize
+        if (!seed.color)
+            seed.color = editTextColor
+        if (seed.bold === undefined)
+            seed.bold = editBoldEnabled
+        if (seed.italic === undefined)
+            seed.italic = editItalicEnabled
+        if (seed.underline === undefined)
+            seed.underline = editUnderlineEnabled
+        if (!seed.rect)
+            seed.rect = { x: point.x, y: point.y, width: 180, height: 24 }
+        if (!seed.originalBlockModel)
+            seed.originalBlockModel = JSON.parse(JSON.stringify(seed))
+        if (!seed.editableDocumentModel) {
+            seed.editableDocumentModel = {
+                plainText: String(seed.text || ""),
+                spans: seed.spans || [],
+                lines: seed.lines || []
+            }
+        }
+        if (!seed.dirtyRanges)
+            seed.dirtyRanges = []
+        if (!seed.layoutMode)
+            seed.layoutMode = "preserve-lines"
+        seed.styleSyncLocked = true
+        seed.geometryFidelity = seed.geometryFidelity || "exact"
+        return seed
+    }
+
+    function commitActiveTextEdit(draft) {
+        if (!hasActiveDocument || !draft)
+            return false
+
+        var text = String(draft.text || "")
+        if (text.trim().length === 0)
+            return false
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var annotations = parseJsonArray(doc.editAnnotationsJson || "[]", [])
+        var sourcePage = Number(draft.sourcePageIndex)
+        if (!isFinite(sourcePage) || sourcePage < 0)
+            sourcePage = sourcePageForActivePage(Number(draft.pageIndex || 0))
+        if (sourcePage < 0)
+            return false
+
+        var replacement = {
+            id: draft.id || nextEditAnnotationId("text"),
+            type: "replaceTextBlock",
+            pageIndex: sourcePage,
+            rect: draft.rect || { x: 72, y: 72, width: 180, height: 24 },
+            originalRect: draft.originalRect || draft.rect || { x: 72, y: 72, width: 180, height: 24 },
+            blockKey: draft.blockKey || String(sourcePage) + ":" + JSON.stringify(draft.originalRect || draft.rect || {}),
+            originalText: String(draft.originalText || ""),
+            text: text,
+            fontFamily: String(draft.fontFamily || editFontFamily || "Helvetica"),
+            fontSize: Math.max(6, Math.min(144, Number(draft.fontSize || editFontSize) || 12)),
+            color: draft.color || editTextColor,
+            bold: draft.bold !== undefined ? !!draft.bold : editBoldEnabled,
+            italic: draft.italic !== undefined ? !!draft.italic : editItalicEnabled,
+            underline: draft.underline !== undefined ? !!draft.underline : editUnderlineEnabled,
+            opacity: 1.0,
+            spans: draft.spans || [],
+            lines: draft.lines || [],
+            writingMode: draft.writingMode !== undefined ? Number(draft.writingMode) : 0,
+            paragraphDirection: draft.paragraphDirection || [1, 0],
+            fontFaceName: String(draft.fontFaceName || ""),
+            fontSubsetPrefix: String(draft.fontSubsetPrefix || ""),
+            fontResourceName: String(draft.fontResourceName || ""),
+            lineCount: Number(draft.lineCount || 0),
+            glyphCount: Number(draft.glyphCount || 0),
+            originalBlockModel: draft.originalBlockModel || {},
+            editableDocumentModel: draft.editableDocumentModel || {
+                plainText: text,
+                spans: draft.spans || [],
+                lines: draft.lines || [],
+                visualRuns: draft.visualRuns || [],
+                fidelity: draft.fidelity || {}
+            },
+            visualDocumentModel: draft.visualDocumentModel || {
+                plainText: text,
+                spans: draft.spans || [],
+                lines: draft.lines || [],
+                visualRuns: draft.visualRuns || [],
+                fidelity: draft.fidelity || {}
+            },
+            editablePlainText: String(draft.editablePlainText || text),
+            visualRuns: draft.visualRuns || [],
+            fidelity: draft.fidelity || {},
+            dirtyRanges: draft.dirtyRanges || [],
+            layoutMode: draft.layoutMode || "preserve-lines",
+            cursorPosition: Number(draft.cursorPosition || 0),
+            selectionStart: Number(draft.selectionStart || draft.cursorPosition || 0),
+            selectionEnd: Number(draft.selectionEnd || draft.cursorPosition || 0),
+            geometryFidelity: String(draft.geometryFidelity || "exact")
+        }
+
+        var replaced = false
+        for (var i = 0; i < annotations.length; ++i) {
+            if (String(annotations[i].type || "") === "replaceTextBlock"
+                    && String(annotations[i].blockKey || "") === String(replacement.blockKey || "")) {
+                annotations[i] = replacement
+                replaced = true
+                break
+            }
+        }
+        if (!replaced)
+            annotations.push(replacement)
+
+        var nextState = captureDocumentEditState(doc)
+        nextState.editAnnotations = annotations
+        return commitDocumentEdit(activeDocumentIndex, nextState, sourcePage)
+    }
+
+    function commitActiveHighlightFromSelection() {
+        if (!hasActiveDocument || topToolbarMenu !== "edit" || activeEditTool !== "highlight")
+            return false
+
+        if (pdfDocument.selectionPage < 0 || String(pdfDocument.selectionText || "").trim().length === 0)
+            return false
+
+        var quads = parseJsonArray(pdfDocument.selectionGeometryJson || "[]", [])
+        if (quads.length === 0)
+            return false
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var annotations = parseJsonArray(doc.editAnnotationsJson || "[]", [])
+        annotations.push({
+            id: nextEditAnnotationId("highlight"),
+            type: "highlight",
+            pageIndex: pdfDocument.selectionPage,
+            quads: quads,
+            color: editHighlightColor,
+            opacity: 0.42,
+            text: pdfDocument.selectionText || ""
+        })
+
+        var nextState = captureDocumentEditState(doc)
+        nextState.editAnnotations = annotations
+        var committed = commitDocumentEdit(activeDocumentIndex, nextState, pdfDocument.selectionPage)
+        if (committed)
+            pdfDocument.clearSelection()
+        return committed
+    }
+
+    function eraseActiveEditAnnotation(annotationId) {
+        if (!hasActiveDocument || !annotationId)
+            return false
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var annotations = parseJsonArray(doc.editAnnotationsJson || "[]", [])
+        var nextAnnotations = []
+        var removedSourcePage = -1
+        for (var i = 0; i < annotations.length; ++i) {
+            if (String(annotations[i].id || "") === String(annotationId)) {
+                removedSourcePage = Number(annotations[i].pageIndex)
+                continue
+            }
+            nextAnnotations.push(annotations[i])
+        }
+
+        if (nextAnnotations.length === annotations.length)
+            return false
+
+        var nextState = captureDocumentEditState(doc)
+        nextState.editAnnotations = nextAnnotations
+        return commitDocumentEdit(activeDocumentIndex, nextState, removedSourcePage)
+    }
+
+    function beginActiveSelection(pageIndex, point) {
+        pdfDocument.beginSelection(sourcePageForActivePage(pageIndex), point)
+    }
+
+    function updateActiveSelection(pageIndex, point) {
+        pdfDocument.updateSelection(sourcePageForActivePage(pageIndex), point)
+    }
+
     function ensureActiveDocumentReflowText(forceRefresh) {
         if (!hasActiveDocument)
             return ""
@@ -1825,7 +2963,11 @@ ApplicationWindow {
         if (!ensureActiveDocumentBackendLoaded())
             return ""
 
-        var extracted = String(pdfDocument.extractPageText(activePageIndex) || "")
+        var sourcePage = sourcePageForActivePage(activePageIndex)
+        if (sourcePage < 0)
+            return ""
+
+        var extracted = String(pdfDocument.extractPageText(sourcePage) || "")
         var nextCache = readActiveDocumentPageTextCache()
         nextCache[String(activePageIndex)] = extracted
         writeActiveDocumentPageTextCache(nextCache)
@@ -2179,8 +3321,11 @@ ApplicationWindow {
             return
 
         var resolvedPage = pdfDocument.resolveLinkPage(targetUri)
-        if (resolvedPage >= 0)
-            navigateToDocumentPage(resolvedPage, true)
+        if (resolvedPage >= 0) {
+            var visiblePage = visibleIndexForSourcePage(doc, resolvedPage)
+            if (visiblePage >= 0)
+                navigateToDocumentPage(visiblePage, true)
+        }
     }
 
     function moveDocument(from, to) {
@@ -2380,15 +3525,7 @@ ApplicationWindow {
         if (!hasActiveDocument)
             return
 
-        var doc = documentModel.get(activeDocumentIndex)
-        documentRenderController.releaseDocumentSync(doc.path, doc.renderSessionId || 0)
-        if (pdfDocument.saveRotatedCopy(doc.path, doc.path, doc.pageRotationsJson || "[]")) {
-            saveMessage = "Guardado: " + doc.title
-            refreshActiveDocumentFromDisk()
-        } else {
-            documentRenderController.markDocumentOpened(doc.path, doc.renderSessionId || 0, doc.password || "")
-            saveMessage = ""
-        }
+        saveDocumentChanges(activeDocumentIndex, documentModel.get(activeDocumentIndex).path, true)
     }
 
     function zoomIn() {
@@ -2480,27 +3617,72 @@ ApplicationWindow {
         return 1
     }
 
+    function rotateDocumentPage(pageIndex, delta) {
+        if (!hasActiveDocument || delta === 0)
+            return
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var rotations = parseJsonArray(doc.pageRotationsJson || "[]", [])
+        while (rotations.length < Number(doc.pageCount || 0))
+            rotations.push(0)
+
+        var sourcePage = sourcePageForDocumentIndex(doc, pageIndex)
+        if (sourcePage < 0)
+            return
+
+        var nextState = captureDocumentEditState(doc)
+        while (nextState.pageRotations.length < Number(doc.pageCount || 0))
+            nextState.pageRotations.push(0)
+        nextState.pageRotations[sourcePage] = (Number(nextState.pageRotations[sourcePage] || 0) + delta + 360) % 360
+
+        if (!commitDocumentEdit(activeDocumentIndex, nextState, sourcePage))
+            return
+
+        requestActivePageRender(pageIndex, pdfViewer ? pdfViewer.renderScale : 2.5)
+        requestActiveThumbnailRender(pageIndex)
+    }
+
     function rotateCurrentPage(delta) {
+        rotateDocumentPage(activePageIndex, delta)
+    }
+
+    function moveActiveDocumentPage(fromIndex, toIndex) {
         if (!hasActiveDocument)
             return
 
         var doc = documentModel.get(activeDocumentIndex)
-        var rotations = []
-        try {
-            rotations = JSON.parse(doc.pageRotationsJson || "[]")
-        } catch(e) {
-            rotations = []
-        }
+        var order = normalizedDocumentPageOrder(doc)
+        var from = Math.max(0, Math.min(Number(fromIndex), order.length - 1))
+        var to = Math.max(0, Math.min(Number(toIndex), order.length - 1))
+        if (!isFinite(from) || !isFinite(to) || from === to)
+            return
 
-        while (rotations.length < doc.pageCount)
-            rotations.push(0)
+        var sourcePage = Number(order[from])
+        order.splice(from, 1)
+        order.splice(to, 0, sourcePage)
 
-        var page = Math.max(0, Math.min(activePageIndex, doc.pageCount - 1))
-        rotations[page] = (rotations[page] + delta + 360) % 360
-        documentModel.setProperty(activeDocumentIndex, "pageRotationsJson", JSON.stringify(rotations))
-        requestActivePageRender(page, pdfViewer ? pdfViewer.renderScale : 2.5)
-        requestActiveThumbnailRender(page)
-        saveMessage = ""
+        var nextState = captureDocumentEditState(doc)
+        nextState.pageOrder = order
+        commitDocumentEdit(activeDocumentIndex, nextState, sourcePage)
+    }
+
+    function deleteActiveDocumentPage(pageIndex) {
+        if (!hasActiveDocument)
+            return
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var order = normalizedDocumentPageOrder(doc)
+        if (order.length <= 1)
+            return
+
+        var target = Math.max(0, Math.min(Number(pageIndex), order.length - 1))
+        if (!isFinite(target))
+            return
+
+        order.splice(target, 1)
+        var nextState = captureDocumentEditState(doc)
+        nextState.pageOrder = order
+        commitDocumentEdit(activeDocumentIndex, nextState, sourcePageForDocumentIndex(doc, pageIndex))
     }
 
     ColumnLayout {
@@ -2942,11 +4124,11 @@ ApplicationWindow {
                                 text: "Vista"
                                 width: 58
                                 height: 28
-                                onClicked: window.readingToolsMenuVisible = false
+                                onClicked: window.topToolbarMenu = "view"
 
                                 contentItem: Text {
                                     text: viewTabButton.text
-                                    color: !window.readingToolsMenuVisible ? Theme.accentText : Theme.text
+                                    color: window.topToolbarMenu === "view" ? Theme.accentText : Theme.text
                                     font.pixelSize: 11
                                     font.weight: Font.DemiBold
                                     horizontalAlignment: Text.AlignHCenter
@@ -2954,7 +4136,7 @@ ApplicationWindow {
                                 }
 
                                 background: Rectangle {
-                                    color: !window.readingToolsMenuVisible ? Theme.accent
+                                    color: window.topToolbarMenu === "view" ? Theme.accent
                                           : viewTabButton.down ? Theme.tabActive
                                           : viewTabButton.hovered ? Theme.hover
                                           : Theme.background
@@ -2965,19 +4147,17 @@ ApplicationWindow {
                             }
 
                             Button {
-                                id: readingToolsButton
-                                text: "Lectura"
-                                width: 72
+                                id: editTabButton
+                                text: "Editar"
+                                width: 64
                                 height: 28
-                                onClicked: {
-                                    window.readingToolsMenuVisible = !window.readingToolsMenuVisible
-                                }
+                                onClicked: window.topToolbarMenu = "edit"
                                 ToolTip.visible: hovered
-                                ToolTip.text: "Mostrar opciones de lectura"
+                                ToolTip.text: "Espacio reservado para futuras herramientas de edicion"
 
                                 contentItem: Text {
-                                    text: readingToolsButton.text
-                                    color: window.readingToolsMenuVisible ? Theme.accentText : Theme.text
+                                    text: editTabButton.text
+                                    color: window.topToolbarMenu === "edit" ? Theme.accentText : Theme.text
                                     font.pixelSize: 11
                                     font.weight: Font.DemiBold
                                     horizontalAlignment: Text.AlignHCenter
@@ -2985,12 +4165,12 @@ ApplicationWindow {
                                 }
 
                                 background: Rectangle {
-                                    color: window.readingToolsMenuVisible ? Theme.accent
-                                          : readingToolsButton.down ? Theme.tabActive
-                                          : readingToolsButton.hovered ? Theme.hover
+                                    color: window.topToolbarMenu === "edit" ? Theme.accent
+                                          : editTabButton.down ? Theme.tabActive
+                                          : editTabButton.hovered ? Theme.hover
                                           : Theme.background
-                                    border.color: readingToolsButton.activeFocus ? Theme.accent : Theme.border
-                                    border.width: readingToolsButton.activeFocus ? 2 : 1
+                                    border.color: editTabButton.activeFocus ? Theme.accent : Theme.border
+                                    border.width: editTabButton.activeFocus ? 2 : 1
                                     radius: Theme.radius
                                 }
                             }
@@ -3006,7 +4186,7 @@ ApplicationWindow {
                     color: Theme.background
 
                     RowLayout {
-                        visible: !window.readingToolsMenuVisible
+                        visible: window.topToolbarMenu === "view"
                         anchors {
                             fill: parent
                             leftMargin: 12
@@ -3157,7 +4337,7 @@ ApplicationWindow {
                         Button {
                             id: saveRotatedButton
                             text: ""
-                            enabled: window.activeDocumentHasRotations()
+                            enabled: window.activeDocumentHasPendingChanges()
                             Layout.preferredWidth: 34
                             Layout.preferredHeight: 30
                             onClicked: window.saveActiveDocumentRotated()
@@ -3218,12 +4398,12 @@ ApplicationWindow {
                         Button {
                             id: saveRotatedAsButton
                             text: ""
-                            enabled: window.activeDocumentHasRotations()
+                            enabled: window.activeDocumentHasPendingChanges()
                             Layout.preferredWidth: 42
                             Layout.preferredHeight: 30
                             onClicked: saveRotatedDialog.open()
                             ToolTip.visible: hovered
-                            ToolTip.text: "Guardar copia rotada"
+                            ToolTip.text: "Guardar copia editada"
 
                             contentItem: Item {
                                 opacity: saveRotatedAsButton.enabled ? 1.0 : 0.55
@@ -3366,19 +4546,11 @@ ApplicationWindow {
                             }
                         }
 
-                        Item { Layout.fillWidth: true }
-                    }
-
-                    RowLayout {
-                        visible: window.readingToolsMenuVisible
-                        anchors {
-                            fill: parent
-                            leftMargin: 12
-                            rightMargin: 12
-                            topMargin: 8
-                            bottomMargin: 8
+                        Rectangle {
+                            Layout.preferredWidth: 1
+                            Layout.fillHeight: true
+                            color: Theme.border
                         }
-                        spacing: 8
 
                         Button {
                             id: copyTextButton
@@ -3728,6 +4900,284 @@ ApplicationWindow {
 
                         Item { Layout.fillWidth: true }
                     }
+
+                    RowLayout {
+                        visible: window.topToolbarMenu === "edit"
+                        anchors {
+                            fill: parent
+                            leftMargin: 12
+                            rightMargin: 12
+                            topMargin: 8
+                            bottomMargin: 8
+                        }
+                        spacing: 8
+
+                        Button {
+                            id: editTextToolButton
+                            text: "T"
+                            Layout.preferredWidth: 34
+                            Layout.preferredHeight: 30
+                            onClicked: window.activeEditTool = "text"
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Editar texto"
+                            contentItem: Text {
+                                text: editTextToolButton.text
+                                color: window.activeEditTool === "text" ? Theme.accentText : Theme.text
+                                font.pixelSize: 15
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            background: Rectangle {
+                                color: window.activeEditTool === "text" ? Theme.accent
+                                      : editTextToolButton.down ? Theme.tabActive
+                                      : editTextToolButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: editTextToolButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: editTextToolButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Button {
+                            id: editHighlightToolButton
+                            text: ""
+                            Layout.preferredWidth: 34
+                            Layout.preferredHeight: 30
+                            onClicked: window.activeEditTool = "highlight"
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Rotulador"
+                            contentItem: Canvas {
+                                anchors.fill: parent
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.strokeStyle = window.activeEditTool === "highlight" ? Theme.accentText : Theme.text
+                                    ctx.fillStyle = window.editHighlightColor
+                                    ctx.lineWidth = 2
+                                    ctx.fillRect(8, 17, 18, 5)
+                                    ctx.beginPath()
+                                    ctx.moveTo(10, 10)
+                                    ctx.lineTo(20, 20)
+                                    ctx.lineTo(24, 16)
+                                    ctx.lineTo(14, 6)
+                                    ctx.closePath()
+                                    ctx.stroke()
+                                }
+                                Connections {
+                                    target: window
+                                    function onActiveEditToolChanged() { parent.requestPaint() }
+                                    function onEditHighlightColorChanged() { parent.requestPaint() }
+                                }
+                            }
+                            background: Rectangle {
+                                color: window.activeEditTool === "highlight" ? Theme.accent
+                                      : editHighlightToolButton.down ? Theme.tabActive
+                                      : editHighlightToolButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: editHighlightToolButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: editHighlightToolButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Button {
+                            id: editEraseToolButton
+                            text: ""
+                            Layout.preferredWidth: 34
+                            Layout.preferredHeight: 30
+                            onClicked: window.activeEditTool = "erase"
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Borrar anotacion"
+                            contentItem: Canvas {
+                                anchors.fill: parent
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.strokeStyle = window.activeEditTool === "erase" ? Theme.accentText : Theme.text
+                                    ctx.lineWidth = 2
+                                    ctx.beginPath()
+                                    ctx.moveTo(11, 19)
+                                    ctx.lineTo(20, 10)
+                                    ctx.lineTo(25, 15)
+                                    ctx.lineTo(16, 24)
+                                    ctx.lineTo(9, 24)
+                                    ctx.lineTo(11, 19)
+                                    ctx.stroke()
+                                }
+                                Connections {
+                                    target: window
+                                    function onActiveEditToolChanged() { parent.requestPaint() }
+                                }
+                            }
+                            background: Rectangle {
+                                color: window.activeEditTool === "erase" ? Theme.accent
+                                      : editEraseToolButton.down ? Theme.tabActive
+                                      : editEraseToolButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: editEraseToolButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: editEraseToolButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.preferredWidth: 1
+                            Layout.fillHeight: true
+                            color: Theme.border
+                        }
+
+                        ComboBox {
+                            id: editFontBox
+                            model: [
+                                { text: "Helvetica", value: "Helv" },
+                                { text: "Times", value: "TiRo" },
+                                { text: "Courier", value: "Cour" }
+                            ]
+                            textRole: "text"
+                            valueRole: "value"
+                            currentIndex: window.editFontFamily === "Cour" ? 2 : window.editFontFamily === "TiRo" ? 1 : 0
+                            Layout.preferredWidth: 118
+                            Layout.preferredHeight: 30
+                            onActivated: window.editFontFamily = currentValue
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Fuente"
+                        }
+
+                        SpinBox {
+                            id: editSizeBox
+                            from: 6
+                            to: 144
+                            value: window.editFontSize
+                            Layout.preferredWidth: 70
+                            Layout.preferredHeight: 30
+                            onValueChanged: window.editFontSize = value
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Tamano"
+                        }
+
+                        Button {
+                            id: editTextColorButton
+                            text: ""
+                            Layout.preferredWidth: 34
+                            Layout.preferredHeight: 30
+                            onClicked: window.editTextColor = window.nextPaletteColor(window.editTextColor, window.editTextColorOptions)
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Color de texto"
+                            contentItem: Rectangle {
+                                anchors.centerIn: parent
+                                width: 18
+                                height: 18
+                                radius: 9
+                                color: window.editTextColor
+                                border.color: Theme.border
+                            }
+                        }
+
+                        Button {
+                            id: editHighlightColorButton
+                            text: ""
+                            Layout.preferredWidth: 34
+                            Layout.preferredHeight: 30
+                            onClicked: window.editHighlightColor = window.nextPaletteColor(window.editHighlightColor, window.editHighlightColorOptions)
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Color del rotulador"
+                            contentItem: Rectangle {
+                                anchors.centerIn: parent
+                                width: 22
+                                height: 10
+                                radius: 3
+                                color: window.editHighlightColor
+                                border.color: Theme.border
+                            }
+                        }
+
+                        Button {
+                            id: editBoldButton
+                            text: "B"
+                            checkable: false
+                            Layout.preferredWidth: 30
+                            Layout.preferredHeight: 30
+                            onClicked: window.editBoldEnabled = !editBoldEnabled
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Negrita"
+                            contentItem: Text {
+                                text: editBoldButton.text
+                                color: window.editBoldEnabled ? Theme.accentText : Theme.text
+                                font.pixelSize: 13
+                                font.weight: Font.Bold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            background: Rectangle {
+                                color: window.editBoldEnabled ? Theme.accent
+                                      : editBoldButton.down ? Theme.tabActive
+                                      : editBoldButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: editBoldButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: editBoldButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Button {
+                            id: editItalicButton
+                            text: "I"
+                            Layout.preferredWidth: 30
+                            Layout.preferredHeight: 30
+                            onClicked: window.editItalicEnabled = !editItalicEnabled
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Cursiva"
+                            contentItem: Text {
+                                text: editItalicButton.text
+                                color: window.editItalicEnabled ? Theme.accentText : Theme.text
+                                font.pixelSize: 13
+                                font.italic: true
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            background: Rectangle {
+                                color: window.editItalicEnabled ? Theme.accent
+                                      : editItalicButton.down ? Theme.tabActive
+                                      : editItalicButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: editItalicButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: editItalicButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Button {
+                            id: editUnderlineButton
+                            text: "U"
+                            Layout.preferredWidth: 30
+                            Layout.preferredHeight: 30
+                            onClicked: window.editUnderlineEnabled = !editUnderlineEnabled
+                            ToolTip.visible: hovered
+                            ToolTip.text: "Subrayado"
+                            contentItem: Text {
+                                text: editUnderlineButton.text
+                                color: window.editUnderlineEnabled ? Theme.accentText : Theme.text
+                                font.pixelSize: 13
+                                font.underline: true
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            background: Rectangle {
+                                color: window.editUnderlineEnabled ? Theme.accent
+                                      : editUnderlineButton.down ? Theme.tabActive
+                                      : editUnderlineButton.hovered ? Theme.hover
+                                      : Theme.surfaceAlt
+                                border.color: editUnderlineButton.activeFocus ? Theme.accent : Theme.border
+                                border.width: editUnderlineButton.activeFocus ? 2 : 1
+                                radius: Theme.radius
+                            }
+                        }
+
+                        Item { Layout.fillWidth: true }
+                    }
                 }
             }
         }
@@ -3767,7 +5217,18 @@ ApplicationWindow {
                         currentPageIndex: window.activePageIndex
                         selectedText: pdfDocument.selectionText
                         selectionGeometryJson: pdfDocument.selectionGeometryJson
-                        selectionPageIndex: pdfDocument.selectionPage
+                        selectionPageIndex: window.activeSelectionVisualPageIndex()
+                        editModeEnabled: window.topToolbarMenu === "edit"
+                        editTool: window.activeEditTool
+                        editAnnotations: window.activeDocumentEditAnnotations()
+                        editFontFamily: window.displayEditFontFamily(window.editFontFamily)
+                        editFontSize: window.editFontSize
+                        editTextColor: window.editTextColor
+                        editBold: window.editBoldEnabled
+                        editItalic: window.editItalicEnabled
+                        editUnderline: window.editUnderlineEnabled
+                        editHighlightColor: window.editHighlightColor
+                        syncingPdfTextStyle: window.syncingPdfTextStyle
                         zoom: window.viewerZoom
                         layoutMode: window.layoutMode
                         zoomMode: window.zoomMode
@@ -3788,11 +5249,20 @@ ApplicationWindow {
                         outlineActivatedAction: window.activateLinkTarget
                         linkActivatedAction: window.activateLinkTarget
                         searchResultActivatedAction: function(index) { window.activateSearchResult(index, true) }
-                        beginSelectionAction: pdfDocument.beginSelection
-                        updateSelectionAction: pdfDocument.updateSelection
+                        beginSelectionAction: window.beginActiveSelection
+                        updateSelectionAction: window.updateActiveSelection
                         endSelectionAction: pdfDocument.endSelection
                         clearSelectionAction: pdfDocument.clearSelection
                         copySelectionAction: window.copySelectedText
+                        textEditSeedAction: window.prepareActiveTextEdit
+                        textElementsForPageAction: window.activeTextElementsForPage
+                        textBlocksForPageAction: window.activeTextBlocksForPage
+                        commitTextEditAction: window.commitActiveTextEdit
+                        commitHighlightAction: window.commitActiveHighlightFromSelection
+                        eraseAnnotationAction: window.eraseActiveEditAnnotation
+                        movePageAction: window.moveActiveDocumentPage
+                        deletePageAction: window.deleteActiveDocumentPage
+                        rotatePageAction: window.rotateDocumentPage
                     }
 
                     Rectangle {
@@ -3894,11 +5364,12 @@ ApplicationWindow {
                     if (String(doc.searchQuery || "").trim() !== String(query || "").trim())
                         return
 
-                    documentModel.setProperty(index, "searchResultsJson", resultsJson)
+                    var remappedResultsJson = window.remapSearchResultsForDocument(index, resultsJson)
+                    documentModel.setProperty(index, "searchResultsJson", remappedResultsJson)
 
                     var parsed = []
                     try {
-                        parsed = JSON.parse(resultsJson || "[]")
+                        parsed = JSON.parse(remappedResultsJson || "[]")
                     } catch(e) {
                         parsed = []
                     }

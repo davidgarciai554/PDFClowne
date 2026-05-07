@@ -7,6 +7,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMetaObject>
 #include <QRegularExpression>
 #include <QThread>
 #include <QUrl>
@@ -94,6 +95,11 @@ class DocumentSearchWorker : public QObject
     Q_OBJECT
 
 public slots:
+    void cancelSearches()
+    {
+        ++m_sequence;
+    }
+
     void search(const QString &filePath, const QString &query, int requestId, const QString &password)
     {
         QElapsedTimer timer;
@@ -258,6 +264,21 @@ void DocumentSearchController::searchDocument(const QString &filePath, const QSt
 {
     setBusy(true);
     emit requestSearch(filePath, query, requestId, password);
+}
+
+void DocumentSearchController::cancelSearchSync()
+{
+    if (!m_worker) {
+        setBusy(false);
+        return;
+    }
+
+    QMetaObject::invokeMethod(m_worker,
+                              [worker = m_worker]() {
+                                  worker->cancelSearches();
+                              },
+                              Qt::BlockingQueuedConnection);
+    setBusy(false);
 }
 
 void DocumentSearchController::handleSearchCompleted(const QString &filePath, int requestId, const QString &query, const QString &resultsJson, bool canceled)

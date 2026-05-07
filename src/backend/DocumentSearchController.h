@@ -17,6 +17,7 @@ public:
 
     bool busy() const { return m_busy; }
 
+    Q_INVOKABLE void cancelSearchSync();
     Q_INVOKABLE void searchDocument(const QString &filePath, const QString &query, int requestId, const QString &password = QString());
 
 signals:

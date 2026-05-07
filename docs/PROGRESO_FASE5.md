@@ -10,9 +10,9 @@
 ## 📍 Estado actual
 
 - **Sub-fase activa**: 5.1 (Extracción de page objects)
-- **Última actualización**: 2026-05-06 21:30
-- **Última acción**: Sub-fase 5.2 completa — TextBlockBuilder + DebugRenderer verificados
-- **Próxima acción planificada**: Sub-fase 5.3 — `PdfCoordTransform` + `TextBlockModel` + `EditableTextBox.qml`
+- **Última actualización**: 2026-05-06 22:30
+- **Última acción**: Sub-fase 5.5 completa — ResizeHandles (8 puntos), snap-to-guides, 3 modos, EditingToolbar
+- **Próxima acción planificada**: Sub-fase 5.6 — FontFallbackManager + fuentes embebidas
 
 ---
 
@@ -35,27 +35,15 @@
 
 ## 📋 Pendientes — Sub-fase 5.3: UI básica QML
 
-- [ ] Implementar `PdfCoordTransform` con conversiones bidireccionales (§6.1)
-- [ ] Implementar `TextBlockModel` (QAbstractListModel) (§6.4)
-- [ ] Crear `EditableTextBox.qml` con states hover/selected (§6.2)
-- [ ] Conectar selección con `EditingController`
-- [ ] Test integración: cargar PDF → ver bloques resaltados al hover
+*(completada)*
 
 ## 📋 Pendientes — Sub-fase 5.4: Edición simple con reflow
 
-- [ ] TextEdit en QML activo en modo edición (§6.2)
-- [ ] Implementar `reflowText` con QFontMetricsF (§7.1)
-- [ ] Live preview en cada keystroke (§7.2)
-- [ ] Auto-expansión vertical del bbox al crecer el texto
-- [ ] Indicador visual de overflow
+*(completada)*
 
 ## 📋 Pendientes — Sub-fase 5.5: Resize handles + estilos
 
-- [ ] Crear `ResizeHandles.qml` con 8 puntos (§6.3)
-- [ ] Conectar resize a reflow en vivo
-- [ ] Implementar 3 modos: reflow / escalar fuente / clip (§8.2)
-- [ ] Snap a guías con otros bloques (§8.3)
-- [ ] Toolbar contextual: fuente, tamaño, color, alineación
+*(completada)*
 
 ## 📋 Pendientes — Sub-fase 5.6: Font fallback
 
@@ -172,7 +160,10 @@
 2026-05-06 — [Sub-fase 5.1] añadido renderer core de bboxes rojos para debug de extracción — b240a2d
 2026-05-06 — [Sub-fase 5.1] añadido test CTest de extractor con PDF simple generado por PDFium — e5f6940
 2026-05-06 — [Sub-fase 5.1] tests MixedFonts y Scanned pasando; fix PATH vcpkg+PDFium en CTest — d89fc6d
-2026-05-06 — [Sub-fase 5.2] TextBlockBuilder + DebugRenderer (runs/lines/blocks) verificados; 8 unit tests pasan — (pendiente commit)
+2026-05-06 — [Sub-fase 5.2] TextBlockBuilder + DebugRenderer (runs/lines/blocks) verificados; 8 unit tests pasan — 04ac54a
+2026-05-06 — [Sub-fase 5.3] phase5BlockOverlay añadido a PdfViewer.qml; conecta EditingController→selectBlock
+2026-05-06 — [Sub-fase 5.4] TextEdit+reflowText(QFontMetricsF)+live preview+overflow indicator implementados
+2026-05-06 — [Sub-fase 5.5] ResizeHandles.qml (8 puntos), snap-to-guides, 3 modos, EditingToolbar implementados
 
 ---
 

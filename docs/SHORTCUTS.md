@@ -7,8 +7,8 @@ Lista de atajos y gestos funcionales hoy en la app. Esta guia esta alineada con 
 | Atajo | Accion | Disponibilidad |
 | --- | --- | --- |
 | `Ctrl+O` | Abrir un PDF. | Siempre disponible. |
-| `Ctrl+S` | Guardar el PDF activo sobrescribiendo con las rotaciones aplicadas. | Solo cuando el documento activo tiene rotaciones pendientes. |
-| `Ctrl+Shift+S` | Guardar una copia rotada del PDF activo. | Solo cuando el documento activo tiene rotaciones pendientes. |
+| `Ctrl+S` | Guardar el PDF activo sobrescribiendo con las ediciones aplicadas. | Solo cuando el documento activo tiene cambios pendientes. |
+| `Ctrl+Shift+S` | Guardar una copia editada del PDF activo. | Solo cuando el documento activo tiene cambios pendientes. |
 | `Ctrl+R` | Recargar el PDF activo desde disco. | Requiere un PDF abierto. |
 | `Ctrl+H` | Abrir la pantalla de inicio con los archivos recientes. | Siempre disponible. |
 
@@ -49,6 +49,13 @@ Lista de atajos y gestos funcionales hoy en la app. Esta guia esta alineada con 
 | `Left` | Ir a la pagina anterior. | Disponible en pantalla completa o presentacion. |
 | `Space` | Ir a la pagina siguiente. | Disponible en pantalla completa o presentacion. |
 | `Backspace` | Ir a la pagina anterior. | Disponible en pantalla completa o presentacion. |
+
+## Edicion
+
+| Atajo | Accion | Disponibilidad |
+| --- | --- | --- |
+| `Ctrl+Z` | Deshacer la ultima edicion del documento activo. | Requiere cambios editables previos en el PDF activo. |
+| `Ctrl+Y` | Rehacer la ultima edicion deshecha del documento activo. | Requiere cambios deshechos en el PDF activo. |
 
 ## Texto
 

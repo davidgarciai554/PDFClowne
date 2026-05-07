@@ -38,9 +38,9 @@ Assert-Matches $pdfDocumentSource 'fz_copy_selection\(ctx,\s*textPage,\s*anchor,
 
 Assert-Matches $mainQml 'selectedText:\s*pdfDocument\.selectionText' 'main.qml must pass MuPDF selectionText into PdfViewer.'
 Assert-Matches $mainQml 'selectionGeometryJson:\s*pdfDocument\.selectionGeometryJson' 'main.qml must pass MuPDF selection geometry into PdfViewer.'
-Assert-Matches $mainQml 'selectionPageIndex:\s*pdfDocument\.selectionPage' 'main.qml must pass MuPDF selection page into PdfViewer.'
-Assert-Matches $mainQml 'beginSelectionAction:\s*pdfDocument\.beginSelection' 'main.qml must route beginSelection to the backend.'
-Assert-Matches $mainQml 'updateSelectionAction:\s*pdfDocument\.updateSelection' 'main.qml must route updateSelection to the backend.'
+Assert-Matches $mainQml 'selectionPageIndex:\s*window\.activeSelectionVisualPageIndex\(\)' 'main.qml must pass MuPDF selection page into PdfViewer after mapping source pages to visible pages.'
+Assert-Matches $mainQml 'beginSelectionAction:\s*window\.beginActiveSelection' 'main.qml must route beginSelection through source-page mapping before the backend.'
+Assert-Matches $mainQml 'updateSelectionAction:\s*window\.updateActiveSelection' 'main.qml must route updateSelection through source-page mapping before the backend.'
 Assert-Matches $mainQml 'endSelectionAction:\s*pdfDocument\.endSelection' 'main.qml must route endSelection to the backend.'
 Assert-Matches $mainQml 'clearSelectionAction:\s*pdfDocument\.clearSelection' 'main.qml must route clearSelection to the backend.'
 
