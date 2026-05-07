@@ -165,4 +165,25 @@ QString EditingController::blockText(const QString& blockId) const
     return parts.join(QLatin1Char(' '));
 }
 
+QString EditingController::resolveFont(const QString& blockId,
+                                       const QString& newText,
+                                       bool&          fallbackUsed) const
+{
+    const PdfTextBlock* block = findBlock(blockId);
+    const QString preferred = block ? block->dominantFontName : QStringLiteral("Helvetica");
+    const double  size      = block ? block->dominantFontSize  : 12.0;
+
+    const FontFallbackResult r = m_fontFallback.selectFontForText(preferred, size, newText);
+    fallbackUsed = r.usedFallback;
+    return r.resolvedFontName;
+}
+
+QString EditingController::fallbackFontFor(const QString& blockId,
+                                            const QString& newText) const
+{
+    bool used = false;
+    const QString resolved = resolveFont(blockId, newText, used);
+    return used ? resolved : QString{};
+}
+
 } // namespace PDFClowne::Editing

@@ -124,6 +124,7 @@ set(CPP_SOURCES
     src/backend/DocumentSearchController.cpp
     src/backend/PdfRenderImageProvider.cpp
     src/backend/PdfDocument.cpp
+    src/core/editing/FontFallbackManager.cpp
     src/core/editing/PdfExtractionDebugRenderer.cpp
     src/core/editing/TextBlockBuilder.cpp
     src/core/editing/TextBlockModel.cpp
@@ -149,6 +150,7 @@ set(CPP_HEADERS
     src/backend/PdfRenderImageProvider.h
     src/backend/PdfDocument.h
     src/core/editing/EditingHeuristics.h
+    src/core/editing/FontFallbackManager.h
     src/core/editing/PdfCoordTransform.h
     src/core/editing/PdfExtractionDebugRenderer.h
     src/core/editing/PdfTextBlock.h

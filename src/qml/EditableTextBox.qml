@@ -21,6 +21,9 @@ Item {
     property var siblingRects: []
     readonly property real snapThresholdPx: 6
 
+    // Set by the parent when a font fallback was triggered for this block.
+    property string fallbackFontName: ""
+
     signal blockClicked(string blockId)
     signal blockHovered(string blockId)
     signal blockUnhovered(string blockId)
@@ -92,6 +95,30 @@ Item {
         visible: root.editingActive
                  && editArea.contentHeight > root.originalHeight
                  && root.originalHeight > 0
+    }
+
+    // ── font-fallback warning banner ─────────────────────────────────────────
+
+    Rectangle {
+        anchors { left: parent.left; right: parent.right; top: parent.top }
+        height: fallbackLabel.implicitHeight + 6
+        color: "#FFF8E1"
+        border.color: "#FFB300"
+        border.width: 1
+        radius: 2
+        visible: root.editingActive && root.fallbackFontName !== ""
+        z: 5
+
+        Text {
+            id: fallbackLabel
+            anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter
+                      leftMargin: 4; rightMargin: 4 }
+            text: qsTr("Font substituted: %1").arg(root.fallbackFontName)
+            font.pixelSize: 9
+            color: "#7B4F00"
+            elide: Text.ElideRight
+            wrapMode: Text.NoWrap
+        }
     }
 
     // ── resize handles (visible when selected, not editing) ──────────────────

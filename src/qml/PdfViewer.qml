@@ -1048,6 +1048,7 @@ FocusScope {
                                         height: Math.max(4, blockDelegate.reflowedHeightPt * scY)
 
                                         EditableTextBox {
+                                            id: editBox
                                             anchors.fill: parent
                                             blockId: blockDelegate.blockId
                                             isEditable: blockDelegate.isEditable
@@ -1068,6 +1069,8 @@ FocusScope {
                                                     const newH = root.editingController.reflowText(id, newText)
                                                     if (newH > 0)
                                                         blockDelegate.reflowedHeightPt = newH
+                                                    editBox.fallbackFontName =
+                                                        root.editingController.fallbackFontFor(id, newText)
                                                 }
                                             }
                                             onResized: function(id, dx, dy, dw, dh) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FontFallbackManager.h"
 #include "TextBlockBuilder.h"
 #include "TextBlockModel.h"
 
@@ -41,6 +42,13 @@ public:
     Q_INVOKABLE void  updateBlockText(const QString& blockId, const QString& newText);
     Q_INVOKABLE QString blockText(const QString& blockId) const;
 
+    // Font fallback — returns the resolved font family for `newText` in `blockId`.
+    // Sets `fallbackUsed` (out) to true when the original font was replaced.
+    Q_INVOKABLE QString resolveFont(const QString& blockId, const QString& newText,
+                                    bool& fallbackUsed) const;
+    // QML-friendly overload (no out-param): returns empty string if original font is fine.
+    Q_INVOKABLE QString fallbackFontFor(const QString& blockId, const QString& newText) const;
+
 signals:
     void readyChanged();
     void pageBlocksChanged();
@@ -51,6 +59,7 @@ private:
     FPDF_DOCUMENT m_doc = nullptr;
     TextBlockModel m_model;
     TextBlockBuilder m_builder;
+    FontFallbackManager m_fontFallback;
     QString m_selectedBlockId;
     bool m_ready = false;
     QHash<QString, QString> m_editedTexts;
