@@ -135,6 +135,8 @@ if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     list(APPEND CPP_SOURCES
         src/core/editing/PdfPageObjectExtractor.cpp
         src/core/editing/EditingController.cpp
+        src/core/editing/FileWriter.cpp
+        src/core/editing/PdfWriteBackEngine.cpp
     )
 endif()
 
@@ -164,7 +166,9 @@ set(CPP_HEADERS
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     list(APPEND CPP_HEADERS
         src/core/editing/EditingController.h
+        src/core/editing/FileWriter.h
         src/core/editing/PdfPageObjectExtractor.h
+        src/core/editing/PdfWriteBackEngine.h
     )
 endif()
 

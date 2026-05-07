@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FontFallbackManager.h"
+#include "PdfWriteBackEngine.h"
 #include "TextBlockBuilder.h"
 #include "TextBlockModel.h"
 
@@ -49,20 +50,30 @@ public:
     // QML-friendly overload (no out-param): returns empty string if original font is fine.
     Q_INVOKABLE QString fallbackFontFor(const QString& blockId, const QString& newText) const;
 
+    // Persistence -----------------------------------------------------------
+    // Write back all pending edits and save to outputPath.
+    // Returns true on success. Emits saveError on failure.
+    Q_INVOKABLE bool saveDocument(const QString& outputPath, bool incremental = false);
+
 signals:
     void readyChanged();
     void pageBlocksChanged();
     void selectedBlockIdChanged();
     void extractionError(const QString& message);
+    void saveError(const QString& message);
+    void saveCompleted(const QString& outputPath);
 
 private:
     FPDF_DOCUMENT m_doc = nullptr;
+    QString m_loadedFilePath;
     TextBlockModel m_model;
     TextBlockBuilder m_builder;
     FontFallbackManager m_fontFallback;
+    PdfWriteBackEngine m_writeBack;
     QString m_selectedBlockId;
     bool m_ready = false;
-    QHash<QString, QString> m_editedTexts;
+    QHash<QString, QString> m_editedTexts;   // blockId → edited text
+    QHash<QString, int>     m_editedPages;   // blockId → page index
 
     void setReady(bool ready);
     const PdfTextBlock* findBlock(const QString& blockId) const;

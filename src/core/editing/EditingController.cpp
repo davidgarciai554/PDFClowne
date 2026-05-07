@@ -10,6 +10,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <fpdf_edit.h>
+
 namespace PDFClowne::Editing {
 
 EditingController::EditingController(QObject* parent)
@@ -53,6 +55,7 @@ bool EditingController::loadDocument(const QString& filePath)
 bool EditingController::loadDocumentWithPassword(const QString& filePath, const QString& password)
 {
     closeDocument();
+    m_loadedFilePath = filePath;
 
     const QByteArray path = filePath.toUtf8();
     const QByteArray pwd = password.toUtf8();
@@ -101,6 +104,9 @@ void EditingController::closeDocument()
 
     m_model.clear();
     m_selectedBlockId.clear();
+    m_editedTexts.clear();
+    m_editedPages.clear();
+    m_loadedFilePath.clear();
 
     {
         PDFIUM_LOCK();
@@ -150,6 +156,9 @@ qreal EditingController::reflowText(const QString& blockId, const QString& newTe
 void EditingController::updateBlockText(const QString& blockId, const QString& newText)
 {
     m_editedTexts[blockId] = newText;
+    const PdfTextBlock* block = findBlock(blockId);
+    if (block)
+        m_editedPages[blockId] = block->pageNumber;
 }
 
 QString EditingController::blockText(const QString& blockId) const
@@ -184,6 +193,66 @@ QString EditingController::fallbackFontFor(const QString& blockId,
     bool used = false;
     const QString resolved = resolveFont(blockId, newText, used);
     return used ? resolved : QString{};
+}
+
+bool EditingController::saveDocument(const QString& outputPath, bool incremental)
+{
+    if (!m_doc) {
+        emit saveError(QStringLiteral("No document loaded"));
+        return false;
+    }
+
+    // Re-extract blocks for each dirty page so we have fresh pageObjectIndex data
+    const QSet<int> dirtyPages(m_editedPages.cbegin(), m_editedPages.cend());
+    for (int page : dirtyPages)
+        extractBlocksForPage(page);
+
+    // Write back each edited block
+    const PdfWriteBackEngine::SaveMode mode = incremental
+        ? PdfWriteBackEngine::SaveMode::Incremental
+        : PdfWriteBackEngine::SaveMode::FullRewrite;
+
+    for (auto it = m_editedTexts.cbegin(); it != m_editedTexts.cend(); ++it) {
+        const QString& blockId = it.key();
+        const QString& newText = it.value();
+        const PdfTextBlock* block = findBlock(blockId);
+        if (!block) {
+            spdlog::warn("EditingController::saveDocument: block '{}' not found,"
+                         " skipping", blockId.toStdString());
+            continue;
+        }
+
+        bool fallbackUsed = false;
+        const QString resolvedFont = resolveFont(blockId, newText, fallbackUsed);
+        const FontFallbackResult fontResult{
+            resolvedFont,
+            block->dominantFontSize,
+            fallbackUsed,
+            {}
+        };
+
+        if (!m_writeBack.writeBackBlock(m_doc, block->pageNumber, *block, newText, fontResult)) {
+            const QString msg = QStringLiteral("Failed to write back block '%1'").arg(blockId);
+            spdlog::error("EditingController::saveDocument: {}", msg.toStdString());
+            emit saveError(msg);
+            return false;
+        }
+    }
+
+    // Determine output path (default: overwrite original if none given)
+    const QString target = outputPath.isEmpty() ? m_loadedFilePath : outputPath;
+    if (!m_writeBack.saveTo(m_doc, target, mode)) {
+        const QString msg = QStringLiteral("Failed to save to '%1'").arg(target);
+        emit saveError(msg);
+        return false;
+    }
+
+    spdlog::info("EditingController::saveDocument: saved {} block(s) to '{}'",
+                 m_editedTexts.size(), target.toStdString());
+    m_editedTexts.clear();
+    m_editedPages.clear();
+    emit saveCompleted(target);
+    return true;
 }
 
 } // namespace PDFClowne::Editing
