@@ -4,4 +4,11 @@
         <file>PdfClowne.ico</file>
         <file>qtquickcontrols2.conf</file>
     </qresource>
+    <qresource prefix="/fonts">
+        <file>fonts/DejaVuSans.ttf</file>
+        <file>fonts/NotoSansArabic-Regular.ttf</file>
+        <file>fonts/NotoSansCJK-Regular.otf</file>
+        <file>fonts/DejaVu-LICENSE.txt</file>
+        <file>fonts/Noto-OFL.txt</file>
+    </qresource>
 </RCC>

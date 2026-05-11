@@ -9,6 +9,7 @@
         "MSVC_ROOT": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207",
         "WINSDK_ROOT": "C:/Program Files (x86)/Windows Kits/10",
         "WINSDK_VER": "10.0.26100.0",
+        "VCPKG_ROOT": "D:/Aplicaciones/vcpkg",
         "INCLUDE": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/include;C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt;C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/um;C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/shared;C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/winrt",
         "LIB": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/lib/x64;C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/ucrt/x64;C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x64",
         "PATH": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64;C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64;C:/Program Files/CMake/bin;$penv{PATH}"
@@ -17,7 +18,10 @@
         "CMAKE_MAKE_PROGRAM": "C:/Program Files/CMake/bin/ninja.exe",
         "CMAKE_C_COMPILER": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe",
         "CMAKE_CXX_COMPILER": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe",
-        "CMAKE_PREFIX_PATH": "$env{QT6_DIR}"
+        "CMAKE_PREFIX_PATH": "C:/tmp/pdfclowne-vcpkg-installed/x64-windows;$env{QT6_DIR}",
+        "CMAKE_TOOLCHAIN_FILE": "D:/Aplicaciones/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "VCPKG_INSTALLED_DIR": "C:/tmp/pdfclowne-vcpkg-installed"
       }
     },
     {

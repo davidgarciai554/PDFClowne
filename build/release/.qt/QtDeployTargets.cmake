@@ -1,3 +1,6 @@
 set(__QT_DEPLOY_TARGET_PDFClowne_FILE D:/Aplicaciones/PDFClowne 2/build/release/PDFClowne.exe)
 set(__QT_DEPLOY_TARGET_PDFClowne_TYPE EXECUTABLE)
-set(__QT_DEPLOY_TARGET_PDFClowne_RUNTIME_DLLS C:/Qt/6.8.3/msvc2022_64/bin/Qt6Quick.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6QmlMeta.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6QmlWorkerScript.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6QmlModels.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Qml.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Network.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6OpenGL.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Gui.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Core.dll)
+set(__QT_DEPLOY_TARGET_PDFClowne_RUNTIME_DLLS C:/Qt/6.8.3/msvc2022_64/bin/Qt6QuickControls2.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Svg.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6QuickTemplates2.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Quick.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6QmlMeta.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6QmlWorkerScript.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6OpenGL.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6QmlModels.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Qml.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Network.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Gui.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Core.dll)
+set(__QT_DEPLOY_TARGET_TextBlockBuilderTest_FILE D:/Aplicaciones/PDFClowne 2/build/release/TextBlockBuilderTest.exe)
+set(__QT_DEPLOY_TARGET_TextBlockBuilderTest_TYPE EXECUTABLE)
+set(__QT_DEPLOY_TARGET_TextBlockBuilderTest_RUNTIME_DLLS C:/Qt/6.8.3/msvc2022_64/bin/Qt6Gui.dll;C:/Qt/6.8.3/msvc2022_64/bin/Qt6Core.dll)

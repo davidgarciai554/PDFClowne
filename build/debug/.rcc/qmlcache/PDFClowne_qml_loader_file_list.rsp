@@ -1,6 +1,0 @@
---resource
-D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/qmake_PDFClowne.qrc
---resource
-D:/Aplicaciones/PDFClowne 2/build/debug/.qt/rcc/PDFClowne_raw_qml_0.qrc
-/qt/qml/PDFClowne/src/qml/PdfViewer.qml
-/qt/qml/PDFClowne/src/qml/Theme.qml

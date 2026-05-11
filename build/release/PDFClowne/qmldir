@@ -2,5 +2,11 @@ module PDFClowne
 typeinfo PDFClowne.qmltypes
 prefer :/qt/qml/PDFClowne/
 PdfViewer 1.0 src/qml/PdfViewer.qml
+EditInspector 1.0 src/qml/EditInspector.qml
+EditOverlay 1.0 src/qml/EditOverlay.qml
+EditToolbar 1.0 src/qml/EditToolbar.qml
 singleton Theme 1.0 src/qml/Theme.qml
+EditableTextBox 1.0 src/qml/EditableTextBox.qml
+ResizeHandles 1.0 src/qml/ResizeHandles.qml
+EditingToolbar 1.0 src/qml/EditingToolbar.qml
 

@@ -3,4 +3,10 @@ D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/qmake_PDFClowne.qrc
 --resource
 D:/Aplicaciones/PDFClowne 2/build/release/.qt/rcc/PDFClowne_raw_qml_0.qrc
 /qt/qml/PDFClowne/src/qml/PdfViewer.qml
+/qt/qml/PDFClowne/src/qml/EditInspector.qml
+/qt/qml/PDFClowne/src/qml/EditOverlay.qml
+/qt/qml/PDFClowne/src/qml/EditToolbar.qml
 /qt/qml/PDFClowne/src/qml/Theme.qml
+/qt/qml/PDFClowne/src/qml/EditableTextBox.qml
+/qt/qml/PDFClowne/src/qml/ResizeHandles.qml
+/qt/qml/PDFClowne/src/qml/EditingToolbar.qml

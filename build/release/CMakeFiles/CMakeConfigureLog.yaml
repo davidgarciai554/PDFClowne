@@ -8983,3 +8983,2530 @@ events:
         - "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/ucrt/x64"
         - "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x64"
 ...
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineSystem.cmake:212 (message)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      The system is: Windows - 10.0.26200 - AMD64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:468 (find_file)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:506 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:3 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCXXCompilerId.cpp.in"
+    candidate_directories:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/"
+    found: "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCXXCompilerId.cpp.in"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "C:\\Qt\\6.8.3\\msvc2022_64"
+      ENV{PATH}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+        - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+        - "C:/Program Files/CMake/bin"
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\PyManager\\"
+        - "C:\\cmake"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\David\\.cargo\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\David\\AppData\\Roaming\\npm"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\David\\flutter\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Users\\David\\.local\\bin"
+        - "C:\\Users\\David\\.bun\\bin"
+        - "C:\\cmake"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Warp\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PDFClowne"
+      ENV{INCLUDE}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/include"
+        - "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt"
+        - "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/um"
+        - "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/shared"
+        - "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/winrt"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe 
+      Build flags: /DWIN32;/D_WINDOWS;/EHsc
+      Id flags:  
+      
+      The output was:
+      0
+      Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35225 for x64
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+      
+      CMakeCXXCompilerId.cpp
+      Microsoft (R) Incremental Linker Version 14.44.35225.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+      
+      /out:CMakeCXXCompilerId.exe 
+      CMakeCXXCompilerId.obj 
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.obj"
+      
+      The CXX compiler identification is MSVC, found in:
+        D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/4.3.2/CompilerIdCXX/CMakeCXXCompilerId.exe
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:1347 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:250 (CMAKE_DETERMINE_MSVC_SHOWINCLUDES_PREFIX)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      Detecting CXX compiler /showIncludes prefix:
+        main.c
+        Note: including file: D:\\Aplicaciones\\PDFClowne 2\\build\\release\\CMakeFiles\\ShowIncludes\\foo.h
+        
+      Found prefix "Note: including file: "
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:65 (__resolve_tool_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:103 (__resolve_linker_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:3 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "link"
+    candidate_directories:
+      - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Sunshine/"
+      - "C:/Program Files/Sunshine/tools/"
+      - "C:/Users/David/.local/bin/claude.exe/"
+      - "C:/Program Files/PyManager/"
+      - "C:/cmake/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/David/.cargo/bin/"
+      - "C:/Users/David/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/David/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/David/AppData/Roaming/npm/"
+      - "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/David/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/David/flutter/bin/"
+      - "C:/Users/David/AppData/Local/Programs/Ollama/"
+      - "C:/Users/David/.local/bin/"
+      - "C:/Users/David/.bun/bin/"
+      - "C:/Users/David/AppData/Local/Programs/Warp/bin/"
+      - "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/"
+    searched_directories:
+      - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "C:\\Qt\\6.8.3\\msvc2022_64"
+      ENV{PATH}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+        - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+        - "C:/Program Files/CMake/bin"
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\PyManager\\"
+        - "C:\\cmake"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\David\\.cargo\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\David\\AppData\\Roaming\\npm"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\David\\flutter\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Users\\David\\.local\\bin"
+        - "C:\\Users\\David\\.bun\\bin"
+        - "C:\\cmake"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Warp\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PDFClowne"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:65 (__resolve_tool_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:104 (__resolve_linker_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:3 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lld-link"
+    candidate_directories:
+      - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Sunshine/"
+      - "C:/Program Files/Sunshine/tools/"
+      - "C:/Users/David/.local/bin/claude.exe/"
+      - "C:/Program Files/PyManager/"
+      - "C:/cmake/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/David/.cargo/bin/"
+      - "C:/Users/David/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/David/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/David/AppData/Roaming/npm/"
+      - "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/David/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/David/flutter/bin/"
+      - "C:/Users/David/AppData/Local/Programs/Ollama/"
+      - "C:/Users/David/.local/bin/"
+      - "C:/Users/David/.bun/bin/"
+      - "C:/Users/David/AppData/Local/Programs/Warp/bin/"
+      - "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/"
+    searched_directories:
+      - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.com"
+      - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.exe"
+      - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link"
+      - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/lld-link.com"
+      - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/lld-link.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/lld-link"
+      - "C:/Program Files/CMake/bin/lld-link.com"
+      - "C:/Program Files/CMake/bin/lld-link.exe"
+      - "C:/Program Files/CMake/bin/lld-link"
+      - "C:/Program Files/PowerShell/7/lld-link.com"
+      - "C:/Program Files/PowerShell/7/lld-link.exe"
+      - "C:/Program Files/PowerShell/7/lld-link"
+      - "C:/Windows/System32/lld-link.com"
+      - "C:/Windows/System32/lld-link.exe"
+      - "C:/Windows/System32/lld-link"
+      - "C:/Windows/lld-link.com"
+      - "C:/Windows/lld-link.exe"
+      - "C:/Windows/lld-link"
+      - "C:/Windows/System32/wbem/lld-link.com"
+      - "C:/Windows/System32/wbem/lld-link.exe"
+      - "C:/Windows/System32/wbem/lld-link"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link"
+      - "C:/Windows/System32/OpenSSH/lld-link.com"
+      - "C:/Windows/System32/OpenSSH/lld-link.exe"
+      - "C:/Windows/System32/OpenSSH/lld-link"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/lld-link.com"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/lld-link.exe"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/lld-link"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link"
+      - "C:/Program Files/nodejs/lld-link.com"
+      - "C:/Program Files/nodejs/lld-link.exe"
+      - "C:/Program Files/nodejs/lld-link"
+      - "C:/Program Files/Tailscale/lld-link.com"
+      - "C:/Program Files/Tailscale/lld-link.exe"
+      - "C:/Program Files/Tailscale/lld-link"
+      - "C:/Program Files/dotnet/lld-link.com"
+      - "C:/Program Files/dotnet/lld-link.exe"
+      - "C:/Program Files/dotnet/lld-link"
+      - "C:/Program Files/Sunshine/lld-link.com"
+      - "C:/Program Files/Sunshine/lld-link.exe"
+      - "C:/Program Files/Sunshine/lld-link"
+      - "C:/Program Files/Sunshine/tools/lld-link.com"
+      - "C:/Program Files/Sunshine/tools/lld-link.exe"
+      - "C:/Program Files/Sunshine/tools/lld-link"
+      - "C:/Users/David/.local/bin/claude.exe/lld-link.com"
+      - "C:/Users/David/.local/bin/claude.exe/lld-link.exe"
+      - "C:/Users/David/.local/bin/claude.exe/lld-link"
+      - "C:/Program Files/PyManager/lld-link.com"
+      - "C:/Program Files/PyManager/lld-link.exe"
+      - "C:/Program Files/PyManager/lld-link"
+      - "C:/cmake/lld-link.com"
+      - "C:/cmake/lld-link.exe"
+      - "C:/cmake/lld-link"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link"
+      - "C:/Program Files/Git/cmd/lld-link.com"
+      - "C:/Program Files/Git/cmd/lld-link.exe"
+      - "C:/Program Files/Git/cmd/lld-link"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/lld-link.com"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/lld-link"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/lld-link.com"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Programs/Python/Python312/lld-link"
+      - "C:/Users/David/.cargo/bin/lld-link.com"
+      - "C:/Users/David/.cargo/bin/lld-link.exe"
+      - "C:/Users/David/.cargo/bin/lld-link"
+      - "C:/Users/David/AppData/Local/Programs/Python/Launcher/lld-link.com"
+      - "C:/Users/David/AppData/Local/Programs/Python/Launcher/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Programs/Python/Launcher/lld-link"
+      - "C:/Users/David/AppData/Local/Microsoft/WindowsApps/lld-link.com"
+      - "C:/Users/David/AppData/Local/Microsoft/WindowsApps/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Microsoft/WindowsApps/lld-link"
+      - "C:/Users/David/AppData/Roaming/npm/lld-link.com"
+      - "C:/Users/David/AppData/Roaming/npm/lld-link.exe"
+      - "C:/Users/David/AppData/Roaming/npm/lld-link"
+      - "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.com"
+      - "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/bin/lld-link"
+      - "C:/Users/David/AppData/Local/Programs/Antigravity/bin/lld-link.com"
+      - "C:/Users/David/AppData/Local/Programs/Antigravity/bin/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Programs/Antigravity/bin/lld-link"
+      - "C:/Users/David/flutter/bin/lld-link.com"
+      - "C:/Users/David/flutter/bin/lld-link.exe"
+      - "C:/Users/David/flutter/bin/lld-link"
+      - "C:/Users/David/AppData/Local/Programs/Ollama/lld-link.com"
+      - "C:/Users/David/AppData/Local/Programs/Ollama/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Programs/Ollama/lld-link"
+      - "C:/Users/David/.local/bin/lld-link.com"
+      - "C:/Users/David/.local/bin/lld-link.exe"
+      - "C:/Users/David/.local/bin/lld-link"
+      - "C:/Users/David/.bun/bin/lld-link.com"
+      - "C:/Users/David/.bun/bin/lld-link.exe"
+      - "C:/Users/David/.bun/bin/lld-link"
+      - "C:/Users/David/AppData/Local/Programs/Warp/bin/lld-link.com"
+      - "C:/Users/David/AppData/Local/Programs/Warp/bin/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Programs/Warp/bin/lld-link"
+      - "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/lld-link.com"
+      - "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/lld-link.exe"
+      - "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/lld-link"
+    found: false
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "C:\\Qt\\6.8.3\\msvc2022_64"
+      ENV{PATH}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+        - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+        - "C:/Program Files/CMake/bin"
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\PyManager\\"
+        - "C:\\cmake"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\David\\.cargo\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\David\\AppData\\Roaming\\npm"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\David\\flutter\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Users\\David\\.local\\bin"
+        - "C:\\Users\\David\\.bun\\bin"
+        - "C:\\cmake"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Warp\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PDFClowne"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:3 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/CMakeScratch/TryCompile-x8pv00"
+      binary: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/CMakeScratch/TryCompile-x8pv00"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/CMakeScratch/TryCompile-x8pv00'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/ninja.exe" -v cmTC_64505
+        [1/2] C:\\PROGRA~1\\MICROS~2\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Zi /Ob0 /Od /RTC1 -MDd /showIncludes /FoCMakeFiles\\cmTC_64505.dir\\CMakeCXXCompilerABI.cpp.obj /FdCMakeFiles\\cmTC_64505.dir\\ /FS -c "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_64505.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~2\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_64505.dir\\CMakeCXXCompilerABI.cpp.obj  /out:cmTC_64505.exe /implib:cmTC_64505.lib /pdb:cmTC_64505.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:253 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'CXX': C:/PROGRA~1/MICROS~2/2022/COMMUN~1/VC/Tools/MSVC/1444~1.352/bin/Hostx64/x64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/Internal/CMakeDetermineLinkerId.cmake:38 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:299 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      Running the CXX compiler's linker: "C:/PROGRA~1/MICROS~2/2022/COMMUN~1/VC/Tools/MSVC/1444~1.352/bin/Hostx64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.44.35225.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:93 (find_package)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:125 (__find_dependency_common)"
+      - "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/QtPublicDependencyHelpers.cmake:145 (find_dependency)"
+      - "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2/Qt6QuickControls2Dependencies.cmake:45 (_qt_internal_find_qt_dependencies)"
+      - "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2/Qt6QuickControls2Config.cmake:43 (include)"
+      - "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake:196 (find_package)"
+      - "CMakeLists.txt:13 (find_package)"
+    name: "Qt6QuickTemplates2"
+    configs:
+      -
+        filename: "Qt6QuickTemplates2.cps"
+        kind: "cps"
+      -
+        filename: "qt6quicktemplates2.cps"
+        kind: "cps"
+      -
+        filename: "Qt6QuickTemplates2Config.cmake"
+        kind: "cmake"
+      -
+        filename: "qt6quicktemplates2-config.cmake"
+        kind: "cmake"
+    version_request:
+      version: "6.8.3"
+      version_complete: "6.8.3"
+      exact: false
+    settings:
+      required: "optional"
+      quiet: false
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "Qt6QuickTemplates2"
+      search_paths:
+        - "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2/.."
+        - "C:/Qt/6.8.3/msvc2022_64/lib/cmake"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: false
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/Qt6QuickTemplates2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/qt6quicktemplates2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/lib/cps/Qt6QuickTemplates2.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/lib/cps/qt6quicktemplates2.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/share/cps/Qt6QuickTemplates2.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/share/cps/qt6quicktemplates2.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickTemplates2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/qt6quicktemplates2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+    found:
+      path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickTemplates2/Qt6QuickTemplates2Config.cmake"
+      mode: "config"
+      version: "6.8.3"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "C:\\Qt\\6.8.3\\msvc2022_64"
+      ENV{PATH}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+        - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+        - "C:/Program Files/CMake/bin"
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\PyManager\\"
+        - "C:\\cmake"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\David\\.cargo\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\David\\AppData\\Roaming\\npm"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\David\\flutter\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Users\\David\\.local\\bin"
+        - "C:\\Users\\David\\.bun\\bin"
+        - "C:\\cmake"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Warp\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PDFClowne"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/PDFClowne"
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake:196 (find_package)"
+      - "CMakeLists.txt:13 (find_package)"
+    name: "Qt6QuickControls2"
+    configs:
+      -
+        filename: "Qt6QuickControls2.cps"
+        kind: "cps"
+      -
+        filename: "qt6quickcontrols2.cps"
+        kind: "cps"
+      -
+        filename: "Qt6QuickControls2Config.cmake"
+        kind: "cmake"
+      -
+        filename: "qt6quickcontrols2-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "optional"
+      quiet: false
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "Qt6QuickControls2"
+      search_paths:
+        - "C:/Qt/6.8.3/msvc2022_64/lib/cmake"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: false
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/lib/cps/Qt6QuickControls2.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/lib/cps/qt6quickcontrols2.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/share/cps/Qt6QuickControls2.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/share/cps/qt6quickcontrols2.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2WindowsStyleImpl/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2WindowsStyleImpl/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2UniversalStyleImpl/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2UniversalStyleImpl/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Universal/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Universal/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2MaterialStyleImpl/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2MaterialStyleImpl/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Material/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Material/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Impl/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Impl/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2ImagineStyleImpl/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2ImagineStyleImpl/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Imagine/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Imagine/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2FusionStyleImpl/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2FusionStyleImpl/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Fusion/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Fusion/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2FluentWinUI3StyleImpl/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2FluentWinUI3StyleImpl/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2BasicStyleImpl/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2BasicStyleImpl/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Basic/Qt6QuickControls2Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2Basic/qt6quickcontrols2-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+    found:
+      path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6QuickControls2/Qt6QuickControls2Config.cmake"
+      mode: "config"
+      version: "6.8.3"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "C:\\Qt\\6.8.3\\msvc2022_64"
+      ENV{PATH}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+        - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+        - "C:/Program Files/CMake/bin"
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\PyManager\\"
+        - "C:\\cmake"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\David\\.cargo\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\David\\AppData\\Roaming\\npm"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\David\\flutter\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Users\\David\\.local\\bin"
+        - "C:\\Users\\David\\.bun\\bin"
+        - "C:\\cmake"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Warp\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PDFClowne"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/PDFClowne"
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake:196 (find_package)"
+      - "CMakeLists.txt:13 (find_package)"
+    name: "Qt6Svg"
+    configs:
+      -
+        filename: "Qt6Svg.cps"
+        kind: "cps"
+      -
+        filename: "qt6svg.cps"
+        kind: "cps"
+      -
+        filename: "Qt6SvgConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "qt6svg-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "optional"
+      quiet: false
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "Qt6Svg"
+      search_paths:
+        - "C:/Qt/6.8.3/msvc2022_64/lib/cmake"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: false
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/Qt6SvgConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/qt6svg-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/lib/cps/Qt6Svg.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/lib/cps/qt6svg.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/share/cps/Qt6Svg.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/share/cps/qt6svg.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6SvgConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/qt6svg-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6SvgWidgets/Qt6SvgConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6SvgWidgets/qt6svg-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+    found:
+      path: "C:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6Svg/Qt6SvgConfig.cmake"
+      mode: "config"
+      version: "6.8.3"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "C:\\Qt\\6.8.3\\msvc2022_64"
+      ENV{PATH}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+        - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+        - "C:/Program Files/CMake/bin"
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\PyManager\\"
+        - "C:\\cmake"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\David\\.cargo\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\David\\AppData\\Roaming\\npm"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\David\\flutter\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Users\\David\\.local\\bin"
+        - "C:\\Users\\David\\.bun\\bin"
+        - "C:\\cmake"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Warp\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PDFClowne"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/PDFClowne"
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "CMakeLists.txt:41 (find_package)"
+    name: "qpdf"
+    configs:
+      -
+        filename: "qpdf.cps"
+        kind: "cps"
+      -
+        filename: "qpdfConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "qpdf-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "optional"
+      quiet: true
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "qpdf"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/tools/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/tools/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/tools/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/tools/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PyManager/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PyManager/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PyManager/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PyManager/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/cmake/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/cmake/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/cmake/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/cmake/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.cargo/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.cargo/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.cargo/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.cargo/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Launcher/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Launcher/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Launcher/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Launcher/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WindowsApps/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WindowsApps/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WindowsApps/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WindowsApps/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Roaming/npm/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Roaming/npm/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Roaming/npm/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Roaming/npm/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Antigravity/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Antigravity/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Antigravity/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Antigravity/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/flutter/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/flutter/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/flutter/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/flutter/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Ollama/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Ollama/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Ollama/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Ollama/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.local/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.local/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.local/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.local/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.bun/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.bun/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.bun/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.bun/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Warp/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Warp/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Warp/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Warp/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/qpdfConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/qpdf-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/lib/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/share/cps/qpdf.cps"
+        mode: "cps"
+        reason: "no_exist"
+    found: null
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "C:\\Qt\\6.8.3\\msvc2022_64"
+      ENV{PATH}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+        - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+        - "C:/Program Files/CMake/bin"
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\PyManager\\"
+        - "C:\\cmake"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\David\\.cargo\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\David\\AppData\\Roaming\\npm"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\David\\flutter\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Users\\David\\.local\\bin"
+        - "C:\\Users\\David\\.bun\\bin"
+        - "C:\\cmake"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Warp\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PDFClowne"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/PDFClowne"
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "CMakeLists.txt:52 (find_package)"
+    name: "podofo"
+    configs:
+      -
+        filename: "podofo.cps"
+        kind: "cps"
+      -
+        filename: "podofoConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "podofo-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "optional"
+      quiet: true
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "podofo"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/pkgRedirects/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Qt/6.8.3/msvc2022_64/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/tools/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/tools/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/tools/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Sunshine/tools/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PyManager/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PyManager/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PyManager/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PyManager/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/cmake/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/cmake/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/cmake/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/cmake/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/Scripts/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Python312/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.cargo/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.cargo/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.cargo/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.cargo/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Launcher/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Launcher/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Launcher/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Python/Launcher/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WindowsApps/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WindowsApps/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WindowsApps/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WindowsApps/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Roaming/npm/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Roaming/npm/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Roaming/npm/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Roaming/npm/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Microsoft VS Code/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Antigravity/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Antigravity/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Antigravity/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Antigravity/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/flutter/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/flutter/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/flutter/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/flutter/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Ollama/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Ollama/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Ollama/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Ollama/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.local/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.local/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.local/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.local/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.bun/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.bun/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.bun/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/.bun/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Warp/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Warp/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Warp/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Programs/Warp/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/David/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/podofoConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/podofo-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/lib/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/share/cps/podofo.cps"
+        mode: "cps"
+        reason: "no_exist"
+    found: null
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "C:\\Qt\\6.8.3\\msvc2022_64"
+      ENV{PATH}:
+        - "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64"
+        - "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+        - "C:/Program Files/CMake/bin"
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\PyManager\\"
+        - "C:\\cmake"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Sunshine"
+        - "C:\\Program Files\\Sunshine\\tools"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\David\\.cargo\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\David\\AppData\\Roaming\\npm"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\David\\flutter\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\David\\.local\\bin\\claude.exe"
+        - "C:\\Users\\David\\.local\\bin"
+        - "C:\\Users\\David\\.bun\\bin"
+        - "C:\\cmake"
+        - "C:\\Users\\David\\AppData\\Local\\Programs\\Warp\\bin"
+        - "C:\\Users\\David\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PDFClowne"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/PDFClowne"
+...

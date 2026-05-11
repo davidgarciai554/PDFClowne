@@ -1,6 +1,0 @@
-module PDFClowne
-typeinfo PDFClowne.qmltypes
-prefer :/qt/qml/PDFClowne/
-PdfViewer 1.0 src/qml/PdfViewer.qml
-singleton Theme 1.0 src/qml/Theme.qml
-

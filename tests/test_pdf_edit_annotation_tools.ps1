@@ -69,7 +69,8 @@ Assert-Matches $mainQml 'editBoldEnabled\s*=\s*!editBoldEnabled' 'The edit toolb
 Assert-Matches $mainQml 'editItalicEnabled\s*=\s*!editItalicEnabled' 'The edit toolbar must include italic toggling.'
 Assert-Matches $mainQml 'editUnderlineEnabled\s*=\s*!editUnderlineEnabled' 'The edit toolbar must include underline toggling.'
 
-Assert-Matches $viewer 'property\s+bool\s+editModeEnabled:\s*false' 'PdfViewer must only enable text editing when the top Edit menu is active.'
+Assert-Matches $viewer 'property\s+string\s+viewMode:\s*"view"' 'PdfViewer must expose a view/edit mode switch.'
+Assert-Matches $viewer 'readonly property bool editModeEnabled:\s*viewMode\s*===\s*"edit"' 'PdfViewer must derive editModeEnabled from viewMode.'
 Assert-Matches $viewer 'property\s+string\s+editTool:\s*"text"' 'PdfViewer must receive the active edit tool.'
 Assert-Matches $viewer 'property\s+var\s+editAnnotations:\s*\[\]' 'PdfViewer must render pending annotation edits.'
 Assert-Matches $viewer 'property\s+var\s+textEditSeedAction:\s*null' 'PdfViewer must request MuPDF text defaults on click.'
@@ -77,7 +78,7 @@ Assert-Matches $viewer 'property\s+var\s+commitTextEditAction:\s*null' 'PdfViewe
 Assert-Matches $viewer 'property\s+var\s+commitHighlightAction:\s*null' 'PdfViewer must commit highlighter edits from selection.'
 Assert-Matches $viewer 'property\s+var\s+eraseAnnotationAction:\s*null' 'PdfViewer must support erasing pending annotations.'
 Assert-Matches $viewer 'editModeEnabled\s*&&\s*root\.editTool\s*===\s*"text"' 'Text editing gestures must be gated by the Edit toolbar mode.'
-Assert-Matches $viewer 'editModeEnabled\s*&&\s*root\.editTool\s*===\s*"highlight"' 'Highlight gestures must be gated by highlighter mode.'
+Assert-Matches $viewer 'root\.editTool\s*===\s*"highlight"' 'Highlight gestures must be gated by highlighter mode.'
 Assert-Matches $viewer 'editModeEnabled\s*&&\s*root\.editTool\s*===\s*"erase"' 'Erase gestures must be gated by eraser mode.'
 Assert-Matches $viewer 'annotationDelegateComponent' 'PdfViewer must render pending text and highlighter annotations in the page UI.'
 Assert-Matches $viewer 'commitActiveTextDraft\(\)' 'PdfViewer must provide an explicit way to finish text edits.'

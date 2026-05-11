@@ -44,6 +44,22 @@ It is designed to feel lightweight, readable, and practical instead of overloade
 - Save a rotated copy as a new file
 - Recent files panel
 
+## Robust PDF Text Editing
+
+PDFClowne keeps MuPDF as the main viewer/rendering engine. The optional text
+editing pipeline can classify recovered text per block:
+
+- `nativeEditable` when the original text object is safe to rewrite.
+- `visualEditable` when the text is visible and editable through persistent
+  visual replacement.
+- `ocrEditable` when OCR is required before editing.
+- `notEditable` only when no supported text or pseudo-text region is available.
+
+Canva/Figma/Illustrator-style PDFs that expose visible text through complex
+layout structures should be treated as `visualEditable`, not as "no text
+found". The current persistent visual replacement uses a white mask plus new
+text; complex backgrounds still need a later backdrop-tile pass.
+
 ## Product Highlights
 
 ### Clean Reading Experience
@@ -153,6 +169,53 @@ PDFClowne/
 ├── CMakePresets.json
 └── README.md
 ```
+
+## Roadmap técnico open source
+
+PDFClowne evoluciona hacia una app de edición PDF completa sin usar Apryse/PDFTron ni ningún SDK comercial cerrado.
+
+### Stack open source aprobado
+
+| Motor | Uso |
+| --- | --- |
+| **MuPDF** | Motor principal: renderizado, visor, extracción de texto, anotaciones |
+| **PoDoFo** | Formularios AcroForm, firma digital, manipulación profunda de PDF |
+| **QPDF** | Validación, reparación, split/merge, normalización |
+| **Tesseract + Leptonica** | OCR opcional para PDFs escaneados |
+| **OpenSSL** | Criptografía para firma digital (PFX/P12, PAdES) |
+| **LibreOffice headless** | Exportación a ODT/DOCX — opcional, futuro |
+
+### Fases de desarrollo
+
+| Fase | Funcionalidad |
+| --- | --- |
+| Fase 1 | Formularios PDF — AcroForm, checkboxes, combos, campos de firma |
+| Fase 2 | Firma visual — dibujar, importar imagen, colocar en página |
+| Fase 3 | Anotaciones — highlight, sticky note, shapes, freehand |
+| Fase 4 | Edición visual de texto — overlays sobre bloques extraídos |
+| Fase 5 | Firma digital real — PFX/P12, OpenSSL, PAdES |
+| Fase 6 | OCR — Tesseract, capa de texto buscable |
+| Fase 7 | Exportación — HTML estructurado → LibreOffice → ODT/DOCX |
+
+### Dependencias opcionales en CMake
+
+Las dependencias opcionales se desactivan automáticamente si no están instaladas:
+
+```cmake
+ENABLE_FORMS=ON               # PoDoFo — formularios AcroForm
+ENABLE_SIGNATURES=ON          # firma visual y digital
+ENABLE_QPDF=ON                # operaciones estructurales
+ENABLE_PODOFO=ON              # manipulación profunda PDF
+ENABLE_OCR=OFF                # Tesseract (requiere instalación)
+ENABLE_LIBREOFFICE_EXPORT=OFF # LibreOffice headless (requiere instalación)
+```
+
+### Advertencias
+
+- **Edición de texto PDF**: limitada por fuentes subset. Glifos fuera del subset original producen caracteres incorrectos. La app avisa cuando detecta esta situación.
+- **Formularios XFA**: no soportados. Solo AcroForm estándar.
+- **Conversión PDF → ODT/DOCX**: no es perfecta. Layouts complejos, imágenes y estilos pueden perderse.
+- **Firma digital**: la validación completa en Acrobat requiere CRL/OCSP activos.
 
 ## Status
 

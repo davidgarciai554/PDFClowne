@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>PdfClowne.svg</file>
-        <file>PdfClowne.ico</file>
-        <file>qtquickcontrols2.conf</file>
-    </qresource>
-</RCC>

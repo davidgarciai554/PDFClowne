@@ -9,10 +9,14 @@ D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/all_qmllint_json.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/all_qmllint_module.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/PDFClowne_copy_qml.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/PDFClowne_copy_res.dir
+D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/TextBlockBuilderTest.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/module_PDFClowne_aotstats_target.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/all_aotstats.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/PDFClowne_qmlimportscan.dir
+D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/test.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/edit_cache.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/rebuild_cache.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/PDFClowne_autogen_timestamp_deps.dir
 D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/PDFClowne_autogen.dir
+D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/TextBlockBuilderTest_autogen_timestamp_deps.dir
+D:/Aplicaciones/PDFClowne 2/build/release/CMakeFiles/TextBlockBuilderTest_autogen.dir

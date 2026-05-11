@@ -1,0 +1,21 @@
+{
+  "fixture": "tests/pdfs/01-base.pdf",
+  "source": "Canva CV export regression",
+  "pageCount": 2,
+  "expectedTextBlocksMin": 3,
+  "mustFindTexts": [
+    "DAVID GARCIA MARTIN",
+    "Backend Engineer con experiencia",
+    "HABILIDADES PROFESIONALES Y PERSONALES",
+    "EXPERIENCIA LABORAL"
+  ],
+  "expected": {
+    "visualEditingAvailable": true,
+    "ocrRequired": false,
+    "noTextFound": false
+  },
+  "expectedStrategies": [
+    "visualEditable",
+    "persistentVisualReplacement"
+  ]
+}
