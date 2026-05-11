@@ -4,16 +4,54 @@
 #include "PdfiumInitializer.h"
 
 #include <QColor>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QByteArray>
 #include <QStringList>
+#include <QUuid>
 
 #include <fpdf_edit.h>
 #include <fpdf_save.h>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <cstring>
 #include <vector>
 
 namespace PDFClowne::Editing {
+
+namespace {
+
+QString tempOutputPathFor(const QString& outputPath)
+{
+    const QFileInfo info(outputPath);
+    const QDir dir = info.absoluteDir();
+    if (!dir.exists())
+        return {};
+
+    const QString baseName = info.completeBaseName().isEmpty()
+        ? QStringLiteral("pdfclowne-edit")
+        : info.completeBaseName();
+    return dir.absoluteFilePath(
+        QStringLiteral(".%1-%2.tmp.pdf")
+            .arg(baseName, QUuid::createUuid().toString(QUuid::Id128)));
+}
+
+bool canOpenWithPdfium(const QString& path)
+{
+    const QByteArray encodedPath = path.toUtf8();
+    FPDF_DOCUMENT loaded = nullptr;
+    {
+        PDFIUM_LOCK();
+        loaded = FPDF_LoadDocument(encodedPath.constData(), nullptr);
+        if (loaded)
+            FPDF_CloseDocument(loaded);
+    }
+    return loaded != nullptr;
+}
+
+} // namespace
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -46,6 +84,41 @@ const char* PdfWriteBackEngine::toStandardFontName(const QString& family)
     return "Helvetica";
 }
 
+FPDF_FONT PdfWriteBackEngine::loadReplacementFont(FPDF_DOCUMENT doc,
+                                                  const FontFallbackResult& font,
+                                                  const char* standardFontName)
+{
+    if (font.canEmbed && !font.fontFilePath.isEmpty()) {
+        QFile fontFile(font.fontFilePath);
+        if (fontFile.open(QIODevice::ReadOnly)) {
+            const QByteArray data = fontFile.readAll();
+            if (!data.isEmpty()) {
+                FPDF_FONT embedded = FPDFText_LoadFont(
+                    doc,
+                    reinterpret_cast<const uint8_t*>(data.constData()),
+                    static_cast<uint32_t>(data.size()),
+                    FPDF_FONT_TRUETYPE,
+                    true);
+                if (embedded) {
+                    spdlog::debug("PdfWriteBackEngine: embedded fallback font '{}'",
+                                  font.fontFilePath.toStdString());
+                    return embedded;
+                }
+            }
+        }
+        spdlog::warn("PdfWriteBackEngine: could not embed fallback font '{}', using standard PDF font",
+                     font.fontFilePath.toStdString());
+    }
+
+    FPDF_FONT standard = FPDFText_LoadStandardFont(doc, standardFontName);
+    if (!standard && std::strcmp(standardFontName, "Helvetica") != 0) {
+        spdlog::warn("PdfWriteBackEngine: FPDFText_LoadStandardFont('{}') failed, falling back to Helvetica",
+                     standardFontName);
+        standard = FPDFText_LoadStandardFont(doc, "Helvetica");
+    }
+    return standard;
+}
+
 // static
 void PdfWriteBackEngine::removeBlockObjects(FPDF_PAGE page,
                                              const PdfTextBlock& block)
@@ -68,6 +141,44 @@ void PdfWriteBackEngine::removeBlockObjects(FPDF_PAGE page,
             FPDFPageObj_Destroy(obj);
         }
     }
+}
+
+// static
+bool PdfWriteBackEngine::insertVisualReplacementMasks(FPDF_PAGE page,
+                                                       const PdfTextBlock& block)
+{
+    const QList<PdfTextLine> lines = block.lines.isEmpty()
+        ? QList<PdfTextLine>{ PdfTextLine{ {}, block.bboxPdf, block.bboxPdf.top() } }
+        : block.lines;
+
+    bool insertedAny = false;
+    for (const PdfTextLine& line : lines) {
+        QRectF rect = line.bboxPdf.isEmpty() ? block.bboxPdf : line.bboxPdf;
+        if (rect.isEmpty()) {
+            continue;
+        }
+
+        const double padX = std::max(0.75, block.dominantFontSize * 0.05);
+        const double padY = std::max(0.75, block.dominantFontSize * 0.08);
+        rect.adjust(-padX, -padY, padX, padY);
+
+        FPDF_PAGEOBJECT mask = FPDFPageObj_CreateNewRect(
+            static_cast<float>(rect.left()),
+            static_cast<float>(rect.top()),
+            static_cast<float>(rect.width()),
+            static_cast<float>(rect.height()));
+        if (!mask) {
+            spdlog::warn("PdfWriteBackEngine: could not create visual replacement mask");
+            continue;
+        }
+
+        FPDFPageObj_SetFillColor(mask, 255, 255, 255, 255);
+        FPDFPath_SetDrawMode(mask, FPDF_FILLMODE_WINDING, 0);
+        FPDFPage_InsertObject(page, mask);
+        insertedAny = true;
+    }
+
+    return insertedAny;
 }
 
 // ---------------------------------------------------------------------------
@@ -93,19 +204,29 @@ bool PdfWriteBackEngine::writeBackBlock(FPDF_DOCUMENT       doc,
     {
         PDFIUM_LOCK();
 
-        // 1. Remove original text objects for this block
-        removeBlockObjects(page, block);
+        // 1. Native rewrite removes source objects. Visual replacement keeps
+        // complex source streams intact and paints a persistent page mask.
+        const bool visualReplacement =
+            block.editStrategy == QStringLiteral("persistentVisualReplacement");
+        if (visualReplacement) {
+            if (!insertVisualReplacementMasks(page, block)) {
+                spdlog::warn("PdfWriteBackEngine: no visual replacement mask inserted for '{}'",
+                             block.blockId.toStdString());
+            }
+        } else {
+            removeBlockObjects(page, block);
+        }
 
         // 2. Determine font + size to use
         const char* stdFont = toStandardFontName(font.resolvedFontName);
         const float  fontSize = static_cast<float>(
             font.resolvedFontSize > 0.0 ? font.resolvedFontSize : 12.0);
 
-        FPDF_FONT pdfFont = FPDFText_LoadStandardFont(doc, stdFont);
+        FPDF_FONT pdfFont = loadReplacementFont(doc, font, stdFont);
         if (!pdfFont) {
-            spdlog::warn("PdfWriteBackEngine: FPDFText_LoadStandardFont('{}') failed,"
-                         " falling back to Helvetica", stdFont);
-            pdfFont = FPDFText_LoadStandardFont(doc, "Helvetica");
+            spdlog::error("PdfWriteBackEngine: failed to load any replacement font");
+            FPDF_ClosePage(page);
+            return false;
         }
 
         // 3. Determine the dominant color
@@ -126,7 +247,7 @@ bool PdfWriteBackEngine::writeBackBlock(FPDF_DOCUMENT       doc,
             const QString& lineStr = lines.at(i);
             if (lineStr.trimmed().isEmpty()) continue;
 
-            FPDF_PAGEOBJECT textObj = FPDFPageObj_NewTextObj(doc, stdFont, fontSize);
+            FPDF_PAGEOBJECT textObj = FPDFPageObj_CreateTextObj(doc, pdfFont, fontSize);
             if (!textObj) {
                 spdlog::warn("PdfWriteBackEngine: FPDFPageObj_NewTextObj failed for line {}", i);
                 continue;
@@ -147,6 +268,7 @@ bool PdfWriteBackEngine::writeBackBlock(FPDF_DOCUMENT       doc,
 
         // 5. Commit to page stream
         FPDFPage_GenerateContent(page);
+        FPDFFont_Close(pdfFont);
         FPDF_ClosePage(page);
     }
 
@@ -160,9 +282,9 @@ bool PdfWriteBackEngine::writeBackBlock(FPDF_DOCUMENT       doc,
 bool PdfWriteBackEngine::saveTo(FPDF_DOCUMENT doc, const QString& outputPath,
                                  SaveMode mode)
 {
-    FileWriter fw(outputPath);
-    if (!fw.isOpen()) {
-        spdlog::error("PdfWriteBackEngine: cannot open output file '{}'",
+    const QString tempPath = tempOutputPathFor(outputPath);
+    if (tempPath.isEmpty()) {
+        spdlog::error("PdfWriteBackEngine: cannot create temporary output path for '{}'",
                       outputPath.toStdString());
         return false;
     }
@@ -172,15 +294,42 @@ bool PdfWriteBackEngine::saveTo(FPDF_DOCUMENT doc, const QString& outputPath,
 
     int result = 0;
     {
-        PDFIUM_LOCK();
-        result = FPDF_SaveAsCopy(doc, fw.handle(), flags);
+        FileWriter fw(tempPath);
+        if (!fw.isOpen()) {
+            spdlog::error("PdfWriteBackEngine: cannot open temporary output file '{}'",
+                          tempPath.toStdString());
+            return false;
+        }
+
+        {
+            PDFIUM_LOCK();
+            result = FPDF_SaveAsCopy(doc, fw.handle(), flags);
+        }
     }
 
     if (!result) {
         spdlog::error("PdfWriteBackEngine: FPDF_SaveAsCopy failed for '{}'",
-                      outputPath.toStdString());
+                      tempPath.toStdString());
+        QFile::remove(tempPath);
+        return false;
     }
-    return result != 0;
+
+    if (!canOpenWithPdfium(tempPath)) {
+        spdlog::error("PdfWriteBackEngine: validation failed for temporary PDF '{}'",
+                      tempPath.toStdString());
+        QFile::remove(tempPath);
+        return false;
+    }
+
+    QFile::remove(outputPath);
+    if (!QFile::rename(tempPath, outputPath)) {
+        spdlog::error("PdfWriteBackEngine: failed to rename temporary PDF '{}' to '{}'",
+                      tempPath.toStdString(), outputPath.toStdString());
+        QFile::remove(tempPath);
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace PDFClowne::Editing

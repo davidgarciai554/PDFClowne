@@ -1,6 +1,6 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
+import PDFClowne
 
 // Contextual toolbar shown above a selected/editing block.
 Rectangle {
@@ -21,11 +21,11 @@ Rectangle {
     signal alignmentChangeRequested(int align)
     signal resizeModeChangeRequested(string mode)
 
-    implicitHeight: 32
-    color: "#F5F5F5"
-    border.color: "#BDBDBD"
+    implicitHeight: 34
+    color: Theme.surface
+    border.color: Theme.border
     border.width: 1
-    radius: 4
+    radius: Theme.radius
 
     RowLayout {
         anchors { fill: parent; leftMargin: 6; rightMargin: 6 }
@@ -34,58 +34,61 @@ Rectangle {
         // Font family (abbreviated)
         Text {
             text: root.fontFamily.length > 10
-                  ? root.fontFamily.substring(0, 10) + "…"
+                  ? root.fontFamily.substring(0, 10) + "..."
                   : root.fontFamily
             font.pixelSize: 11
-            color: "#333"
+            color: Theme.text
             Layout.preferredWidth: 80
             elide: Text.ElideRight
         }
 
-        Rectangle { width: 1; height: 20; color: "#BDBDBD" }
+        Rectangle { width: 1; height: 20; color: Theme.border }
 
         // Font size -/+
-        ToolButton {
-            text: "−"
-            font.pixelSize: 13
-            implicitWidth: 24; implicitHeight: 24
+        PclToolButton {
+            text: "-"
+            Layout.preferredWidth: Theme.iconButtonSize
+            Layout.preferredHeight: Theme.compactControlHeight
+            tooltip: qsTr("Reducir tamaño")
             onClicked: root.fontSizeChangeRequested(Math.max(6, root.fontSize - 1))
         }
         Text {
             text: Math.round(root.fontSize)
             font.pixelSize: 11
-            color: "#333"
+            color: Theme.text
             Layout.preferredWidth: 24
             horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
-        ToolButton {
+        PclToolButton {
             text: "+"
-            font.pixelSize: 13
-            implicitWidth: 24; implicitHeight: 24
+            Layout.preferredWidth: Theme.iconButtonSize
+            Layout.preferredHeight: Theme.compactControlHeight
+            tooltip: qsTr("Aumentar tamaño")
             onClicked: root.fontSizeChangeRequested(root.fontSize + 1)
         }
 
-        Rectangle { width: 1; height: 20; color: "#BDBDBD" }
+        Rectangle { width: 1; height: 20; color: Theme.border }
 
         // Bold / Italic
-        ToolButton {
+        PclToolButton {
             text: "B"
-            font.bold: true
-            font.pixelSize: 12
-            implicitWidth: 24; implicitHeight: 24
-            opacity: root.bold ? 1.0 : 0.45
+            checked: root.bold
+            Layout.preferredWidth: Theme.iconButtonSize
+            Layout.preferredHeight: Theme.compactControlHeight
+            tooltip: qsTr("Negrita")
             onClicked: root.boldToggled()
         }
-        ToolButton {
+        PclToolButton {
             text: "I"
-            font.italic: true
-            font.pixelSize: 12
-            implicitWidth: 24; implicitHeight: 24
-            opacity: root.italic ? 1.0 : 0.45
+            checked: root.italic
+            Layout.preferredWidth: Theme.iconButtonSize
+            Layout.preferredHeight: Theme.compactControlHeight
+            tooltip: qsTr("Cursiva")
             onClicked: root.italicToggled()
         }
 
-        Rectangle { width: 1; height: 20; color: "#BDBDBD" }
+        Rectangle { width: 1; height: 20; color: Theme.border }
 
         // Alignment
         Repeater {
@@ -94,17 +97,17 @@ Rectangle {
                 { label: "≡C", align: Qt.AlignHCenter },
                 { label: "≡R", align: Qt.AlignRight },
             ]
-            ToolButton {
+            PclToolButton {
                 required property var modelData
                 text: modelData.label
-                font.pixelSize: 11
-                implicitWidth: 26; implicitHeight: 24
-                opacity: root.alignment === modelData.align ? 1.0 : 0.45
+                checked: root.alignment === modelData.align
+                Layout.preferredWidth: Theme.iconButtonSize
+                Layout.preferredHeight: Theme.compactControlHeight
                 onClicked: root.alignmentChangeRequested(modelData.align)
             }
         }
 
-        Rectangle { width: 1; height: 20; color: "#BDBDBD" }
+        Rectangle { width: 1; height: 20; color: Theme.border }
 
         // Resize mode
         Repeater {
@@ -113,15 +116,13 @@ Rectangle {
                 { label: "↕S", mode: "scaleFont", tip: "Scale font" },
                 { label: "↕C", mode: "clip",      tip: "Clip" },
             ]
-            ToolButton {
+            PclToolButton {
                 required property var modelData
                 text: modelData.label
-                font.pixelSize: 10
-                implicitWidth: 26; implicitHeight: 24
-                opacity: root.resizeMode === modelData.mode ? 1.0 : 0.45
-                ToolTip.text: modelData.tip
-                ToolTip.visible: hovered
-                ToolTip.delay: 600
+                checked: root.resizeMode === modelData.mode
+                Layout.preferredWidth: Theme.iconButtonSize
+                Layout.preferredHeight: Theme.compactControlHeight
+                tooltip: modelData.tip
                 onClicked: root.resizeModeChangeRequested(modelData.mode)
             }
         }

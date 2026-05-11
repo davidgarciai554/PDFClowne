@@ -14,7 +14,13 @@
 #include "DocumentRenderController.h"
 #include "DocumentSearchController.h"
 #include "Logger.h"
+#include "OcrService.h"
+#include "PdfAnnotationController.h"
+#include "PdfFormController.h"
 #include "PdfDocument.h"
+#include "PdfEditSession.h"
+#include "PdfEditSessionController.h"
+#include "PdfGlyphOverlayItem.h"
 #include "PdfRenderImageProvider.h"
 #include "TextBlockModel.h"
 
@@ -58,7 +64,13 @@ int main(int argc, char *argv[])
     const QStringList startupFiles = parser.positionalArguments();
 
     qmlRegisterType<PdfDocument>("PDFClowne.Backend", 1, 0, "PdfDocument");
+    qmlRegisterType<PdfEditSession>("PDFClowne.Backend", 1, 0, "PdfEditSession");
+    qmlRegisterType<PdfAnnotationController>("PDFClowne.Backend", 1, 0, "PdfAnnotationController");
+    qmlRegisterType<OcrService>("PDFClowne.Backend", 1, 0, "OcrService");
+    qmlRegisterType<PdfFormController>("PDFClowne.Backend", 1, 0, "PdfFormController");
     qmlRegisterType<PDFClowne::Editing::TextBlockModel>("PDFClowne.Editing", 1, 0, "TextBlockModel");
+    qmlRegisterType<PDFClowne::Editing::PdfEditSessionController>("PDFClowne.Editing", 1, 0, "PdfEditSessionController");
+    qmlRegisterType<PDFClowne::Render::PdfGlyphOverlayItem>("PDFClowne.Editing", 1, 0, "PdfGlyphOverlayItem");
 #ifdef PDFCLOWNE_ENABLE_PDFIUM_EDITING
     qmlRegisterType<PDFClowne::Editing::EditingController>("PDFClowne.Editing", 1, 0, "EditingController");
 #endif

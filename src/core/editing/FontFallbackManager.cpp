@@ -3,14 +3,64 @@
 #include <QFont>
 #include <QFontDatabase>
 #include <QFontMetrics>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
 
 namespace PDFClowne::Editing {
+
+namespace {
+
+struct BundledFontCandidate {
+    const char* family;
+    const char* fileName;
+};
+
+static constexpr BundledFontCandidate kBundledFonts[] = {
+    {"DejaVu Sans", "DejaVuSans.ttf"},
+    {"Noto Sans CJK SC", "NotoSansCJK-Regular.otf"},
+    {"Noto Sans CJK", "NotoSansCJK-Regular.otf"},
+    {"Noto Sans Arabic", "NotoSansArabic-Regular.ttf"},
+    {nullptr, nullptr}
+};
+
+QString sourceFontsDir()
+{
+    QDir dir(QCoreApplication::applicationDirPath());
+    for (int i = 0; i < 6; ++i) {
+        const QString candidate = dir.absoluteFilePath(QStringLiteral("resources/fonts"));
+        if (QDir(candidate).exists())
+            return candidate;
+        if (!dir.cdUp())
+            break;
+    }
+    return {};
+}
+
+QString fontPathForFileName(const QString& fileName)
+{
+    const QString resourcePath = QStringLiteral(":/fonts/%1").arg(fileName);
+    if (QFileInfo::exists(resourcePath))
+        return resourcePath;
+
+    const QString sourceDir = sourceFontsDir();
+    if (!sourceDir.isEmpty()) {
+        const QString sourcePath = QDir(sourceDir).absoluteFilePath(fileName);
+        if (QFileInfo::exists(sourcePath))
+            return sourcePath;
+    }
+    return {};
+}
+
+} // namespace
 
 // Preferred fallback order — wide Unicode coverage first.
 static constexpr const char* kCandidates[] = {
     "Arial Unicode MS",
     "Noto Sans",
     "Noto Serif",
+    "Noto Sans CJK SC",
+    "Noto Sans Arabic",
     "DejaVu Sans",
     "Segoe UI",
     "Tahoma",
@@ -22,6 +72,7 @@ static constexpr const char* kCandidates[] = {
 
 FontFallbackManager::FontFallbackManager()
 {
+    registerBundledFonts();
     buildChain();
 }
 
@@ -55,6 +106,8 @@ FontFallbackResult FontFallbackManager::selectFontForText(
 
     if (canFontRenderText(preferredFont, preferredSize, newText)) {
         result.resolvedFontName = preferredFont;
+        result.fontFilePath     = fontFilePathForFamily(preferredFont);
+        result.canEmbed         = !result.fontFilePath.isEmpty();
         result.usedFallback     = false;
         return result;
     }
@@ -63,6 +116,8 @@ FontFallbackResult FontFallbackManager::selectFontForText(
         if (family == preferredFont) continue;
         if (canFontRenderText(family, preferredSize, newText)) {
             result.resolvedFontName = family;
+            result.fontFilePath     = fontFilePathForFamily(family);
+            result.canEmbed         = !result.fontFilePath.isEmpty();
             result.usedFallback     = true;
             result.fallbackReason   =
                 QStringLiteral("Font \"%1\" lacks required glyphs; "
@@ -81,6 +136,24 @@ FontFallbackResult FontFallbackManager::selectFontForText(
     return result;
 }
 
+QString FontFallbackManager::fontFilePathForFamily(const QString& family) const
+{
+    for (int i = 0; kBundledFonts[i].family != nullptr; ++i) {
+        if (family.compare(QString::fromLatin1(kBundledFonts[i].family), Qt::CaseInsensitive) == 0)
+            return fontPathForFileName(QString::fromLatin1(kBundledFonts[i].fileName));
+    }
+    return {};
+}
+
+void FontFallbackManager::registerBundledFonts()
+{
+    for (int i = 0; kBundledFonts[i].family != nullptr; ++i) {
+        const QString path = fontPathForFileName(QString::fromLatin1(kBundledFonts[i].fileName));
+        if (!path.isEmpty())
+            QFontDatabase::addApplicationFont(path);
+    }
+}
+
 void FontFallbackManager::buildChain()
 {
     const QStringList installed = QFontDatabase::families();
@@ -88,6 +161,12 @@ void FontFallbackManager::buildChain()
         const QString fam = QString::fromLatin1(kCandidates[i]);
         if (installed.contains(fam, Qt::CaseInsensitive))
             m_chain.append(fam);
+    }
+
+    for (int i = 0; kBundledFonts[i].family != nullptr; ++i) {
+        const QString family = QString::fromLatin1(kBundledFonts[i].family);
+        if (!m_chain.contains(family, Qt::CaseInsensitive) && !fontFilePathForFamily(family).isEmpty())
+            m_chain.append(family);
     }
 }
 

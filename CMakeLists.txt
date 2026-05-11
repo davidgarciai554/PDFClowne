@@ -10,9 +10,17 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Qml Svg)
+find_package(harfbuzz CONFIG REQUIRED)
+find_package(Freetype REQUIRED)
 
 option(PDFCLOWNE_ENABLE_PDFIUM_EDITING "Enable direct PDFium-backed PDF text editing" OFF)
+option(ENABLE_OCR "Enable OCR fallback" OFF)
+option(ENABLE_FORMS "Enable PDF AcroForm filling via PoDoFo" ON)
+option(ENABLE_SIGNATURES "Enable PDF visual and digital signatures" ON)
+option(ENABLE_QPDF "Enable QPDF for structural PDF operations (split/merge/repair/encrypt)" ON)
+option(ENABLE_PODOFO "Enable PoDoFo for AcroForm and deep PDF manipulation" ON)
+option(ENABLE_LIBREOFFICE_EXPORT "Enable LibreOffice headless export to ODT/DOCX (requires LO installed)" OFF)
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     find_package(Qt6 REQUIRED COMPONENTS Pdf)
@@ -26,8 +34,33 @@ if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     find_package(qpdf CONFIG REQUIRED)
     find_package(podofo CONFIG REQUIRED)
     find_package(spdlog CONFIG REQUIRED)
+    set(_PDFCLOWNE_QPDF_FOUND TRUE)
+    set(_PDFCLOWNE_PODOFO_FOUND TRUE)
 endif()
 
+# Independent QPDF — only searched if PDFIUM block didn't already find it
+if(ENABLE_QPDF AND NOT _PDFCLOWNE_QPDF_FOUND)
+    find_package(qpdf CONFIG QUIET)
+    if(qpdf_FOUND)
+        set(_PDFCLOWNE_QPDF_FOUND TRUE)
+    else()
+        message(STATUS "ENABLE_QPDF=ON but qpdf not found — PdfStructureService will be a stub")
+        set(ENABLE_QPDF OFF)
+    endif()
+endif()
+
+# Independent PoDoFo — only searched if PDFIUM block didn't already find it
+if(ENABLE_PODOFO AND NOT _PDFCLOWNE_PODOFO_FOUND)
+    find_package(podofo CONFIG QUIET)
+    if(podofo_FOUND)
+        set(_PDFCLOWNE_PODOFO_FOUND TRUE)
+    else()
+        message(STATUS "ENABLE_PODOFO=ON but podofo not found — PdfFormService/PdfSignatureService will be stubs")
+        set(ENABLE_PODOFO OFF)
+    endif()
+endif()
+
+set(MUPDF_VERSION_TAG "1.25.6" CACHE STRING "Stable MuPDF version/tag expected by this build")
 set(MUPDF_ROOT "" CACHE PATH "MuPDF installation root")
 set(MUPDF_EXTRA_LIBRARIES "" CACHE STRING "Additional MuPDF libraries required by this build")
 
@@ -122,8 +155,22 @@ set(CPP_SOURCES
     src/backend/DesktopIntegration.cpp
     src/backend/DocumentRenderController.cpp
     src/backend/DocumentSearchController.cpp
+    src/backend/OcrService.cpp
+    src/backend/PdfAnnotationController.cpp
+    src/backend/PdfFormController.cpp
     src/backend/PdfRenderImageProvider.cpp
     src/backend/PdfDocument.cpp
+    src/backend/PdfEditableLayout.cpp
+    src/backend/PdfEditCommand.cpp
+    src/backend/PdfEditSession.cpp
+    src/backend/text/PdfGlyphRunModel.cpp
+    src/backend/text/PdfTextExtractor.cpp
+    src/backend/text/PdfFontResolver.cpp
+    src/backend/text/PdfEditSessionController.cpp
+    src/backend/render/PdfGlyphOverlayItem.cpp
+    src/backend/render/PdfScratchPageRenderer.cpp
+    src/backend/pdf/PdfContentWriter.cpp
+    src/backend/pdf/PdfSaveCoordinator.cpp
     src/core/editing/FontFallbackManager.cpp
     src/core/editing/PdfExtractionDebugRenderer.cpp
     src/core/editing/TextBlockBuilder.cpp
@@ -134,6 +181,8 @@ set(CPP_SOURCES
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     list(APPEND CPP_SOURCES
         src/core/editing/PdfPageObjectExtractor.cpp
+        src/core/editing/PdfExtractionWorker.cpp
+        src/core/editing/PdfSaveWorker.cpp
         src/core/editing/EditingController.cpp
         src/core/editing/FileWriter.cpp
         src/core/editing/PdfWriteBackEngine.cpp
@@ -149,8 +198,23 @@ set(CPP_HEADERS
     src/backend/DocumentRenderController.h
     src/backend/DocumentSearchController.h
     src/backend/Logger.h
+    src/backend/OcrService.h
+    src/backend/PdfAnnotationController.h
+    src/backend/PdfFormController.h
     src/backend/PdfRenderImageProvider.h
     src/backend/PdfDocument.h
+    src/backend/PdfEditableLayout.h
+    src/backend/PdfEditCommand.h
+    src/backend/PdfEditSession.h
+    src/backend/PdfTextElement.h
+    src/backend/text/PdfGlyphRunModel.h
+    src/backend/text/PdfTextExtractor.h
+    src/backend/text/PdfFontResolver.h
+    src/backend/text/PdfEditSessionController.h
+    src/backend/render/PdfGlyphOverlayItem.h
+    src/backend/render/PdfScratchPageRenderer.h
+    src/backend/pdf/PdfContentWriter.h
+    src/backend/pdf/PdfSaveCoordinator.h
     src/core/editing/EditingHeuristics.h
     src/core/editing/FontFallbackManager.h
     src/core/editing/PdfCoordTransform.h
@@ -161,13 +225,24 @@ set(CPP_HEADERS
     src/core/editing/TextBlockBuilder.h
     src/core/editing/TextBlockModel.h
     src/core/pdf/PdfiumInitializer.h
+    src/services/PdfAnnotationService.h
+    src/services/PdfEditService.h
+    src/services/PdfExportService.h
+    src/services/PdfFormService.h
+    src/services/PdfOcrService.h
+    src/services/PdfRenderService.h
+    src/services/PdfSaveService.h
+    src/services/PdfSignatureService.h
+    src/services/PdfStructureService.h
 )
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     list(APPEND CPP_HEADERS
         src/core/editing/EditingController.h
         src/core/editing/FileWriter.h
+        src/core/editing/PdfExtractionWorker.h
         src/core/editing/PdfPageObjectExtractor.h
+        src/core/editing/PdfSaveWorker.h
         src/core/editing/PdfWriteBackEngine.h
     )
 endif()
@@ -186,10 +261,22 @@ qt_add_qml_module(PDFClowne
     QML_FILES
         src/qml/main.qml
         src/qml/PdfViewer.qml
+        src/qml/EditInspector.qml
+        src/qml/EditOverlay.qml
+        src/qml/EditToolbar.qml
+        src/qml/editor/PdfEditOverlay.qml
         src/qml/Theme.qml
         src/qml/EditableTextBox.qml
         src/qml/ResizeHandles.qml
         src/qml/EditingToolbar.qml
+        src/qml/PclToolButton.qml
+        src/qml/PclButton.qml
+        src/qml/PclComboBox.qml
+        src/qml/PclSpinBox.qml
+        src/qml/PclCheckBox.qml
+        src/qml/PclColorSwatch.qml
+        src/qml/FormOverlay.qml
+        src/qml/FormInspector.qml
     RESOURCES
         src/qml/ShortcutCatalog.js
         resources/resources.qrc
@@ -197,17 +284,56 @@ qt_add_qml_module(PDFClowne
 
 target_include_directories(PDFClowne PRIVATE
     src/backend
+    src/backend/text
+    src/backend/render
+    src/backend/pdf
     src/core/editing
     src/core/pdf
+    src/services
     ${MUPDF_INCLUDE_DIR}
 )
 
 target_link_libraries(PDFClowne PRIVATE
     Qt6::Core
     Qt6::Gui
+    Qt6::Qml
     Qt6::Quick
+    Qt6::QuickControls2
+    Qt6::Svg
+    Freetype::Freetype
+    harfbuzz::harfbuzz
     ${MUPDF_LIBRARIES}
 )
+
+if(ENABLE_OCR)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_OCR=1)
+endif()
+
+if(ENABLE_FORMS)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_FORMS=1)
+endif()
+
+if(ENABLE_SIGNATURES)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_SIGNATURES=1)
+endif()
+
+if(ENABLE_QPDF AND _PDFCLOWNE_QPDF_FOUND AND NOT PDFCLOWNE_ENABLE_PDFIUM_EDITING)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_QPDF=1)
+    target_link_libraries(PDFClowne PRIVATE qpdf::libqpdf)
+elseif(ENABLE_QPDF AND _PDFCLOWNE_QPDF_FOUND)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_QPDF=1)
+endif()
+
+if(ENABLE_PODOFO AND _PDFCLOWNE_PODOFO_FOUND AND NOT PDFCLOWNE_ENABLE_PDFIUM_EDITING)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_PODOFO=1)
+    target_link_libraries(PDFClowne PRIVATE podofo::podofo)
+elseif(ENABLE_PODOFO AND _PDFCLOWNE_PODOFO_FOUND)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_PODOFO=1)
+endif()
+
+if(ENABLE_LIBREOFFICE_EXPORT)
+    target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_LIBREOFFICE_EXPORT=1)
+endif()
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     target_compile_definitions(PDFClowne PRIVATE PDFCLOWNE_ENABLE_PDFIUM_EDITING=1)
@@ -219,6 +345,18 @@ if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
         podofo::podofo
         spdlog::spdlog
     )
+
+    if(WIN32)
+        if(DEFINED PDFium_LIBRARY AND EXISTS "${PDFium_LIBRARY}")
+            add_custom_command(TARGET PDFClowne POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    "${PDFium_LIBRARY}"
+                    "$<TARGET_FILE_DIR:PDFClowne>"
+                COMMENT "Deploying PDFium runtime from PDFium_LIBRARY..."
+                VERBATIM
+            )
+        endif()
+    endif()
 endif()
 
 enable_testing()
@@ -240,6 +378,70 @@ target_link_libraries(TextBlockBuilderTest PRIVATE
 
 add_test(NAME TextBlockBuilder COMMAND TextBlockBuilderTest)
 
+add_executable(PdfEditCommandTest
+    tests/cpp/PdfEditCommandTest.cpp
+    src/backend/PdfEditCommand.cpp
+    src/backend/PdfEditSession.cpp
+)
+
+target_include_directories(PdfEditCommandTest PRIVATE
+    src/backend
+)
+
+target_link_libraries(PdfEditCommandTest PRIVATE
+    Qt6::Core
+)
+
+add_test(NAME PdfEditCommand COMMAND PdfEditCommandTest)
+
+add_executable(PdfEditSessionVisualSnapshotTest
+    tests/cpp/PdfEditSessionVisualSnapshotTest.cpp
+    src/backend/text/PdfGlyphRunModel.cpp
+    src/backend/text/PdfTextExtractor.cpp
+    src/backend/text/PdfFontResolver.cpp
+    src/backend/text/PdfEditSessionController.cpp
+    src/backend/render/PdfScratchPageRenderer.cpp
+    src/backend/pdf/PdfContentWriter.cpp
+    src/backend/pdf/PdfSaveCoordinator.cpp
+)
+
+target_include_directories(PdfEditSessionVisualSnapshotTest PRIVATE
+    src/backend
+    src/backend/text
+    src/backend/render
+    src/backend/pdf
+    ${MUPDF_INCLUDE_DIR}
+)
+
+target_link_libraries(PdfEditSessionVisualSnapshotTest PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Freetype::Freetype
+    harfbuzz::harfbuzz
+    ${MUPDF_LIBRARIES}
+)
+
+add_test(NAME PdfEditSessionVisualSnapshot
+    COMMAND PdfEditSessionVisualSnapshotTest "${CMAKE_SOURCE_DIR}/tests/pdfs/01-base.pdf")
+
+if(WIN32 AND DEFINED VCPKG_INSTALLED_DIR)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(_PDFCLOWNE_VCPKG_RUNTIME_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/bin")
+    else()
+        set(_PDFCLOWNE_VCPKG_RUNTIME_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin")
+    endif()
+
+    if(EXISTS "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}")
+        add_custom_command(TARGET PdfEditSessionVisualSnapshotTest POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy_directory
+                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}"
+                "$<TARGET_FILE_DIR:PdfEditSessionVisualSnapshotTest>"
+            COMMENT "Deploying vcpkg runtime dependencies for PDF edit snapshot tests..."
+            VERBATIM
+        )
+    endif()
+endif()
+
 # PDFium-dependent tests
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     cmake_path(GET PDFium_LIBRARY PARENT_PATH _PDFium_BIN_DIR)
@@ -258,12 +460,15 @@ if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
         add_executable(${target_name}
             ${source_file}
             src/core/editing/PdfPageObjectExtractor.cpp
+            src/core/editing/TextBlockBuilder.cpp
             src/core/pdf/PdfiumInitializer.cpp
         )
         target_include_directories(${target_name} PRIVATE src/core/editing src/core/pdf)
         target_link_libraries(${target_name} PRIVATE
             Qt6::Core Qt6::Gui ${PDFCLOWNE_PDFIUM_TARGET} spdlog::spdlog)
-        target_compile_definitions(${target_name} PRIVATE PDFCLOWNE_ENABLE_PDFIUM_EDITING=1)
+        target_compile_definitions(${target_name} PRIVATE
+            PDFCLOWNE_ENABLE_PDFIUM_EDITING=1
+            PDFCLOWNE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
         add_test(NAME ${test_name} COMMAND ${target_name})
         set_tests_properties(${test_name} PROPERTIES ENVIRONMENT_MODIFICATION "${_PDFIUM_TEST_ENVMOD}")
     endfunction()
@@ -279,6 +484,23 @@ if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
     add_pdfium_test(PdfPageObjectExtractorScannedTest
         tests/cpp/PdfPageObjectExtractorScannedTest.cpp
         PdfPageObjectExtractorScanned)
+
+    add_pdfium_test(PdfPageObjectExtractorCanvaRegressionTest
+        tests/cpp/PdfPageObjectExtractorCanvaRegressionTest.cpp
+        PdfPageObjectExtractorCanvaRegression)
+
+    add_executable(PdfWriteBackIntegrationTest
+        tests/cpp/PdfWriteBackIntegrationTest.cpp
+        src/core/editing/FileWriter.cpp
+        src/core/editing/PdfWriteBackEngine.cpp
+        src/core/pdf/PdfiumInitializer.cpp
+    )
+    target_include_directories(PdfWriteBackIntegrationTest PRIVATE src/core/editing src/core/pdf)
+    target_link_libraries(PdfWriteBackIntegrationTest PRIVATE
+        Qt6::Core Qt6::Gui ${PDFCLOWNE_PDFIUM_TARGET} spdlog::spdlog)
+    target_compile_definitions(PdfWriteBackIntegrationTest PRIVATE PDFCLOWNE_ENABLE_PDFIUM_EDITING=1)
+    add_test(NAME PdfWriteBackIntegration COMMAND PdfWriteBackIntegrationTest)
+    set_tests_properties(PdfWriteBackIntegration PROPERTIES ENVIRONMENT_MODIFICATION "${_PDFIUM_TEST_ENVMOD}")
 endif()
 
 set_target_properties(PDFClowne PROPERTIES
@@ -286,6 +508,15 @@ set_target_properties(PDFClowne PROPERTIES
 )
 
 if(WIN32)
+    add_custom_command(TARGET PDFClowne POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "$<TARGET_RUNTIME_DLLS:PDFClowne>"
+            "$<TARGET_FILE_DIR:PDFClowne>"
+        COMMAND_EXPAND_LISTS
+        COMMENT "Deploying linked runtime dependencies..."
+        VERBATIM
+    )
+
     find_program(WINDEPLOYQT windeployqt
         HINTS "${Qt6_DIR}/../../../bin"
               "$ENV{QT6_DIR}/bin"

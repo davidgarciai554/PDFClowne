@@ -8,14 +8,23 @@ Item {
     property bool   isEditable: true
     property bool   isSelected: false
     property string plainText: ""
+    property string draftText: plainText
     property string fontFamily: "Helvetica"
     property real   fontSize: 12
     property real   originalHeight: height
     property bool   editingActive: false
     property string resizeMode: "reflow"   // "reflow" | "scaleFont" | "clip"
+    property string editability: "nativeEditable"
+    property string editStrategy: "nativeStreamRewrite"
     property bool   bold: false
     property bool   italic: false
     property int    textAlignment: Qt.AlignLeft
+    property string nonEditableReason: ""
+    property color pdfPageBackgroundColor: "#FFFFFFFF"
+    property color pdfPageTextColor: "#1C1C2E"
+    readonly property bool hovered: hoverArea.containsMouse
+    readonly property bool hasLocalEdit: root.draftText !== root.plainText
+    readonly property bool visualReplacementActive: root.editingActive || root.hasLocalEdit
 
     // Other blocks' screen rects for snap-to-guides (array of {x,y,width,height})
     property var siblingRects: []
@@ -31,6 +40,11 @@ Item {
     signal resized(string blockId, real dx, real dy, real dw, real dh)
     signal styleChanged(string blockId, string prop, var value)
 
+    onPlainTextChanged: {
+        if (!root.editingActive && !root.hasLocalEdit)
+            root.draftText = root.plainText
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     function snapDelta(val, candidates) {
@@ -43,6 +57,22 @@ Item {
         return best - val
     }
 
+    function beginEditing() {
+        if (!root.isEditable)
+            return
+        if (!root.hasLocalEdit)
+            root.draftText = root.plainText
+        root.editingActive = true
+        editArea.forceActiveFocus()
+        editArea.cursorPosition = editArea.length
+    }
+
+    function finishEditing() {
+        if (root.isEditable)
+            root.textEditing(root.blockId, root.draftText)
+        root.editingActive = false
+    }
+
     // ── background ───────────────────────────────────────────────────────────
 
     Rectangle {
@@ -50,24 +80,24 @@ Item {
         anchors.fill: parent
         radius: 2
         color: {
-            if (root.editingActive)       return "#08000000"
-            if (root.isSelected)          return "#152196F3"
-            if (hoverArea.containsMouse)  return root.isEditable ? "#104CAF50" : "#10FF9800"
+            if (root.visualReplacementActive) return root.pdfPageBackgroundColor
+            if (root.isSelected)          return "transparent"
+            if (root.hovered)             return Theme.isDark ? "#24304D40" : "#F8FAFF40"
             return "transparent"
         }
         border.color: {
-            if (root.editingActive || root.isSelected) return "#2196F3"
-            if (hoverArea.containsMouse)               return root.isEditable ? "#4CAF50" : "#FF9800"
+            if (root.editingActive || root.isSelected) return Theme.editSelection
+            if (root.hovered)                          return root.isEditable ? Theme.accent : Theme.danger
             return "transparent"
         }
-        border.width: (root.isSelected || root.editingActive) ? 2 : 1
+        border.width: root.isSelected || root.editingActive || root.hovered ? 1 : 0
     }
 
     // ── text edit ────────────────────────────────────────────────────────────
 
     TextEdit {
         id: editArea
-        anchors { left: parent.left; right: parent.right; top: parent.top }
+        anchors { fill: parent; margins: 3 }
         visible: root.editingActive
         enabled: root.editingActive
         wrapMode: TextEdit.Wrap
@@ -76,13 +106,49 @@ Item {
         font.bold: root.bold
         font.italic: root.italic
         horizontalAlignment: root.textAlignment
-        color: "#1C1C2E"
-        text: root.plainText
+        color: root.pdfPageTextColor
+        text: root.draftText
         selectByMouse: true
         leftPadding: 2
         rightPadding: 2
+        topPadding: 1
+        bottomPadding: 1
 
-        onTextChanged: root.textEditing(root.blockId, text)
+        onTextChanged: {
+            if (root.draftText !== text)
+                root.draftText = text
+            root.textEditing(root.blockId, text)
+        }
+
+        Keys.onPressed: function(event) {
+            if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+                    && !(event.modifiers & Qt.ShiftModifier)) {
+                root.finishEditing()
+                event.accepted = true
+            } else if (event.key === Qt.Key_Escape) {
+                root.finishEditing()
+                event.accepted = true
+            }
+        }
+
+        onActiveFocusChanged: {
+            if (!activeFocus && root.editingActive)
+                root.finishEditing()
+        }
+    }
+
+    Text {
+        anchors { fill: parent; margins: 5 }
+        visible: root.hasLocalEdit && !root.editingActive
+        text: root.draftText
+        wrapMode: Text.Wrap
+        clip: true
+        font.family: root.fontFamily
+        font.pointSize: Math.max(1, root.fontSize)
+        font.bold: root.bold
+        font.italic: root.italic
+        horizontalAlignment: root.textAlignment
+        color: root.pdfPageTextColor
     }
 
     // ── overflow indicator ───────────────────────────────────────────────────
@@ -91,7 +157,7 @@ Item {
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
         height: 3
         radius: 1
-        color: "#EF5350"
+        color: Theme.danger
         visible: root.editingActive
                  && editArea.contentHeight > root.originalHeight
                  && root.originalHeight > 0
@@ -102,8 +168,8 @@ Item {
     Rectangle {
         anchors { left: parent.left; right: parent.right; top: parent.top }
         height: fallbackLabel.implicitHeight + 6
-        color: "#FFF8E1"
-        border.color: "#FFB300"
+        color: Theme.surface
+        border.color: Theme.accent
         border.width: 1
         radius: 2
         visible: root.editingActive && root.fallbackFontName !== ""
@@ -115,7 +181,36 @@ Item {
                       leftMargin: 4; rightMargin: 4 }
             text: qsTr("Font substituted: %1").arg(root.fallbackFontName)
             font.pixelSize: 9
-            color: "#7B4F00"
+            color: Theme.text
+            elide: Text.ElideRight
+            wrapMode: Text.NoWrap
+        }
+    }
+
+    Rectangle {
+        anchors { left: parent.left; right: parent.right; top: parent.top }
+        height: nonEditableLabel.implicitHeight + 6
+        color: Theme.surface
+        border.color: Theme.danger
+        border.width: 1
+        radius: 2
+        visible: !root.isEditable && (root.isSelected || root.hovered)
+        z: 6
+
+        Text {
+            id: nonEditableLabel
+            anchors {
+                left: parent.left
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+                leftMargin: 4
+                rightMargin: 4
+            }
+            text: root.nonEditableReason.length > 0
+                  ? root.nonEditableReason
+                  : qsTr("Este bloque de texto no se puede editar")
+            font.pixelSize: 9
+            color: Theme.text
             elide: Text.ElideRight
             wrapMode: Text.NoWrap
         }
@@ -177,14 +272,8 @@ Item {
         onEntered:  root.blockHovered(root.blockId)
         onExited:   root.blockUnhovered(root.blockId)
         onClicked:  root.blockClicked(root.blockId)
-        onDoubleClicked: {
-            if (root.isEditable) {
-                root.editingActive = true
-                editArea.forceActiveFocus()
-                editArea.cursorPosition = editArea.length
-            }
-        }
+        onDoubleClicked: root.beginEditing()
     }
 
-    Keys.onEscapePressed: root.editingActive = false
+    Keys.onEscapePressed: root.finishEditing()
 }

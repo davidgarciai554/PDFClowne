@@ -34,6 +34,44 @@ QColor lineDominantColor(const PdfTextLine& line)
     return QColor(static_cast<int>(r / n), static_cast<int>(g / n), static_cast<int>(b / n));
 }
 
+bool lineUsesVisualFallback(const PdfTextLine& line)
+{
+    for (const PdfTextRun& run : line.runs) {
+        if (run.editability == QStringLiteral("visualEditable")
+            || run.sourceKind == QStringLiteral("extractedStructuredText")
+            || run.sourceKind == QStringLiteral("formXObjectText")
+            || run.sourceKind == QStringLiteral("nestedFormXObjectText")) {
+            return true;
+        }
+    }
+    return false;
+}
+
+QString linePlainText(const PdfTextLine& line)
+{
+    QString text;
+    for (const PdfTextRun& run : line.runs)
+        text += run.text;
+    return text.simplified();
+}
+
+bool isLikelySectionHeading(const PdfTextLine& line)
+{
+    const QString text = linePlainText(line);
+    if (text.size() < 8)
+        return false;
+    int letters = 0;
+    int uppercase = 0;
+    for (const QChar ch : text) {
+        if (!ch.isLetter())
+            continue;
+        ++letters;
+        if (ch.isUpper())
+            ++uppercase;
+    }
+    return letters >= 6 && uppercase >= letters * 0.75;
+}
+
 double colorDistance(const QColor& a, const QColor& b)
 {
     const double dr = a.red() - b.red();
@@ -140,13 +178,26 @@ QList<PdfTextBlock> TextBlockBuilder::groupLinesIntoBlocks(const QList<PdfTextLi
         // Baseline-to-baseline distance (prev is above in PDF Y-up, so prev.baseline > line.baseline)
         const double leading = prev.baseline - line.baseline;
         const double leadingRatio = prevFs > 0.0 ? leading / prevFs : 999.0;
+        const bool visualFallbackPair = lineUsesVisualFallback(prev) || lineUsesVisualFallback(line);
+        const double maxLeadingRatio = visualFallbackPair
+            ? 1.95
+            : PDFClowne::Heuristics::BLOCK_LEADING_RATIO_MAX;
+        const bool headingBoundary = isLikelySectionHeading(prev) || isLikelySectionHeading(line);
 
-        const bool leadingOk = leadingRatio >= PDFClowne::Heuristics::BLOCK_LEADING_RATIO_MIN
-            && leadingRatio <= PDFClowne::Heuristics::BLOCK_LEADING_RATIO_MAX;
+        const double minLeadingRatio = visualFallbackPair
+            ? 0.45
+            : PDFClowne::Heuristics::BLOCK_LEADING_RATIO_MIN;
+        const bool leadingOk = leadingRatio >= minLeadingRatio
+            && leadingRatio <= maxLeadingRatio;
 
         const double fsRatio = prevFs > 0.0 ? curFs / prevFs : 0.0;
-        const bool fontSizeOk = fsRatio >= PDFClowne::Heuristics::BLOCK_FONT_SIZE_RATIO_MIN
-            && fsRatio <= PDFClowne::Heuristics::BLOCK_FONT_SIZE_RATIO_MAX;
+        const double minFontRatio = visualFallbackPair
+            ? 0.75
+            : PDFClowne::Heuristics::BLOCK_FONT_SIZE_RATIO_MIN;
+        const double maxFontRatio = visualFallbackPair
+            ? 1.35
+            : PDFClowne::Heuristics::BLOCK_FONT_SIZE_RATIO_MAX;
+        const bool fontSizeOk = fsRatio >= minFontRatio && fsRatio <= maxFontRatio;
 
         const bool colorOk =
             colorDistance(lineDominantColor(prev), lineDominantColor(line))
@@ -156,10 +207,16 @@ QList<PdfTextBlock> TextBlockBuilder::groupLinesIntoBlocks(const QList<PdfTextLi
         const double overlapRight = std::min(prev.bboxPdf.right(), line.bboxPdf.right());
         const double overlap = std::max(0.0, overlapRight - overlapLeft);
         const double minWidth = std::min(prev.bboxPdf.width(), line.bboxPdf.width());
+        const double minOverlapRatio = visualFallbackPair
+            ? 0.12
+            : PDFClowne::Heuristics::BLOCK_HORIZ_OVERLAP_MIN;
         const bool overlapOk =
-            minWidth <= 0.0 || (overlap / minWidth) >= PDFClowne::Heuristics::BLOCK_HORIZ_OVERLAP_MIN;
+            minWidth <= 0.0 || (overlap / minWidth) >= minOverlapRatio;
+        const double leftDelta = std::abs(prev.bboxPdf.left() - line.bboxPdf.left());
+        const double leftTolerance = std::max(prevFs, curFs) * (visualFallbackPair ? 2.5 : 1.25);
+        const bool leftEdgeOk = leftDelta <= leftTolerance;
 
-        if (leadingOk && fontSizeOk && colorOk && overlapOk) {
+        if (!headingBoundary && leadingOk && fontSizeOk && colorOk && overlapOk && leftEdgeOk) {
             current.lines.append(line);
         } else {
             finalizeBlock(current);
@@ -186,6 +243,11 @@ void TextBlockBuilder::finalizeBlock(PdfTextBlock& block)
     QMap<QString, double> fontWeight;
     double wFontSize = 0.0, wR = 0.0, wG = 0.0, wB = 0.0, totalW = 0.0;
     bool anyEditable = false;
+    bool anyVisualEditable = false;
+    bool anyOcrEditable = false;
+    bool allNativeEditable = true;
+    double unicodeQualitySum = 0.0;
+    int unicodeQualityCount = 0;
 
     for (const PdfTextLine& line : block.lines) {
         lineBboxes.append(line.bboxPdf);
@@ -198,6 +260,18 @@ void TextBlockBuilder::finalizeBlock(PdfTextBlock& block)
             wB += run.color.blue() * w;
             totalW += w;
             if (run.isEditable) anyEditable = true;
+            if (run.editability == QStringLiteral("visualEditable"))
+                anyVisualEditable = true;
+            if (run.editability == QStringLiteral("ocrEditable"))
+                anyOcrEditable = true;
+            if (run.editability != QStringLiteral("nativeEditable"))
+                allNativeEditable = false;
+            unicodeQualitySum += run.unicodeQuality;
+            ++unicodeQualityCount;
+            if (block.sourceKind == QStringLiteral("directPageText")
+                && run.sourceKind != QStringLiteral("directPageText")) {
+                block.sourceKind = run.sourceKind;
+            }
         }
     }
 
@@ -230,8 +304,27 @@ void TextBlockBuilder::finalizeBlock(PdfTextBlock& block)
 
     block.alignment = detectAlignment(block);
     block.isEditable = anyEditable;
-    if (!anyEditable && !block.lines.isEmpty() && !block.lines.first().runs.isEmpty())
-        block.nonEditableReason = block.lines.first().runs.first().nonEditableReason;
+    block.unicodeQuality = unicodeQualityCount > 0
+        ? unicodeQualitySum / unicodeQualityCount
+        : 0.0;
+    if (anyEditable && (anyVisualEditable || !allNativeEditable)) {
+        block.editability = QStringLiteral("visualEditable");
+        block.editStrategy = QStringLiteral("persistentVisualReplacement");
+        if (block.nonEditableReason.isEmpty())
+            block.nonEditableReason = QStringLiteral("Edición visual persistente: no se reescribirá el stream original.");
+    } else if (anyEditable) {
+        block.editability = QStringLiteral("nativeEditable");
+        block.editStrategy = QStringLiteral("nativeStreamRewrite");
+    } else {
+        block.editability = anyOcrEditable
+            ? QStringLiteral("ocrEditable")
+            : QStringLiteral("notEditable");
+        block.editStrategy = anyOcrEditable
+            ? QStringLiteral("ocrLayerReplacement")
+            : QStringLiteral("unsupported");
+        if (!block.lines.isEmpty() && !block.lines.first().runs.isEmpty())
+            block.nonEditableReason = block.lines.first().runs.first().nonEditableReason;
+    }
 
     block.blockId = QString("blk_p%1_x%2_y%3")
         .arg(block.pageNumber)

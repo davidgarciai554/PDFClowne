@@ -38,7 +38,7 @@ QImage PdfExtractionDebugRenderer::drawTextRunBoxes(const QImage& pageImage,
     QPainter painter(&result);
     painter.setRenderHint(QPainter::Antialiasing, false);
 
-    QPen pen(QColor(220, 30, 30, 200), 1.0);
+    QPen pen(QColor(255, 0, 0, 200), 1.0);
     pen.setCosmetic(true);
     painter.setPen(pen);
     painter.setBrush(Qt::NoBrush);

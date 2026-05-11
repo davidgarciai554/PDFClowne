@@ -1,10 +1,12 @@
 #include "EditingController.h"
 
-#include "PdfPageObjectExtractor.h"
 #include "PdfiumInitializer.h"
 
+#include <QFileInfo>
+#include <QElapsedTimer>
 #include <QFont>
 #include <QFontMetricsF>
+#include <QMetaType>
 #include <QRectF>
 #include <Qt>
 
@@ -18,6 +20,7 @@ EditingController::EditingController(QObject* parent)
     : QObject(parent)
     , m_model(this)
 {
+    qRegisterMetaType<QList<PdfTextBlock>>("QList<PDFClowne::Editing::PdfTextBlock>");
 }
 
 EditingController::~EditingController()
@@ -47,6 +50,41 @@ TextBlockModel* EditingController::currentPageBlocks()
     return &m_model;
 }
 
+bool EditingController::isBusy() const
+{
+    return m_extractionThread || m_saveThread;
+}
+
+bool EditingController::isExtracting() const
+{
+    return m_extractionThread != nullptr;
+}
+
+bool EditingController::isSaving() const
+{
+    return m_saveThread != nullptr;
+}
+
+bool EditingController::hasPendingEdits() const
+{
+    return !m_editedTexts.isEmpty();
+}
+
+int EditingController::progress() const
+{
+    return m_progress;
+}
+
+QString EditingController::statusMessage() const
+{
+    return m_statusMessage;
+}
+
+bool EditingController::scannedDocumentSuspected() const
+{
+    return m_scannedDocumentSuspected;
+}
+
 bool EditingController::loadDocument(const QString& filePath)
 {
     return loadDocumentWithPassword(filePath, {});
@@ -73,6 +111,8 @@ bool EditingController::loadDocumentWithPassword(const QString& filePath, const 
     }
 
     m_doc = doc;
+    setScannedDocumentSuspected(false);
+    setProgress(0, tr("Documento listo para edición"));
     setReady(true);
     return true;
 }
@@ -84,13 +124,71 @@ void EditingController::extractBlocksForPage(int pageNumber)
         return;
     }
 
-    PdfPageObjectExtractor extractor(m_doc);
-    const QList<PdfTextRun> runs = extractor.extractTextRunsFromPage(pageNumber);
-    const QList<PdfTextBlock> blocks = m_builder.buildBlocks(runs, pageNumber);
-    m_model.setBlocks(blocks);
+    if (m_extractionThread) {
+        spdlog::warn("EditingController::extractBlocksForPage ignored while extraction is already running");
+        emit editWarning(tr("Ya hay una extracción de texto en curso."));
+        return;
+    }
 
-    spdlog::debug("EditingController: {} blocks extracted from page {}", blocks.size(), pageNumber);
-    emit pageBlocksChanged();
+    if (m_pageBlockCache.contains(pageNumber)) {
+        const QList<PdfTextBlock> blocks = m_pageBlockCache.value(pageNumber);
+        m_model.setBlocks(blocks);
+        setScannedDocumentSuspected(m_scannedPageCache.value(pageNumber, false));
+        setProgress(100, tr("Bloques de texto cargados desde caché"));
+        spdlog::info("EditingController: cache hit for page {} ({} blocks)", pageNumber, blocks.size());
+        emit pageBlocksChanged();
+        return;
+    }
+
+    auto* elapsed = new QElapsedTimer;
+    elapsed->start();
+    auto* worker = new PdfExtractionWorker(m_doc, pageNumber);
+    auto* thread = new QThread(this);
+    m_extractionThread = thread;
+    worker->moveToThread(thread);
+    setProgress(0, tr("Iniciando extracción de texto"));
+    emit busyChanged();
+
+    connect(thread, &QThread::started, worker, &PdfExtractionWorker::run);
+    connect(worker, &PdfExtractionWorker::progressChanged, this,
+            [this](int progress, const QString& message) {
+                setProgress(progress, message);
+            });
+    connect(worker, &PdfExtractionWorker::finished, this,
+            [this, elapsed](int pageNumber, const QList<PdfTextBlock>& blocks, bool scannedCandidate) {
+                m_pageBlockCache.insert(pageNumber, blocks);
+                m_scannedPageCache.insert(pageNumber, scannedCandidate);
+                m_model.setBlocks(blocks);
+                setScannedDocumentSuspected(scannedCandidate);
+                if (scannedCandidate) {
+                    const QString msg = tr("No se ha encontrado texto editable en esta página. Puede requerir OCR.");
+                    emit ocrSuggested(msg);
+                    setProgress(100, msg);
+                }
+                spdlog::info("EditingController: {} blocks extracted from page {}",
+                             blocks.size(), pageNumber);
+                spdlog::info("EditingController: edit extraction page {} completed in {} ms",
+                             pageNumber, elapsed ? elapsed->elapsed() : -1);
+                delete elapsed;
+                emit pageBlocksChanged();
+                if (m_extractionThread)
+                    m_extractionThread->quit();
+            });
+    connect(worker, &PdfExtractionWorker::failed, this,
+            [this, elapsed](const QString& message) {
+                spdlog::error("EditingController extraction failed: {}", message.toStdString());
+                spdlog::warn("EditingController: edit extraction failed after {} ms",
+                             elapsed ? elapsed->elapsed() : -1);
+                delete elapsed;
+                emit extractionError(message);
+                setProgress(0, message);
+                if (m_extractionThread)
+                    m_extractionThread->quit();
+            });
+    connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(thread, &QThread::finished, this, &EditingController::clearExtractionThread);
+
+    thread->start();
 }
 
 void EditingController::selectBlock(const QString& blockId)
@@ -100,13 +198,20 @@ void EditingController::selectBlock(const QString& blockId)
 
 void EditingController::closeDocument()
 {
+    clearExtractionThread();
+    clearSaveThread();
+
     if (!m_doc) return;
 
     m_model.clear();
     m_selectedBlockId.clear();
     m_editedTexts.clear();
     m_editedPages.clear();
+    m_pageBlockCache.clear();
+    m_scannedPageCache.clear();
     m_loadedFilePath.clear();
+    setScannedDocumentSuspected(false);
+    setProgress(0, {});
 
     {
         PDFIUM_LOCK();
@@ -127,7 +232,62 @@ const PdfTextBlock* EditingController::findBlock(const QString& blockId) const
 {
     for (const PdfTextBlock& b : m_model.blocks())
         if (b.blockId == blockId) return &b;
+    for (auto pageIt = m_pageBlockCache.cbegin(); pageIt != m_pageBlockCache.cend(); ++pageIt) {
+        for (const PdfTextBlock& b : pageIt.value()) {
+            if (b.blockId == blockId)
+                return &b;
+        }
+    }
     return nullptr;
+}
+
+void EditingController::setProgress(int progress, const QString& message)
+{
+    const int bounded = qBound(0, progress, 100);
+    const bool progressChangedValue = m_progress != bounded;
+    const bool messageChangedValue = m_statusMessage != message;
+    m_progress = bounded;
+    m_statusMessage = message;
+    if (progressChangedValue)
+        emit progressChanged();
+    if (messageChangedValue)
+        emit statusMessageChanged();
+}
+
+void EditingController::setScannedDocumentSuspected(bool suspected)
+{
+    if (m_scannedDocumentSuspected == suspected)
+        return;
+    m_scannedDocumentSuspected = suspected;
+    emit scannedDocumentSuspectedChanged();
+}
+
+void EditingController::clearExtractionThread()
+{
+    if (!m_extractionThread)
+        return;
+    QThread* thread = m_extractionThread;
+    m_extractionThread = nullptr;
+    if (thread->isRunning()) {
+        thread->quit();
+        thread->wait();
+    }
+    thread->deleteLater();
+    emit busyChanged();
+}
+
+void EditingController::clearSaveThread()
+{
+    if (!m_saveThread)
+        return;
+    QThread* thread = m_saveThread;
+    m_saveThread = nullptr;
+    if (thread->isRunning()) {
+        thread->quit();
+        thread->wait();
+    }
+    thread->deleteLater();
+    emit busyChanged();
 }
 
 qreal EditingController::reflowText(const QString& blockId, const QString& newText)
@@ -135,6 +295,12 @@ qreal EditingController::reflowText(const QString& blockId, const QString& newTe
     const PdfTextBlock* block = findBlock(blockId);
     if (!block || block->bboxPdf.width() <= 0.0)
         return 0.0;
+    if (block && !block->isEditable) {
+        emit editWarning(block->nonEditableReason.isEmpty()
+                             ? tr("Este bloque no es editable.")
+                             : block->nonEditableReason);
+        return 0.0;
+    }
 
     QFont font(block->dominantFontName);
     font.setPointSizeF(block->dominantFontSize > 0.0 ? block->dominantFontSize : 12.0);
@@ -155,10 +321,29 @@ qreal EditingController::reflowText(const QString& blockId, const QString& newTe
 
 void EditingController::updateBlockText(const QString& blockId, const QString& newText)
 {
-    m_editedTexts[blockId] = newText;
     const PdfTextBlock* block = findBlock(blockId);
+    if (block && !block->isEditable) {
+        emit editWarning(block->nonEditableReason.isEmpty()
+                             ? tr("Este bloque no es editable.")
+                             : block->nonEditableReason);
+        return;
+    }
+
+    const bool wasDirty = hasPendingEdits();
+    const QString original = blockText(blockId);
+    if (newText == original) {
+        m_editedTexts.remove(blockId);
+        m_editedPages.remove(blockId);
+        if (wasDirty != hasPendingEdits())
+            emit pendingEditsChanged();
+        return;
+    }
+
+    m_editedTexts[blockId] = newText;
     if (block)
         m_editedPages[blockId] = block->pageNumber;
+    if (!wasDirty)
+        emit pendingEditsChanged();
 }
 
 QString EditingController::blockText(const QString& blockId) const
@@ -201,58 +386,71 @@ bool EditingController::saveDocument(const QString& outputPath, bool incremental
         emit saveError(QStringLiteral("No document loaded"));
         return false;
     }
+    if (outputPath.trimmed().isEmpty()) {
+        emit saveError(QStringLiteral("Output path is required for safe PDF editing saves"));
+        return false;
+    }
+    if (m_saveThread || m_extractionThread) {
+        emit saveError(tr("Hay una operación de edición en curso."));
+        return false;
+    }
+    if (m_editedTexts.isEmpty()) {
+        emit saveError(tr("No hay cambios de texto pendientes para guardar."));
+        return false;
+    }
 
-    // Re-extract blocks for each dirty page so we have fresh pageObjectIndex data
-    const QSet<int> dirtyPages(m_editedPages.cbegin(), m_editedPages.cend());
-    for (int page : dirtyPages)
-        extractBlocksForPage(page);
+    const QString target = outputPath.trimmed();
+    if (QFileInfo(target).canonicalFilePath() == QFileInfo(m_loadedFilePath).canonicalFilePath()) {
+        emit saveError(QStringLiteral("Refusing to overwrite the loaded PDF without explicit safe replacement"));
+        return false;
+    }
 
-    // Write back each edited block
     const PdfWriteBackEngine::SaveMode mode = incremental
         ? PdfWriteBackEngine::SaveMode::Incremental
         : PdfWriteBackEngine::SaveMode::FullRewrite;
 
-    for (auto it = m_editedTexts.cbegin(); it != m_editedTexts.cend(); ++it) {
-        const QString& blockId = it.key();
-        const QString& newText = it.value();
-        const PdfTextBlock* block = findBlock(blockId);
-        if (!block) {
-            spdlog::warn("EditingController::saveDocument: block '{}' not found,"
-                         " skipping", blockId.toStdString());
-            continue;
-        }
+    auto* worker = new PdfSaveWorker(m_doc, target, mode, m_editedTexts, m_editedPages, m_pageBlockCache);
+    auto* thread = new QThread(this);
+    m_saveThread = thread;
+    worker->moveToThread(thread);
+    setProgress(0, tr("Iniciando guardado"));
+    emit busyChanged();
 
-        bool fallbackUsed = false;
-        const QString resolvedFont = resolveFont(blockId, newText, fallbackUsed);
-        const FontFallbackResult fontResult{
-            resolvedFont,
-            block->dominantFontSize,
-            fallbackUsed,
-            {}
-        };
+    connect(thread, &QThread::started, worker, &PdfSaveWorker::run);
+    connect(worker, &PdfSaveWorker::progressChanged, this,
+            [this](int progress, const QString& message) {
+                setProgress(progress, message);
+            });
+    connect(worker, &PdfSaveWorker::finished, this,
+            [this](const QString& savedPath) {
+                spdlog::info("EditingController::saveDocument: saved {} block(s) to '{}'",
+                             m_editedTexts.size(), savedPath.toStdString());
+                clearPendingEdits();
+                emit saveCompleted(savedPath);
+                if (m_saveThread)
+                    m_saveThread->quit();
+            });
+    connect(worker, &PdfSaveWorker::failed, this,
+            [this](const QString& message) {
+                emit saveError(message);
+                setProgress(0, message);
+                if (m_saveThread)
+                    m_saveThread->quit();
+            });
+    connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(thread, &QThread::finished, this, &EditingController::clearSaveThread);
 
-        if (!m_writeBack.writeBackBlock(m_doc, block->pageNumber, *block, newText, fontResult)) {
-            const QString msg = QStringLiteral("Failed to write back block '%1'").arg(blockId);
-            spdlog::error("EditingController::saveDocument: {}", msg.toStdString());
-            emit saveError(msg);
-            return false;
-        }
-    }
+    thread->start();
+    return true;
+}
 
-    // Determine output path (default: overwrite original if none given)
-    const QString target = outputPath.isEmpty() ? m_loadedFilePath : outputPath;
-    if (!m_writeBack.saveTo(m_doc, target, mode)) {
-        const QString msg = QStringLiteral("Failed to save to '%1'").arg(target);
-        emit saveError(msg);
-        return false;
-    }
-
-    spdlog::info("EditingController::saveDocument: saved {} block(s) to '{}'",
-                 m_editedTexts.size(), target.toStdString());
+void EditingController::clearPendingEdits()
+{
+    const bool wasDirty = hasPendingEdits();
     m_editedTexts.clear();
     m_editedPages.clear();
-    emit saveCompleted(target);
-    return true;
+    if (wasDirty)
+        emit pendingEditsChanged();
 }
 
 } // namespace PDFClowne::Editing

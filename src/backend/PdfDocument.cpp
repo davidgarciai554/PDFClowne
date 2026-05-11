@@ -1,4 +1,5 @@
 #include "PdfDocument.h"
+#include "PdfEditableLayout.h"
 
 #include <QBuffer>
 #include <QByteArray>
@@ -1428,6 +1429,39 @@ QVector<fz_quad> quadsFromJson(const QJsonArray &paths)
     return quads;
 }
 
+QVector<fz_point> pointsFromJson(const QJsonArray &pointsJson)
+{
+    QVector<fz_point> points;
+    points.reserve(pointsJson.size());
+    for (const QJsonValue &value : pointsJson) {
+        const QJsonArray point = value.toArray();
+        if (point.size() < 2)
+            continue;
+        points.append(fz_make_point(static_cast<float>(point.at(0).toDouble()),
+                                    static_cast<float>(point.at(1).toDouble())));
+    }
+    return points;
+}
+
+fz_rect rectFromPoints(const QVector<fz_point> &points, const fz_rect &fallback)
+{
+    if (points.isEmpty())
+        return fallback;
+
+    fz_rect rect = fz_make_rect(points.first().x, points.first().y, points.first().x, points.first().y);
+    for (const fz_point &point : points) {
+        rect.x0 = std::min(rect.x0, point.x);
+        rect.y0 = std::min(rect.y0, point.y);
+        rect.x1 = std::max(rect.x1, point.x);
+        rect.y1 = std::max(rect.y1, point.y);
+    }
+    rect.x0 -= 2.0f;
+    rect.y0 -= 2.0f;
+    rect.x1 += 2.0f;
+    rect.y1 += 2.0f;
+    return rect;
+}
+
 fz_rect unionQuadRects(const QVector<fz_quad> &quads)
 {
     if (quads.isEmpty())
@@ -1506,6 +1540,92 @@ void applyHighlightAnnotation(fz_context *ctx, pdf_page *page, const QJsonObject
     pdf_update_annot(ctx, annot);
 }
 
+void applyTextMarkupAnnotation(fz_context *ctx, pdf_page *page, const QJsonObject &edit, enum pdf_annot_type annotType)
+{
+    QVector<fz_quad> quads = quadsFromJson(edit.value(QStringLiteral("quads")).toArray());
+    if (quads.isEmpty()) {
+        const fz_rect rect = rectFromJson(edit, fz_make_rect(72, 72, 144, 88));
+        fz_quad quad;
+        quad.ul = fz_make_point(rect.x0, rect.y0);
+        quad.ur = fz_make_point(rect.x1, rect.y0);
+        quad.lr = fz_make_point(rect.x1, rect.y1);
+        quad.ll = fz_make_point(rect.x0, rect.y1);
+        quads.append(quad);
+    }
+
+    const QColor color = colorFromJson(edit, QStringLiteral("color"), QColor(defaultAnnotationColor()));
+    const double opacity = std::clamp(jsonNumber(edit, QStringLiteral("opacity"), 0.80), 0.05, 1.0);
+    float colorComponents[3] = {};
+    colorToPdfComponents(color, colorComponents);
+
+    pdf_annot *annot = pdf_create_annot(ctx, page, annotType);
+    pdf_set_annot_flags(ctx, annot, PDF_ANNOT_IS_PRINT);
+    pdf_set_annot_rect(ctx, annot, unionQuadRects(quads));
+    pdf_set_annot_quad_points(ctx, annot, quads.size(), quads.constData());
+    pdf_set_annot_color(ctx, annot, 3, colorComponents);
+    pdf_set_annot_opacity(ctx, annot, static_cast<float>(opacity));
+    pdf_set_annot_contents(ctx, annot, "PDFClowne text markup");
+    pdf_update_annot(ctx, annot);
+}
+
+void applyStickyNoteAnnotation(fz_context *ctx, pdf_page *page, const QJsonObject &edit)
+{
+    const fz_rect rect = rectFromJson(edit, fz_make_rect(72, 72, 96, 96));
+    const QColor color = colorFromJson(edit, QStringLiteral("color"), QColor(QStringLiteral("#FFE45A")));
+    float colorComponents[3] = {};
+    colorToPdfComponents(color, colorComponents);
+
+    pdf_annot *annot = pdf_create_annot(ctx, page, PDF_ANNOT_TEXT);
+    pdf_set_annot_rect(ctx, annot, rect);
+    pdf_set_annot_flags(ctx, annot, PDF_ANNOT_IS_PRINT);
+    pdf_set_annot_color(ctx, annot, 3, colorComponents);
+    pdf_set_annot_contents(ctx, annot, edit.value(QStringLiteral("text")).toString(QStringLiteral("Nota")).toUtf8().constData());
+    pdf_update_annot(ctx, annot);
+}
+
+void applyShapeAnnotation(fz_context *ctx, pdf_page *page, const QJsonObject &edit, enum pdf_annot_type annotType)
+{
+    const fz_rect rect = rectFromJson(edit, fz_make_rect(72, 72, 144, 120));
+    const QColor color = colorFromJson(edit, QStringLiteral("color"), QColor(defaultAnnotationColor()));
+    const double opacity = std::clamp(jsonNumber(edit, QStringLiteral("opacity"), 1.0), 0.05, 1.0);
+    const double borderWidth = std::clamp(jsonNumber(edit, QStringLiteral("borderWidth"), 1.5), 0.25, 24.0);
+    float colorComponents[3] = {};
+    colorToPdfComponents(color, colorComponents);
+
+    pdf_annot *annot = pdf_create_annot(ctx, page, annotType);
+    pdf_set_annot_rect(ctx, annot, rect);
+    pdf_set_annot_flags(ctx, annot, PDF_ANNOT_IS_PRINT);
+    pdf_set_annot_color(ctx, annot, 3, colorComponents);
+    pdf_set_annot_border_width(ctx, annot, static_cast<float>(borderWidth));
+    pdf_set_annot_opacity(ctx, annot, static_cast<float>(opacity));
+    pdf_update_annot(ctx, annot);
+}
+
+void applyInkAnnotation(fz_context *ctx, pdf_page *page, const QJsonObject &edit)
+{
+    QVector<fz_point> points = pointsFromJson(edit.value(QStringLiteral("points")).toArray());
+    if (points.size() < 2) {
+        const fz_rect rect = rectFromJson(edit, fz_make_rect(72, 72, 144, 120));
+        points = { fz_make_point(rect.x0, rect.y0), fz_make_point(rect.x1, rect.y1) };
+    }
+
+    const QColor color = colorFromJson(edit, QStringLiteral("color"), QColor(defaultAnnotationColor()));
+    const double opacity = std::clamp(jsonNumber(edit, QStringLiteral("opacity"), 1.0), 0.05, 1.0);
+    const double borderWidth = std::clamp(jsonNumber(edit, QStringLiteral("borderWidth"), 1.8), 0.25, 24.0);
+    float colorComponents[3] = {};
+    colorToPdfComponents(color, colorComponents);
+    const int count = points.size();
+
+    pdf_annot *annot = pdf_create_annot(ctx, page, PDF_ANNOT_INK);
+    pdf_set_annot_rect(ctx, annot, rectFromPoints(points, fz_make_rect(72, 72, 144, 120)));
+    pdf_set_annot_flags(ctx, annot, PDF_ANNOT_IS_PRINT);
+    pdf_set_annot_color(ctx, annot, 3, colorComponents);
+    pdf_set_annot_border_width(ctx, annot, static_cast<float>(borderWidth));
+    pdf_set_annot_opacity(ctx, annot, static_cast<float>(opacity));
+    pdf_set_annot_ink_list(ctx, annot, 1, &count, points.constData());
+    pdf_update_annot(ctx, annot);
+}
+
 void applyAnnotationEdits(fz_context *ctx, pdf_document *doc, int pageCount, const QJsonArray &annotationEdits)
 {
     for (const QJsonValue &value : annotationEdits) {
@@ -1524,6 +1644,18 @@ void applyAnnotationEdits(fz_context *ctx, pdf_document *doc, int pageCount, con
                 applyFreeTextAnnotation(ctx, page, edit);
             else if (type == QStringLiteral("highlight"))
                 applyHighlightAnnotation(ctx, page, edit);
+            else if (type == QStringLiteral("underline"))
+                applyTextMarkupAnnotation(ctx, page, edit, PDF_ANNOT_UNDERLINE);
+            else if (type == QStringLiteral("strikeout"))
+                applyTextMarkupAnnotation(ctx, page, edit, PDF_ANNOT_STRIKE_OUT);
+            else if (type == QStringLiteral("stickyNote"))
+                applyStickyNoteAnnotation(ctx, page, edit);
+            else if (type == QStringLiteral("rect"))
+                applyShapeAnnotation(ctx, page, edit, PDF_ANNOT_SQUARE);
+            else if (type == QStringLiteral("circle"))
+                applyShapeAnnotation(ctx, page, edit, PDF_ANNOT_CIRCLE);
+            else if (type == QStringLiteral("ink"))
+                applyInkAnnotation(ctx, page, edit);
             else if (type == QStringLiteral("replaceTextBlock"))
                 applyReplaceTextBlockEdit(ctx, doc, page, edit);
         }
@@ -2577,6 +2709,24 @@ QString PdfDocument::textElementsForPage(int pageIndex)
     return QString::fromUtf8(QJsonDocument(elements).toJson(QJsonDocument::Compact));
 }
 
+QString PdfDocument::extractEditableLayout(int pageIndex)
+{
+    QJsonArray elements;
+    const QJsonDocument document = QJsonDocument::fromJson(textElementsForPage(pageIndex).toUtf8());
+    if (document.isArray())
+        elements = document.array();
+
+    PdfEditableLayout layout = PdfEditableLayout::fromJsonElements(pageIndex, elements);
+    int nativeTextLength = 0;
+    for (const QJsonValue &value : elements)
+        nativeTextLength += value.toObject().value(QStringLiteral("text")).toString().trimmed().length();
+
+    if (nativeTextLength < 4)
+        layout.markOcrCandidate(QStringLiteral("native-text-insufficient"));
+
+    return QString::fromUtf8(QJsonDocument(layout.toJson()).toJson(QJsonDocument::Compact));
+}
+
 QString PdfDocument::textEditAt(int pageIndex, const QPointF &point)
 {
     QJsonObject result;
@@ -2724,6 +2874,82 @@ void PdfDocument::rebuildNavigationData()
 bool PdfDocument::saveRotatedCopy(const QString &source, const QString &target, const QString &rotationsJson)
 {
     return saveEditedCopy(source, target, QStringLiteral("[]"), rotationsJson, m_password, QStringLiteral("[]"));
+}
+
+void PdfDocument::setPendingEditJournal(const QString &journalJson)
+{
+    const QString normalized = journalJson.trimmed().isEmpty() ? QStringLiteral("[]") : journalJson;
+    if (m_pendingEditJournalJson == normalized)
+        return;
+
+    m_pendingEditJournalJson = normalized;
+    emit pendingEditJournalChanged();
+}
+
+bool PdfDocument::saveEditedCopy(const QString &outPath)
+{
+    return saveEditedCopy(m_filePath,
+                          outPath,
+                          QStringLiteral("[]"),
+                          QStringLiteral("[]"),
+                          m_password,
+                          m_pendingEditJournalJson);
+}
+
+bool PdfDocument::replaceOriginalSafely(bool createBackup)
+{
+    const QString sourcePath = toLocalPath(m_filePath);
+    const QFileInfo sourceInfo(sourcePath);
+    m_errorMessage.clear();
+    emit errorMessageChanged();
+
+    if (!sourceInfo.exists() || !sourceInfo.isFile()) {
+        m_errorMessage = tr("No loaded PDF can be replaced safely.");
+        emit errorMessageChanged();
+        return false;
+    }
+
+    const QString tempPath = tempPdfPathFor(sourceInfo.absoluteFilePath());
+    if (tempPath.isEmpty()) {
+        m_errorMessage = tr("Could not create a temporary PDF path.");
+        emit errorMessageChanged();
+        return false;
+    }
+
+    if (!saveEditedCopy(sourceInfo.absoluteFilePath(),
+                        tempPath,
+                        QStringLiteral("[]"),
+                        QStringLiteral("[]"),
+                        m_password,
+                        m_pendingEditJournalJson)) {
+        QFile::remove(tempPath);
+        return false;
+    }
+
+    const QFileInfo tempInfo(tempPath);
+    if (!tempInfo.exists() || tempInfo.size() <= 0) {
+        QFile::remove(tempPath);
+        m_errorMessage = tr("The edited PDF copy could not be validated.");
+        emit errorMessageChanged();
+        return false;
+    }
+
+    if (createBackup) {
+        const QString backupPath = sourceInfo.absoluteDir().absoluteFilePath(
+            sourceInfo.completeBaseName() + QStringLiteral(".pdfclowne-user-backup.pdf"));
+        QFile::remove(backupPath);
+        QFile::copy(sourceInfo.absoluteFilePath(), backupPath);
+    }
+
+    QString error;
+    if (!replaceFileWithBackup(sourceInfo.absoluteFilePath(), tempPath, &error)) {
+        QFile::remove(tempPath);
+        m_errorMessage = error;
+        emit errorMessageChanged();
+        return false;
+    }
+
+    return true;
 }
 
 bool PdfDocument::saveEditedCopy(const QString &source,

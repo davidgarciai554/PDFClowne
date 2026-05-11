@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Shapes
+import "editor"
 import PDFClowne
 
 FocusScope {
@@ -70,8 +71,14 @@ FocusScope {
     property var searchResultActivatedAction: null
     property string selectionGeometryJson: "[]"
     property int selectionPageIndex: -1
-    property bool editModeEnabled: false
+    property string viewMode: "view"
+    readonly property bool editModeEnabled: viewMode === "edit"
+    readonly property bool formModeEnabled: viewMode === "forms"
     property var editingController: null
+    property var formController: null
+    property string selectedFormFieldId: ""
+
+    signal formFieldSelected(var field)
     property string editTool: "text"
     property var editAnnotations: []
     property string editFontFamily: "Arial"
@@ -94,12 +101,50 @@ FocusScope {
     property var textBlocksForPageAction: null
     property var commitTextEditAction: null
     property var commitHighlightAction: null
+    property var createAnnotationAction: null
     property var eraseAnnotationAction: null
     property var movePageAction: null
     property var deletePageAction: null
     property var rotatePageAction: null
     readonly property bool searchPanelAvailable: searchQuery.trim().length > 0 || searchResults.length > 0 || sidePanelMode === "search"
     readonly property bool inlineTextEditingActive: !!activeTextDraft
+    readonly property real editOverlayPaddingPx: 2
+    readonly property real editHitPaddingPx: 4
+    readonly property real editMinimumEditorHeightPx: 14
+    readonly property bool loadingEditableText: editModeEnabled
+                                                && editingController !== null
+                                                && editingController.busy
+    readonly property int visibleEditableBlockCount: editingController
+                                                     ? parsedEditableRegionCount()
+                                                     : 0
+    readonly property int recoverableTextBlockCount: editingController
+                                                     ? parsedEditableRegionCount()
+                                                     : 0
+    readonly property bool editableTextReady: editModeEnabled
+                                              && editingController !== null
+                                              && editingController.ready
+                                              && !loadingEditableText
+                                              && visibleEditableBlockCount > 0
+    readonly property bool noEditableTextFound: editModeEnabled
+                                                && editingController !== null
+                                                && editingController.ready
+                                                && !loadingEditableText
+                                                && recoverableTextBlockCount === 0
+                                                && !inlineTextEditingActive
+                                                && !hasVisibleFreeTextForPage(currentPageIndex)
+    readonly property bool editableTextError: false
+    property bool editDebugGeometry: false
+
+    function parsedEditableRegionCount() {
+        if (!editingController)
+            return 0
+        try {
+            var regions = JSON.parse(editingController.editableRegionsJson || "[]")
+            return regions && regions.length !== undefined ? regions.length : 0
+        } catch(e) {
+            return 0
+        }
+    }
 
     Keys.priority: Keys.BeforeItem
     Keys.onShortcutOverride: function(event) {
@@ -234,10 +279,7 @@ FocusScope {
     }
     onActiveTextDraftChanged: {
         if (activeTextDraft)
-            Qt.callLater(function() {
-                draftTextArea.cursorPosition = Math.max(0, Math.min(String(activeTextDraft.text || "").length, Number(activeTextDraft.cursorPosition || 0)))
-                draftTextArea.forceActiveFocus()
-            })
+            root.forceActiveFocus()
     }
     Component.onCompleted: {
         syncPageCache()
@@ -941,153 +983,125 @@ FocusScope {
                                 }
                             }
 
-                            Item {
-                                id: pdfTextBlockOverlay
+                            PdfEditOverlay {
+                                id: pdfEditOverlay
                                 anchors.fill: parent
                                 visible: pageImage.status === Image.Ready
                                          && root.editModeEnabled
                                          && root.editTool === "text"
-                                z: 3
+                                         && root.editingController !== null
+                                z: 4
+                                controller: root.editingController
+                                pageIndex: pageFrame.pageIndex
+                                pageScale: pagePaper.pageScale
+                                debugRegions: root.editDebugGeometry
+                                accentColor: Theme.accent
+                            }
+                            Rectangle {
+                                id: phase5ProgressPanel
+                                anchors {
+                                    horizontalCenter: parent.horizontalCenter
+                                    top: parent.top
+                                    topMargin: 12
+                                }
+                                width: Math.min(parent.width - 32, 360)
+                                height: progressColumn.implicitHeight + 18
+                                radius: Theme.radius
+                                color: Theme.surface
+                                border.color: Theme.border
+                                border.width: 1
+                                visible: root.editModeEnabled
+                                         && root.editingController !== null
+                                         && root.editingController.busy
+                                z: 8
 
-                                Repeater {
-                                    model: root.pageTextBlocks(pageFrame.pageIndex)
+                                Column {
+                                    id: progressColumn
+                                    anchors {
+                                        left: parent.left
+                                        right: parent.right
+                                        verticalCenter: parent.verticalCenter
+                                        leftMargin: 12
+                                        rightMargin: 12
+                                    }
+                                    spacing: 6
 
-                                    Rectangle {
-                                        required property var modelData
-                                        readonly property var mappedRect: root.mapPageRect(modelData.rect || {},
-                                                                                           pageFrame.pageSize,
-                                                                                           pagePaper,
-                                                                                           pageFrame.pageRotation)
-                                        visible: pdfTextBlockOverlay.visible
-                                                 && !root.hasReplacementForBlock(pageFrame.pageIndex, modelData.blockKey)
-                                                 && (!root.activeTextDraft || String(root.activeTextDraft.blockKey || "") !== String(modelData.blockKey || ""))
-                                        x: mappedRect.x
-                                        y: mappedRect.y
-                                        width: Math.max(20, mappedRect.width)
-                                        height: Math.max(16, mappedRect.height)
-                                        color: "transparent"
-                                        border.color: root.colorWithOpacity(Theme.accent, 0.58)
-                                        border.width: 1
+                                    Text {
+                                        width: parent.width
+                                        text: root.editingController && root.editingController.statusMessage.length > 0
+                                              ? root.editingController.statusMessage
+                                              : qsTr("Processing PDF edit operation")
+                                        color: Theme.text
+                                        font.pixelSize: 11
+                                        elide: Text.ElideRight
+                                    }
 
-                                        Repeater {
-                                            model: root.draftLineMaskRects(modelData,
-                                                                           pageFrame.pageSize,
-                                                                           pagePaper,
-                                                                           pageFrame.pageRotation)
-
-                                            Rectangle {
-                                                required property var modelData
-                                                readonly property var lineRect: modelData
-                                                x: lineRect.x - parent.mappedRect.x
-                                                y: lineRect.y - parent.mappedRect.y
-                                                width: Math.max(1, lineRect.width)
-                                                height: Math.max(1, lineRect.height)
-                                                color: "transparent"
-                                                border.color: root.colorWithOpacity(Theme.accent, 0.28)
-                                                border.width: 1
-                                            }
-                                        }
-
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            enabled: parent.visible
-                                            hoverEnabled: true
-                                            cursorShape: Qt.IBeamCursor
-                                            onClicked: function(mouse) {
-                                                mouse.accepted = true
-                                                root.forceActiveFocus()
-                                                root.activateTextBlock(pageFrame.pageIndex, modelData)
-                                            }
-                                        }
+                                    ProgressBar {
+                                        width: parent.width
+                                        from: 0
+                                        to: 100
+                                        value: root.editingController ? root.editingController.progress : 0
                                     }
                                 }
                             }
 
-                            Item {
-                                id: phase5BlockOverlay
+                            Rectangle {
+                                id: phase5OcrSuggestion
+                                anchors {
+                                    horizontalCenter: parent.horizontalCenter
+                                    top: phase5ProgressPanel.visible ? phase5ProgressPanel.bottom : parent.top
+                                    topMargin: 12
+                                }
+                                width: Math.min(parent.width - 32, 440)
+                                height: ocrSuggestionText.implicitHeight + 18
+                                radius: Theme.radius
+                                color: Theme.surface
+                                border.color: Theme.border
+                                border.width: 1
+                                visible: root.editModeEnabled
+                                         && root.editingController !== null
+                                         && root.noEditableTextFound
+                                         && root.editingController.scannedDocumentSuspected
+                                z: 8
+
+                                Text {
+                                    id: ocrSuggestionText
+                                    anchors {
+                                        left: parent.left
+                                        right: parent.right
+                                        verticalCenter: parent.verticalCenter
+                                        leftMargin: 12
+                                        rightMargin: 12
+                                    }
+                                    text: qsTr("No editable text was found on this page. Try OCR before visual text editing.")
+                                    color: Theme.text
+                                    font.pixelSize: 11
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+
+                            FormOverlay {
+                                id: formOverlay
                                 anchors.fill: parent
                                 visible: pageImage.status === Image.Ready
-                                         && root.editModeEnabled
-                                         && root.editingController !== null
-                                         && root.editingController.ready
-                                         && pageFrame.pageIndex === root.currentPageIndex
-                                z: 4
-
-                                onVisibleChanged: {
-                                    if (visible)
-                                        root.editingController.extractBlocksForPage(pageFrame.pageIndex)
+                                         && root.formModeEnabled
+                                         && root.formController !== null
+                                z: 5
+                                formFields: root.pageFormFields(pageFrame.pageIndex)
+                                selectedFieldId: root.selectedFormFieldId
+                                mapRect: function(rect) {
+                                    return root.mapPageRect(rect || {},
+                                                            pageFrame.pageSize,
+                                                            pagePaper,
+                                                            pageFrame.pageRotation)
                                 }
-
-                                Repeater {
-                                    model: phase5BlockOverlay.visible
-                                           ? root.editingController.currentPageBlocks : null
-
-                                    delegate: Item {
-                                        id: blockDelegate
-                                        required property string blockId
-                                        required property bool isEditable
-                                        required property double bboxX
-                                        required property double bboxY
-                                        required property double bboxWidth
-                                        required property double bboxHeight
-                                        required property string dominantFontName
-                                        required property double dominantFontSize
-                                        required property string plainText
-
-                                        readonly property var ps: pageFrame.pageSize
-                                        readonly property real scX: ps.width > 0
-                                            ? pagePaper.width / ps.width : 1.0
-                                        readonly property real scY: ps.height > 0
-                                            ? pagePaper.height / ps.height : 1.0
-
-                                        property real reflowedHeightPt: blockDelegate.bboxHeight
-
-                                        x: blockDelegate.bboxX * scX
-                                        y: (ps.height - blockDelegate.bboxY - blockDelegate.reflowedHeightPt) * scY
-                                        width: Math.max(4, blockDelegate.bboxWidth * scX)
-                                        height: Math.max(4, blockDelegate.reflowedHeightPt * scY)
-
-                                        EditableTextBox {
-                                            id: editBox
-                                            anchors.fill: parent
-                                            blockId: blockDelegate.blockId
-                                            isEditable: blockDelegate.isEditable
-                                            isSelected: root.editingController !== null
-                                                        && root.editingController.selectedBlockId === blockDelegate.blockId
-                                            plainText: blockDelegate.plainText
-                                            fontFamily: blockDelegate.dominantFontName
-                                            fontSize: blockDelegate.dominantFontSize
-                                            originalHeight: blockDelegate.bboxHeight * blockDelegate.scY
-
-                                            onBlockClicked: function(id) {
-                                                if (root.editingController)
-                                                    root.editingController.selectBlock(id)
-                                            }
-                                            onTextEditing: function(id, newText) {
-                                                if (root.editingController) {
-                                                    root.editingController.updateBlockText(id, newText)
-                                                    const newH = root.editingController.reflowText(id, newText)
-                                                    if (newH > 0)
-                                                        blockDelegate.reflowedHeightPt = newH
-                                                    editBox.fallbackFontName =
-                                                        root.editingController.fallbackFontFor(id, newText)
-                                                }
-                                            }
-                                            onResized: function(id, dx, dy, dw, dh) {
-                                                blockDelegate.x      = Math.max(0, blockDelegate.x + dx)
-                                                blockDelegate.y      = Math.max(0, blockDelegate.y + dy)
-                                                const minSz = 4
-                                                const newW = Math.max(minSz, blockDelegate.width  + dw)
-                                                const newH = Math.max(minSz, blockDelegate.height + dh)
-                                                blockDelegate.width  = newW
-                                                blockDelegate.height = newH
-                                                blockDelegate.reflowedHeightPt = newH / blockDelegate.scY
-                                            }
-                                            onStyleChanged: function(id, prop, value) {
-                                                // Forward style changes back to C++ when persistence is ready
-                                            }
-                                        }
-                                    }
+                                onFieldSelected: function(field) {
+                                    root.selectedFormFieldId = String(field.id || "")
+                                    root.formFieldSelected(field)
+                                }
+                                onCheckStateChanged: function(fieldId, checked) {
+                                    if (root.formController)
+                                        root.formController.setCheckState(fieldId, checked)
                                 }
                             }
 
@@ -1237,224 +1251,12 @@ FocusScope {
 
                             Item {
                                 id: inlinePdfTextLayer
-                                readonly property bool draftVisible: root.activeTextDraft && root.activeTextDraft.pageIndex === pageFrame.pageIndex
-                                readonly property var draftInputRect: draftVisible
-                                                                         ? root.mapPageRect(root.activeTextDraft.rect || root.activeTextDraft.originalRect || {},
-                                                                                            pageFrame.pageSize,
-                                                                                            pagePaper,
-                                                                                            pageFrame.pageRotation)
-                                                                         : ({ x: 0, y: 0, width: 1, height: 1 })
-                                visible: draftVisible
-                                z: 8
                                 anchors.fill: parent
-
-                                Rectangle {
-                                    id: activeTextSelectionFrame
-                                    x: inlinePdfTextLayer.draftInputRect.x
-                                    y: inlinePdfTextLayer.draftInputRect.y
-                                    width: Math.max(24, inlinePdfTextLayer.draftInputRect.width)
-                                    height: Math.max(18, inlinePdfTextLayer.draftInputRect.height)
-                                    color: "transparent"
-                                    border.color: "#FF4D3D"
-                                    border.width: 1
-                                    z: 20
-
-                                    Repeater {
-                                        model: root.selectionHandleRects(inlinePdfTextLayer.draftInputRect)
-
-                                        Rectangle {
-                                            required property var modelData
-                                            x: modelData.x - activeTextSelectionFrame.x
-                                            y: modelData.y - activeTextSelectionFrame.y
-                                            width: modelData.width
-                                            height: modelData.height
-                                            radius: width / 2
-                                            color: "#FFFFFFFF"
-                                            border.color: "#FF4D3D"
-                                            border.width: 1
-                                        }
-                                    }
-                                }
-
-                                Repeater {
-                                    model: root.activeTextDraft
-                                           ? root.draftLineMaskRects(root.activeTextDraft,
-                                                                     pageFrame.pageSize,
-                                                                     pagePaper,
-                                                                     pageFrame.pageRotation)
-                                           : []
-
-                                    Rectangle {
-                                        required property var modelData
-                                        x: modelData.x
-                                        y: modelData.y
-                                        width: Math.max(1, modelData.width)
-                                        height: Math.max(1, modelData.height)
-                                        color: "#FFFFFFFF"
-                                    }
-                                }
-
-                                Repeater {
-                                    model: root.activeTextDraft
-                                           ? root.selectionRectsForDraft(root.activeTextDraft,
-                                                                         pageFrame.pageSize,
-                                                                         pagePaper,
-                                                                         pageFrame.pageRotation)
-                                           : []
-
-                                    Rectangle {
-                                        required property var modelData
-                                        x: modelData.x
-                                        y: modelData.y
-                                        width: Math.max(1, modelData.width)
-                                        height: Math.max(1, modelData.height)
-                                        color: root.colorWithOpacity(Theme.accent, 0.30)
-                                        z: 12
-                                    }
-                                }
-
-                                Repeater {
-                                    model: root.activeTextDraft
-                                           ? root.visualRunsForDraft(root.activeTextDraft,
-                                                                     pageFrame.pageSize,
-                                                                     pagePaper,
-                                                                     pageFrame.pageRotation)
-                                           : []
-
-                                    Text {
-                                        required property var modelData
-                                        x: modelData.rect.x
-                                        y: modelData.rect.y
-                                        width: Math.max(1, modelData.rect.width)
-                                        height: Math.max(1, modelData.rect.height)
-                                        text: modelData.text || ""
-                                        color: modelData.color || root.editTextColor
-                                        font.family: root.displayFontFamily(modelData.fontFaceName
-                                                                           || modelData.fontFamily
-                                                                           || (root.activeTextDraft ? root.activeTextDraft.fontFaceName || root.activeTextDraft.fontFamily : "")
-                                                                           || root.editFontFamily)
-                                        font.pixelSize: Math.max(6, Number(modelData.fontSize || (root.activeTextDraft ? root.activeTextDraft.fontSize : root.editFontSize) || root.editFontSize) * pagePaper.pageScale)
-                                        font.bold: !!modelData.bold
-                                        font.italic: !!modelData.italic
-                                        font.underline: !!modelData.underline
-                                        wrapMode: Text.NoWrap
-                                        clip: false
-                                        verticalAlignment: Text.AlignTop
-                                    }
-                                }
-
-                                Rectangle {
-                                    id: pdfNativeCaret
-                                    readonly property var caretRect: root.caretRectForTextPosition(root.activeTextDraft,
-                                                                                                   root.activeTextDraft ? Number(root.activeTextDraft.cursorPosition || 0) : 0,
-                                                                                                   pageFrame.pageSize,
-                                                                                                   pagePaper,
-                                                                                                   pageFrame.pageRotation)
-                                    x: caretRect.x
-                                    y: caretRect.y
-                                    width: Math.max(1, caretRect.width)
-                                    height: Math.max(8, caretRect.height)
-                                    color: "#FF3B30"
-                                    visible: inlinePdfTextLayer.draftVisible
-                                    z: 30
-
-                                    SequentialAnimation on opacity {
-                                        running: pdfNativeCaret.visible
-                                        loops: Animation.Infinite
-                                        NumberAnimation { from: 1.0; to: 1.0; duration: 520 }
-                                        NumberAnimation { from: 0.15; to: 0.15; duration: 360 }
-                                    }
-                                }
-
-                                TextEdit {
-                                    id: draftTextArea
-                                    x: inlinePdfTextLayer.draftInputRect.x
-                                    y: inlinePdfTextLayer.draftInputRect.y
-                                    width: Math.max(24, inlinePdfTextLayer.draftInputRect.width)
-                                    height: Math.max(18, inlinePdfTextLayer.draftInputRect.height)
-                                    text: root.activeTextDraft ? root.activeTextDraft.text || "" : ""
-                                    textFormat: TextEdit.PlainText
-                                    selectByMouse: true
-                                    persistentSelection: true
-                                    leftPadding: 0
-                                    rightPadding: 0
-                                    topPadding: 0
-                                    bottomPadding: 0
-                                    wrapMode: root.activeTextDraft && root.activeTextDraft.layoutMode === "preserve-lines"
-                                              ? TextEdit.NoWrap
-                                              : TextEdit.WordWrap
-                                    color: "transparent"
-                                    selectedTextColor: "transparent"
-                                    selectionColor: root.colorWithOpacity(Theme.accent, 0.35)
-                                    opacity: 0.01
-                                    cursorVisible: false
-                                    font.family: root.displayFontFamily(root.activeTextDraft ? (root.activeTextDraft.fontFaceName || root.activeTextDraft.fontFamily || root.editFontFamily) : root.editFontFamily)
-                                    font.pixelSize: Math.max(6, Number(root.activeTextDraft ? (root.activeTextDraft.fontSize || root.editFontSize) : root.editFontSize) * pagePaper.pageScale)
-                                    font.bold: root.activeTextDraft ? !!root.activeTextDraft.bold : root.editBold
-                                    font.italic: root.activeTextDraft ? !!root.activeTextDraft.italic : root.editItalic
-                                    font.underline: root.activeTextDraft ? !!root.activeTextDraft.underline : root.editUnderline
-                                    onTextChanged: root.updateActiveDraftText(text)
-                                    onCursorPositionChanged: root.setActiveDraftCursorPosition(cursorPosition)
-                                    onSelectionStartChanged: root.syncActiveDraftTextSelection(selectionStart, selectionEnd)
-                                    onSelectionEndChanged: root.syncActiveDraftTextSelection(selectionStart, selectionEnd)
-                                    onVisibleChanged: if (visible) forceActiveFocus()
-                                    Keys.onPressed: function(event) {
-                                        if (event.key === Qt.Key_Escape) {
-                                            root.activeTextDraft = null
-                                            event.accepted = true
-                                        } else if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_Z) {
-                                            if (event.modifiers & Qt.ShiftModifier)
-                                                draftTextArea.redo()
-                                            else
-                                                draftTextArea.undo()
-                                            event.accepted = true
-                                        } else if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_Y) {
-                                            draftTextArea.redo()
-                                            event.accepted = true
-                                        } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
-                                                   && (event.modifiers & Qt.ControlModifier)) {
-                                            root.commitActiveTextDraft()
-                                            event.accepted = true
-                                        }
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: activeDraftMouseArea
-                                    anchors.fill: parent
-                                    enabled: inlinePdfTextLayer.draftVisible
-                                    hoverEnabled: true
-                                    cursorShape: Qt.IBeamCursor
-                                    z: 40
-                                    acceptedButtons: Qt.LeftButton
-                                    onPressed: function(mouse) {
-                                        var pagePoint = root.selectionPoint(Qt.point(activeDraftMouseArea.mouseX, activeDraftMouseArea.mouseY),
-                                                                            pagePaper.pageScale)
-                                        if (!root.pointInsideRect(pagePoint, root.activeTextDraft ? root.activeTextDraft.rect || root.activeTextDraft.originalRect || {} : {})) {
-                                            mouse.accepted = false
-                                            return
-                                        }
-                                        root.moveCaretInActiveDraft(pagePoint)
-                                        draftTextArea.forceActiveFocus()
-                                        mouse.accepted = true
-                                    }
-                                    onClicked: function(mouse) {
-                                        var pagePoint = root.selectionPoint(Qt.point(activeDraftMouseArea.mouseX, activeDraftMouseArea.mouseY),
-                                                                            pagePaper.pageScale)
-                                        if (!root.pointInsideRect(pagePoint, root.activeTextDraft ? root.activeTextDraft.rect || root.activeTextDraft.originalRect || {} : {})) {
-                                            mouse.accepted = false
-                                            return
-                                        }
-                                        root.moveCaretInActiveDraft(pagePoint)
-                                        draftTextArea.forceActiveFocus()
-                                        mouse.accepted = true
-                                    }
-                                }
+                                visible: false
                             }
-
                             TapHandler {
                                 id: textEditTapHandler
-                                enabled: root.editModeEnabled && root.editTool === "text"
+                                enabled: false
                                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus | PointerDevice.TouchScreen
                                 onTapped: {
                                     root.forceActiveFocus()
@@ -1463,12 +1265,59 @@ FocusScope {
                                 }
                             }
 
+                            TapHandler {
+                                id: createAnnotationTapHandler
+                                enabled: root.editModeEnabled
+                                         && (root.editTool === "stickyNote"
+                                             || root.editTool === "rect"
+                                             || root.editTool === "circle")
+                                acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus | PointerDevice.TouchScreen
+                                onTapped: {
+                                    root.forceActiveFocus()
+                                    root.createAnnotationAt(pageFrame.pageIndex,
+                                                            root.editTool,
+                                                            root.selectionPoint(createAnnotationTapHandler.point.position, pagePaper.pageScale),
+                                                            [])
+                                }
+                            }
+
+                            DragHandler {
+                                id: inkDragHandler
+                                property var inkPoints: []
+                                enabled: root.editModeEnabled && root.editTool === "ink"
+                                acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
+                                target: null
+                                onActiveChanged: {
+                                    if (active) {
+                                        inkPoints = [root.pointToArray(root.selectionPoint(inkDragHandler.centroid.pressPosition, pagePaper.pageScale))]
+                                    } else if (inkPoints.length > 1) {
+                                        root.createAnnotationAt(pageFrame.pageIndex,
+                                                                "ink",
+                                                                root.selectionPoint(inkDragHandler.centroid.position, pagePaper.pageScale),
+                                                                inkPoints)
+                                        inkPoints = []
+                                    }
+                                }
+                                onCentroidChanged: {
+                                    if (!active)
+                                        return
+                                    var point = root.pointToArray(root.selectionPoint(inkDragHandler.centroid.position, pagePaper.pageScale))
+                                    if (inkPoints.length === 0
+                                            || Math.abs(point[0] - inkPoints[inkPoints.length - 1][0]) > 0.8
+                                            || Math.abs(point[1] - inkPoints[inkPoints.length - 1][1]) > 0.8)
+                                        inkPoints.push(point)
+                                }
+                            }
+
                             DragHandler {
                                 id: textSelectionDrag
                                 enabled: !root.handToolEnabled
                                          && root.pdfDocument
                                          && root.pdfDocument.isLoaded
-                                         && (!root.editModeEnabled || root.editTool === "highlight")
+                                         && (!root.editModeEnabled
+                                             || root.editTool === "highlight"
+                                             || root.editTool === "underline"
+                                             || root.editTool === "strikeout")
                                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
                                 target: null
                                 onActiveChanged: {
@@ -1481,7 +1330,10 @@ FocusScope {
                                             root.updateSelectionAction(pageFrame.pageIndex, root.selectionPoint(textSelectionDrag.centroid.position, pagePaper.pageScale))
                                         if (root.endSelectionAction)
                                             root.endSelectionAction()
-                                        if (root.editModeEnabled && root.editTool === "highlight")
+                                        if (root.editModeEnabled
+                                                && (root.editTool === "highlight"
+                                                    || root.editTool === "underline"
+                                                    || root.editTool === "strikeout"))
                                             Qt.callLater(function() {
                                                 if (root.commitHighlightAction)
                                                     root.commitHighlightAction()
@@ -1496,7 +1348,10 @@ FocusScope {
 
                             TapHandler {
                                 id: selectionTapHandler
-                                enabled: !root.handToolEnabled && ((!root.editModeEnabled || root.editTool === "highlight")
+                                enabled: !root.handToolEnabled && ((!root.editModeEnabled
+                                                                    || root.editTool === "highlight"
+                                                                    || root.editTool === "underline"
+                                                                    || root.editTool === "strikeout")
                                          || (root.editModeEnabled && root.editTool === "text" && !!root.activeTextDraft))
                                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus | PointerDevice.TouchScreen
                                 onTapped: {
@@ -1566,7 +1421,7 @@ FocusScope {
                                 color: modelData.active
                                        ? (Theme.isDark ? "#C7FFD54F" : "#D7FFD54F")
                                        : (Theme.isDark ? "#66E6C35A" : "#88F7D95A")
-                                border.color: modelData.active ? "#FFB300" : Theme.accent
+                                border.color: modelData.active ? Theme.accent : Theme.accent
                                 border.width: modelData.active ? 3 : 1
                                 radius: modelData.active ? 4 : 2
                                 visible: pageImage.status === Image.Ready
@@ -1883,9 +1738,69 @@ FocusScope {
         }
     }
 
+    function pdfiumRectToPageRect(rect, pageSize) {
+        var pageHeight = Math.max(1, Number(pageSize.height || 1))
+        var height = Number(rect.height || 0)
+        return {
+            x: Number(rect.x || 0),
+            y: pageHeight - Number(rect.y || 0) - height,
+            width: Number(rect.width || 0),
+            height: height
+        }
+    }
+
+    function inflateRect(rect, padX, padY) {
+        var px = Math.max(0, Number(padX || 0))
+        var py = Math.max(0, Number(padY || 0))
+        return {
+            x: Number(rect.x || 0) - px,
+            y: Number(rect.y || 0) - py,
+            width: Math.max(1, Number(rect.width || 0) + px * 2),
+            height: Math.max(1, Number(rect.height || 0) + py * 2)
+        }
+    }
+
+    function constrainEditorRect(rect, pageItem) {
+        var x = Math.max(0, Number(rect.x || 0))
+        var y = Math.max(0, Number(rect.y || 0))
+        var width = Math.max(1, Number(rect.width || 1))
+        var height = Math.max(root.editMinimumEditorHeightPx, Number(rect.height || root.editMinimumEditorHeightPx))
+        return {
+            x: x,
+            y: y,
+            width: Math.min(width, Math.max(1, Number(pageItem.width || width) - x)),
+            height: Math.min(height, Math.max(1, Number(pageItem.height || height) - y))
+        }
+    }
+
+    function pdfiumLineMaskRects(lineRects, pageSize, paperItem, rotation) {
+        var rects = []
+        if (!lineRects || lineRects.length === undefined)
+            return rects
+
+        for (var i = 0; i < lineRects.length; ++i) {
+            var mapped = mapPageRect(pdfiumRectToPageRect(lineRects[i] || {}, pageSize),
+                                     pageSize,
+                                     paperItem,
+                                     rotation)
+            rects.push(inflateRect(mapped, 1, 1))
+        }
+        return rects
+    }
+
     function selectionPoint(point, scale) {
         var safeScale = Math.max(0.01, Number(scale) || 0.01)
         return Qt.point((Number(point.x) || 0) / safeScale, (Number(point.y) || 0) / safeScale)
+    }
+
+    function pointToArray(point) {
+        return [Number(point.x) || 0, Number(point.y) || 0]
+    }
+
+    function createAnnotationAt(pageIndex, tool, point, points) {
+        if (!root.createAnnotationAction)
+            return false
+        return root.createAnnotationAction(pageIndex, tool, point, points || [])
     }
 
     function displayFontFamily(fontFamily) {
@@ -1929,6 +1844,18 @@ FocusScope {
         }
 
         return list
+    }
+
+    function hasVisibleFreeTextForPage(pageIndex) {
+        var annotations = annotationsForPage(pageIndex)
+        for (var i = 0; i < annotations.length; ++i) {
+            if (String((annotations[i] || {}).type || "") === "freeText")
+                return true
+        }
+        return activeTextDraft
+               && Number(activeTextDraft.pageIndex) === Number(pageIndex)
+               && String(activeTextDraft.type || "") === "freeText"
+               && root.editTool === "freeText"
     }
 
     function hasReplacementForBlock(pageIndex, blockKey) {
@@ -1992,11 +1919,102 @@ FocusScope {
         var lines = draft.lines || []
         for (var i = 0; i < lines.length; ++i) {
             var line = lines[i] || {}
-            if (line.bbox)
-                rects.push(mapPageRect(line.bbox, pageSize, paperItem, rotation))
+            var lineRect = line.bbox || line.rect || line.originalRect || line.bboxPdf || null
+            if (lineRect)
+                rects.push(inflateRect(mapPageRect(lineRect, pageSize, paperItem, rotation), 2, 2))
+        }
+
+        var sourceRects = [
+            draft.originalRect,
+            draft.sourceRect,
+            draft.rect,
+            draft.originalBlockModel ? draft.originalBlockModel.rect : null,
+            draft.originalBlockModel ? draft.originalBlockModel.originalRect : null
+        ]
+        for (var r = 0; r < sourceRects.length; ++r) {
+            var sourceRect = sourceRects[r]
+            if (sourceRect && Number(sourceRect.width || 0) > 0 && Number(sourceRect.height || 0) > 0)
+                rects.push(inflateRect(mapPageRect(sourceRect, pageSize, paperItem, rotation), 2, 2))
         }
 
         return rects
+    }
+
+    function rectUnion(rects) {
+        if (!rects || rects.length === undefined || rects.length === 0)
+            return { x: 0, y: 0, width: 1, height: 1 }
+
+        var left = Number.MAX_VALUE
+        var top = Number.MAX_VALUE
+        var right = -Number.MAX_VALUE
+        var bottom = -Number.MAX_VALUE
+        for (var i = 0; i < rects.length; ++i) {
+            var rect = rects[i] || {}
+            left = Math.min(left, Number(rect.x || 0))
+            top = Math.min(top, Number(rect.y || 0))
+            right = Math.max(right, Number(rect.x || 0) + Math.max(1, Number(rect.width || 1)))
+            bottom = Math.max(bottom, Number(rect.y || 0) + Math.max(1, Number(rect.height || 1)))
+        }
+
+        if (left === Number.MAX_VALUE)
+            return { x: 0, y: 0, width: 1, height: 1 }
+        return { x: left, y: top, width: Math.max(1, right - left), height: Math.max(1, bottom - top) }
+    }
+
+    function activeDraftMaskRects(draft, pageSize, paperItem, rotation) {
+        var rects = draftLineMaskRects(draft, pageSize, paperItem, rotation)
+        if (rects.length > 0)
+            return rects
+
+        var runs = visualRunsForDraft(draft, pageSize, paperItem, rotation)
+        for (var i = 0; i < runs.length; ++i)
+            rects.push(inflateRect((runs[i] || {}).rect || {}, 2, 2))
+
+        if (rects.length === 0)
+            rects.push(inflateRect(mapPageRect(draft && (draft.rect || draft.originalRect)
+                                               ? (draft.rect || draft.originalRect)
+                                               : { x: 0, y: 0, width: 1, height: 1 },
+                                               pageSize,
+                                               paperItem,
+                                               rotation), 2, 2))
+        return rects
+    }
+
+    function draftOriginalText(draft) {
+        if (!draft)
+            return ""
+        return String(draft.originalText
+                      || (draft.originalBlockModel ? draft.originalBlockModel.text : "")
+                      || "")
+    }
+
+    function draftHasVisualChanges(draft) {
+        if (!draft)
+            return false
+
+        var dirty = draft.dirtyRanges || []
+        if (dirty.length !== undefined && dirty.length > 0)
+            return true
+
+        if (String(draft.text || "") !== draftOriginalText(draft))
+            return true
+
+        var originalRect = draft.originalBlockModel && draft.originalBlockModel.rect
+                ? draft.originalBlockModel.rect
+                : (draft.originalRect || draft.rect || {})
+        return JSON.stringify(draft.rect || {}) !== JSON.stringify(originalRect || {})
+    }
+
+    function compactFrameForDraft(draft, pageSize, paperItem, rotation) {
+        var maskUnion = rectUnion(activeDraftMaskRects(draft, pageSize, paperItem, rotation))
+        var fontPx = Math.max(8, Number(draft ? draft.fontSize || root.editFontSize : root.editFontSize) * Number(paperItem.pageScale || 1))
+        var minHeight = fontPx + 6
+        return inflateRect({
+            x: maskUnion.x,
+            y: maskUnion.y,
+            width: maskUnion.width,
+            height: Math.max(minHeight, maskUnion.height)
+        }, 2, 1)
     }
 
     function pointInsideRect(point, rect) {
@@ -2013,23 +2031,17 @@ FocusScope {
     function selectionHandleRects(rect) {
         if (!rect)
             return []
-        var size = 8
+        var size = 5
         var half = size / 2
         var left = Number(rect.x || 0)
         var top = Number(rect.y || 0)
         var right = left + Math.max(1, Number(rect.width || 1))
         var bottom = top + Math.max(1, Number(rect.height || 1))
-        var midX = (left + right) / 2
-        var midY = (top + bottom) / 2
         return [
             { x: left - half, y: top - half, width: size, height: size },
-            { x: midX - half, y: top - half, width: size, height: size },
             { x: right - half, y: top - half, width: size, height: size },
-            { x: right - half, y: midY - half, width: size, height: size },
             { x: right - half, y: bottom - half, width: size, height: size },
-            { x: midX - half, y: bottom - half, width: size, height: size },
-            { x: left - half, y: bottom - half, width: size, height: size },
-            { x: left - half, y: midY - half, width: size, height: size }
+            { x: left - half, y: bottom - half, width: size, height: size }
         ]
     }
 
@@ -2235,6 +2247,32 @@ FocusScope {
         if (layout.lines.length > 0) {
             for (var layoutLineIndex = 0; layoutLineIndex < layout.lines.length; ++layoutLineIndex) {
                 var layoutLine = layout.lines[layoutLineIndex] || {}
+                if (layoutLine.geometryFidelity === "exact" && layoutLine.line) {
+                    var sourceRuns = layoutLine.line.visualRuns || layoutLine.line.spans || []
+                    var preservedRuns = 0
+                    for (var sourceRunIndex = 0; sourceRunIndex < sourceRuns.length; ++sourceRunIndex) {
+                        var sourceRun = sourceRuns[sourceRunIndex] || {}
+                        var sourceText = String(sourceRun.text || "")
+                        if (sourceText.length === 0)
+                            continue
+                        runs.push({
+                            text: sourceText,
+                            rect: runRectFromSource(sourceRun, layoutLine.line, pageSize, paperItem, rotation),
+                            fontFamily: sourceRun.fontFamily || draft.fontFamily || "",
+                            fontFaceName: sourceRun.fontFaceName || draft.fontFaceName || "",
+                            fontResourceName: sourceRun.fontResourceName || draft.fontResourceName || "",
+                            fontSize: sourceRun.fontSize || draft.fontSize || root.editFontSize,
+                            color: sourceRun.color || draft.color || root.editTextColor,
+                            bold: sourceRun.bold !== undefined ? !!sourceRun.bold : !!draft.bold,
+                            italic: sourceRun.italic !== undefined ? !!sourceRun.italic : !!draft.italic,
+                            underline: sourceRun.underline !== undefined ? !!sourceRun.underline : !!draft.underline
+                        })
+                        preservedRuns += 1
+                    }
+                    if (preservedRuns > 0)
+                        continue
+                }
+
                 var layoutRuns = layoutLine.runs || []
                 for (var layoutRunIndex = 0; layoutRunIndex < layoutRuns.length; ++layoutRunIndex) {
                     var layoutRun = layoutRuns[layoutRunIndex] || {}
@@ -2686,7 +2724,9 @@ FocusScope {
         return [{
             start: prefix,
             end: Math.max(prefix, next.length - suffix),
-            originalEnd: Math.max(prefix, original.length - suffix)
+            originalStart: prefix,
+            originalEnd: Math.max(prefix, original.length - suffix),
+            reason: "text"
         }]
     }
 
@@ -2737,8 +2777,6 @@ FocusScope {
         activeTextDraft.selectionStart = cursor
         activeTextDraft.selectionEnd = cursor
         activeTextDraft = activeTextDraft
-        if (draftTextArea && draftTextArea.cursorPosition !== cursor)
-            draftTextArea.cursorPosition = cursor
     }
 
     function syncActiveDraftTextSelection(start, end) {
@@ -2862,6 +2900,53 @@ FocusScope {
             activeTextDraft = null
     }
 
+    function stylePatchedSpan(span, patch) {
+        var next = JSON.parse(JSON.stringify(span || {}))
+        var keys = Object.keys(patch || {})
+        for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex)
+            next[keys[keyIndex]] = patch[keys[keyIndex]]
+        return next
+    }
+
+    function applyStylePatchToSpans(spans, selectionStart, selectionEnd, stylePatch) {
+        var source = spans || []
+        if (selectionEnd <= selectionStart || source.length === 0)
+            return source
+
+        var result = []
+        for (var i = 0; i < source.length; ++i) {
+            var span = source[i] || {}
+            var start = Number(span.start)
+            var end = Number(span.end)
+            if (!isFinite(start) || !isFinite(end) || end <= start) {
+                result.push(stylePatchedSpan(span, stylePatch))
+                continue
+            }
+            if (end <= selectionStart || start >= selectionEnd) {
+                result.push(span)
+                continue
+            }
+            if (start < selectionStart) {
+                var left = JSON.parse(JSON.stringify(span))
+                left.text = String(span.text || "").slice(0, selectionStart - start)
+                left.end = selectionStart
+                result.push(left)
+            }
+            var middle = stylePatchedSpan(span, stylePatch)
+            middle.start = Math.max(start, selectionStart)
+            middle.end = Math.min(end, selectionEnd)
+            middle.text = String(span.text || "").slice(middle.start - start, middle.end - start)
+            result.push(middle)
+            if (end > selectionEnd) {
+                var right = JSON.parse(JSON.stringify(span))
+                right.start = selectionEnd
+                right.text = String(span.text || "").slice(selectionEnd - start)
+                result.push(right)
+            }
+        }
+        return result
+    }
+
     function updateActiveTextDraftStyle(stylePatch) {
         if (!activeTextDraft || !stylePatch)
             return
@@ -2870,8 +2955,36 @@ FocusScope {
 
         var draft = JSON.parse(JSON.stringify(activeTextDraft))
         var keys = Object.keys(stylePatch)
-        for (var i = 0; i < keys.length; ++i)
-            draft[keys[i]] = stylePatch[keys[i]]
+        var selectionStart = Math.min(Number(draft.selectionStart || 0), Number(draft.selectionEnd || draft.selectionStart || 0))
+        var selectionEnd = Math.max(Number(draft.selectionStart || 0), Number(draft.selectionEnd || draft.selectionStart || 0))
+        if (!draft.editableDocumentModel)
+            draft.editableDocumentModel = {}
+        if (!draft.visualDocumentModel)
+            draft.visualDocumentModel = {}
+        if (!draft.editableDocumentModel.spans)
+            draft.editableDocumentModel.spans = draft.spans || []
+
+        if (selectionEnd > selectionStart) {
+            draft.editableDocumentModel.spans = applyStylePatchToSpans(draft.editableDocumentModel.spans,
+                                                                       selectionStart,
+                                                                       selectionEnd,
+                                                                       stylePatch)
+            draft.visualDocumentModel.spans = draft.editableDocumentModel.spans
+            if (!draft.dirtyRanges)
+                draft.dirtyRanges = []
+            draft.dirtyRanges.push({
+                start: selectionStart,
+                end: selectionEnd,
+                originalStart: selectionStart,
+                originalEnd: selectionEnd,
+                reason: "style"
+            })
+            draft.editableDocumentModel.dirtyRanges = draft.dirtyRanges
+            draft.visualDocumentModel.dirtyRanges = draft.dirtyRanges
+        } else {
+            for (var i = 0; i < keys.length; ++i)
+                draft[keys[i]] = stylePatch[keys[i]]
+        }
         draft.styleSyncLocked = false
         activeTextDraft = draft
     }
@@ -2881,7 +2994,13 @@ FocusScope {
     }
 
     function pageTextBlocks(pageIndex) {
-        if (!editModeEnabled || editTool !== "text" || (!textElementsForPageAction && !textBlocksForPageAction))
+        if (!editModeEnabled || editTool !== "text")
+            return []
+        if (editingController)
+            return []
+        if (pageIndex !== currentPageIndex)
+            return []
+        if (!textElementsForPageAction && !textBlocksForPageAction)
             return []
 
         var key = String(pageIndex)
@@ -2892,8 +3011,8 @@ FocusScope {
         var parsed = []
         try {
             parsed = JSON.parse(textElementsForPageAction
-                                ? textElementsForPageAction(pageIndex) || "[]"
-                                : textBlocksForPageAction(pageIndex) || "[]")
+                                ? textElementsForPageAction(currentPageIndex) || "[]"
+                                : textBlocksForPageAction(currentPageIndex) || "[]")
         } catch(e) {
             parsed = []
         }
@@ -2907,6 +3026,23 @@ FocusScope {
 
         pageTextBlockCache[key] = textBlocks
         return textBlocks
+    }
+
+    function pageFormFields(pageIndex) {
+        if (!root.formModeEnabled || !root.formController)
+            return []
+        var all = []
+        try {
+            all = JSON.parse(root.formController.fieldsJson || "[]")
+        } catch(e) {
+            return []
+        }
+        var page = []
+        for (var i = 0; i < all.length; ++i) {
+            if (Number(all[i].pageIndex || 0) === pageIndex)
+                page.push(all[i])
+        }
+        return page
     }
 
     function shouldHandleCopyShortcut(event) {

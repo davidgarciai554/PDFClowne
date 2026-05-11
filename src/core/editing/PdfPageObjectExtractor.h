@@ -21,6 +21,7 @@ private:
     FPDF_DOCUMENT m_doc = nullptr;
 
     PdfTextRun extractRun(FPDF_PAGEOBJECT obj, FPDF_TEXTPAGE textPage, int idx);
+    QList<PdfTextRun> extractTextPageFallbackRuns(FPDF_TEXTPAGE textPage);
     QString readUnicodeString(FPDF_PAGEOBJECT obj, FPDF_TEXTPAGE textPage);
 };
 

@@ -9,6 +9,8 @@ struct FontFallbackResult {
     QString resolvedFontName;
     double  resolvedFontSize  = 0.0;
     bool    usedFallback      = false;
+    bool    canEmbed          = false;
+    QString fontFilePath;
     QString fallbackReason;
 };
 
@@ -32,11 +34,13 @@ public:
 
     // Ordered list of fallback families (filtered to those actually installed).
     const QStringList& fallbackChain() const { return m_chain; }
+    QString fontFilePathForFamily(const QString& family) const;
 
 private:
     QStringList m_chain;
 
     void buildChain();
+    void registerBundledFonts();
 };
 
 } // namespace PDFClowne::Editing

@@ -69,9 +69,19 @@ QtObject {
     readonly property color hover:         isDark ? "#2E2E50" : "#EAEAF4"
     readonly property color tabActive:     isDark ? "#2C2C48" : "#ECECfA"
     readonly property color danger:        isDark ? "#F08090" : "#C83040"
+    readonly property color controlFill:   surfaceAlt
+    readonly property color controlFillHover: hover
+    readonly property color controlFillPressed: tabActive
+    readonly property color controlDisabled: isDark ? "#1E1E32" : "#E2E2EC"
+    readonly property color focusRing:     accent
+    readonly property color editSelection: accent
+    readonly property color editSelectionSoft: isDark ? "#263A66" : "#DDE7FF"
 
     readonly property int radius: 6
     readonly property int radiusLg: 10
+    readonly property int controlHeight: 34
+    readonly property int compactControlHeight: 28
+    readonly property int iconButtonSize: 30
 
     property QtObject _settings: Settings {
         category: "Theme"

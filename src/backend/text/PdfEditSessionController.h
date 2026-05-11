@@ -1,0 +1,121 @@
+#pragma once
+
+#include "PdfFontResolver.h"
+#include "PdfGlyphRunModel.h"
+#include "PdfTextExtractor.h"
+#include "../render/PdfScratchPageRenderer.h"
+
+#include <QImage>
+#include <QInputMethodEvent>
+#include <QObject>
+#include <QPointF>
+#include <QSize>
+#include <QString>
+
+namespace PDFClowne::Editing {
+
+class PdfEditSessionController : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString filePath READ filePath NOTIFY documentChanged)
+    Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
+    Q_PROPERTY(bool busy READ isBusy NOTIFY busyChanged)
+    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged)
+    Q_PROPERTY(bool hasPendingEdits READ hasPendingEdits NOTIFY pendingEditsChanged)
+    Q_PROPERTY(int currentPageIndex READ currentPageIndex NOTIFY pageChanged)
+    Q_PROPERTY(QString selectedBlockId READ selectedBlockId NOTIFY activeChanged)
+    Q_PROPERTY(QString runsJson READ runsJson NOTIFY pageChanged)
+    Q_PROPERTY(QString editableRegionsJson READ editableRegionsJson NOTIFY pageChanged)
+    Q_PROPERTY(QString selectionQuadsJson READ selectionQuadsJson NOTIFY activeChanged)
+    Q_PROPERTY(QString activeText READ activeText WRITE updateActiveText NOTIFY activeTextChanged)
+    Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY statusMessageChanged)
+    Q_PROPERTY(QImage editLayerImage READ editLayerImage NOTIFY editLayerImageChanged)
+    Q_PROPERTY(bool scannedDocumentSuspected READ scannedDocumentSuspected NOTIFY pageChanged)
+
+public:
+    explicit PdfEditSessionController(QObject *parent = nullptr);
+
+    QString filePath() const { return m_filePath; }
+    bool isReady() const { return m_ready; }
+    bool isBusy() const { return m_busy; }
+    bool isActive() const { return m_active; }
+    bool hasPendingEdits() const { return m_hasPendingEdits; }
+    int currentPageIndex() const { return m_currentPageIndex; }
+    QString selectedBlockId() const;
+    QString runsJson() const { return m_runsJson; }
+    QString editableRegionsJson() const { return m_regionsJson; }
+    QString selectionQuadsJson() const { return m_selectionQuadsJson; }
+    QString activeText() const { return m_activeText; }
+    QString statusMessage() const { return m_statusMessage; }
+    QImage editLayerImage() const { return m_editLayerImage; }
+    bool scannedDocumentSuspected() const { return m_ready && m_currentPageIndex >= 0 && m_pageText.glyphs.isEmpty(); }
+
+    Q_INVOKABLE bool loadDocumentWithPassword(const QString &filePath, const QString &password);
+    Q_INVOKABLE bool loadDocument(const QString &filePath);
+    Q_INVOKABLE bool extractPage(int pageIndex);
+    Q_INVOKABLE void extractBlocksForPage(int pageIndex);
+    Q_INVOKABLE void selectBlock(const QString &blockId);
+    Q_INVOKABLE void closeDocument();
+    Q_INVOKABLE bool beginSession(int pageIndex,
+                                  qreal pageX,
+                                  qreal pageY,
+                                  int pixelWidth,
+                                  int pixelHeight,
+                                  qreal scale);
+    Q_INVOKABLE void clearSession();
+    Q_INVOKABLE void updateActiveText(const QString &text);
+    Q_INVOKABLE bool commitActiveText();
+    Q_INVOKABLE bool saveDocument(const QString &outputPath, bool incremental = false);
+    Q_INVOKABLE void handleKeyText(const QString &text);
+    Q_INVOKABLE void handleBackspace();
+    Q_INVOKABLE void inputMethodCommit(const QString &commitText);
+
+signals:
+    void documentChanged();
+    void readyChanged();
+    void busyChanged();
+    void activeChanged();
+    void pendingEditsChanged();
+    void pageChanged();
+    void activeTextChanged();
+    void statusMessageChanged();
+    void editLayerImageChanged();
+    void saveCompleted(const QString &outputPath);
+    void saveError(const QString &message);
+
+private:
+    void setBusy(bool busy);
+    void setReady(bool ready);
+    void setStatusMessage(const QString &message);
+    bool ensurePage(int pageIndex);
+    void selectRegionAt(const QPointF &point);
+    void rebuildPageJson();
+    void rebuildSelectionJson();
+    void regenerateEditLayer();
+    QVector<PdfRun> activeReplacementRuns() const;
+    QVector<QPolygonF> activeRedactionQuads() const;
+    bool writeEditedPdfCopy(const QString &tempPath, QString *error) const;
+
+    QString m_filePath;
+    QString m_password;
+    QString m_runsJson = QStringLiteral("[]");
+    QString m_regionsJson = QStringLiteral("[]");
+    QString m_selectionQuadsJson = QStringLiteral("[]");
+    QString m_activeText;
+    QString m_originalActiveText;
+    QString m_statusMessage;
+    QImage m_editLayerImage;
+    PdfTextExtractor::PageText m_pageText;
+    PdfTextExtractor m_extractor;
+    PdfFontResolver m_fontResolver;
+    PDFClowne::Render::PdfScratchPageRenderer m_scratchRenderer;
+    bool m_ready = false;
+    bool m_busy = false;
+    bool m_active = false;
+    bool m_hasPendingEdits = false;
+    int m_currentPageIndex = -1;
+    int m_activeRegionIndex = -1;
+    QSize m_pixelSize;
+    qreal m_scale = 1.0;
+};
+
+} // namespace PDFClowne::Editing

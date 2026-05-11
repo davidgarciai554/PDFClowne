@@ -30,9 +30,17 @@ public:
                 SaveMode mode = SaveMode::FullRewrite);
 
 private:
+    static FPDF_FONT loadReplacementFont(FPDF_DOCUMENT doc,
+                                         const FontFallbackResult& font,
+                                         const char* standardFontName);
+
     // Collect and remove all page objects belonging to `block` from `page`.
     // Removal is done in reverse-index order to preserve validity.
     static void removeBlockObjects(FPDF_PAGE page, const PdfTextBlock& block);
+
+    // Persistently cover the original visual text area when the source stream
+    // cannot be rewritten safely (Form XObject/subset/structured fallback).
+    static bool insertVisualReplacementMasks(FPDF_PAGE page, const PdfTextBlock& block);
 
     // Build a null-terminated UTF-16LE buffer from `s`.
     static std::vector<unsigned short> toUtf16(const QString& s);

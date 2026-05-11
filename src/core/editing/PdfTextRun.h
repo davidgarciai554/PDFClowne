@@ -20,6 +20,10 @@ struct PdfTextRun {
     int renderMode = 0;
     bool fontIsEmbedded = false;
     bool fontIsSubset = false;
+    QString sourceKind = QStringLiteral("directPageText");
+    QString editability = QStringLiteral("nativeEditable");
+    QString editStrategy = QStringLiteral("nativeStreamRewrite");
+    double unicodeQuality = 1.0;
     bool isEditable = true;
     QString nonEditableReason;
 };

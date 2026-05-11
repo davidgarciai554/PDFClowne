@@ -25,6 +25,7 @@ class PdfDocument : public QObject {
     Q_PROPERTY(QString selectionText READ selectionText NOTIFY selectionChanged)
     Q_PROPERTY(QString selectionGeometryJson READ selectionGeometryJson NOTIFY selectionChanged)
     Q_PROPERTY(int selectionPage READ selectionPage NOTIFY selectionChanged)
+    Q_PROPERTY(QString pendingEditJournalJson READ pendingEditJournalJson WRITE setPendingEditJournal NOTIFY pendingEditJournalChanged)
 
 public:
     explicit PdfDocument(QObject *parent = nullptr);
@@ -47,6 +48,7 @@ public:
     QString selectionText() const { return m_selectionText; }
     QString selectionGeometryJson() const { return m_selectionGeometryJson; }
     int selectionPage() const { return m_selectionPage; }
+    QString pendingEditJournalJson() const { return m_pendingEditJournalJson; }
     void setPassword(const QString &password);
 
 public slots:
@@ -58,6 +60,7 @@ public slots:
     QString searchDocument(const QString &query);
     Q_INVOKABLE QString textElementsForPage(int pageIndex);
     Q_INVOKABLE QString textBlocksForPage(int pageIndex);
+    Q_INVOKABLE QString extractEditableLayout(int pageIndex);
     Q_INVOKABLE QString textEditAt(int pageIndex, const QPointF &point);
     QString extractPageText(int pageIndex);
     QString extractDocumentText();
@@ -68,6 +71,9 @@ public slots:
                         const QString &rotationsJson,
                         const QString &password = {},
                         const QString &annotationsJson = {});
+    Q_INVOKABLE bool saveEditedCopy(const QString &outPath);
+    Q_INVOKABLE bool replaceOriginalSafely(bool createBackup = true);
+    Q_INVOKABLE void setPendingEditJournal(const QString &journalJson);
     bool saveRotatedCopy(const QString &source, const QString &target, const QString &rotationsJson);
     void beginSelection(int pageIndex, const QPointF &point);
     void updateSelection(int pageIndex, const QPointF &point);
@@ -94,6 +100,7 @@ signals:
     void passwordChanged();
     void errorMessageChanged();
     void selectionChanged();
+    void pendingEditJournalChanged();
 
 private:
     class PdfEngine;
@@ -113,6 +120,7 @@ private:
     QString m_errorMessage;
     QString m_selectionText;
     QString m_selectionGeometryJson = QStringLiteral("[]");
+    QString m_pendingEditJournalJson = QStringLiteral("[]");
     int m_pageCount = 0;
     int m_selectionPage = -1;
     qint64 m_fileSizeBytes = 0;

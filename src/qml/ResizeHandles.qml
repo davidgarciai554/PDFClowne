@@ -1,4 +1,5 @@
 import QtQuick
+import PDFClowne
 
 // 8-point resize handle overlay. Parent sets width/height to match block.
 // Drag any handle → resized(dx, dy, dw, dh) fires with delta adjustments.
@@ -11,19 +12,15 @@ Item {
 
     signal resized(real dx, real dy, real dw, real dh)
 
-    readonly property real _hs: 8  // handle size px
+    readonly property real _hs: 5  // handle size px
     readonly property real _hh: _hs / 2
 
-    // Positions: NW N NE E SE S SW W
+    // Positions: NW NE SE SW. Mid-edge handles were too intrusive for text.
     readonly property var _handles: [
         { cx: 0,           cy: 0,           cursor: Qt.SizeFDiagCursor, dx:  1, dy:  1, dw: -1, dh: -1 },
-        { cx: 0.5,         cy: 0,           cursor: Qt.SizeVerCursor,   dx:  0, dy:  1, dw:  0, dh: -1 },
         { cx: 1,           cy: 0,           cursor: Qt.SizeBDiagCursor, dx:  0, dy:  1, dw:  1, dh: -1 },
-        { cx: 1,           cy: 0.5,         cursor: Qt.SizeHorCursor,   dx:  0, dy:  0, dw:  1, dh:  0 },
         { cx: 1,           cy: 1,           cursor: Qt.SizeFDiagCursor, dx:  0, dy:  0, dw:  1, dh:  1 },
-        { cx: 0.5,         cy: 1,           cursor: Qt.SizeVerCursor,   dx:  0, dy:  0, dw:  0, dh:  1 },
         { cx: 0,           cy: 1,           cursor: Qt.SizeBDiagCursor, dx:  1, dy:  0, dw: -1, dh:  1 },
-        { cx: 0,           cy: 0.5,         cursor: Qt.SizeHorCursor,   dx:  1, dy:  0, dw: -1, dh:  0 },
     ]
 
     Repeater {
@@ -41,10 +38,10 @@ Item {
 
             Rectangle {
                 anchors.fill: parent
-                color: "#2196F3"
-                border.color: "white"
+                color: Theme.accent
+                border.color: Theme.surface
                 border.width: 1
-                radius: 2
+                radius: 1
             }
 
             MouseArea {

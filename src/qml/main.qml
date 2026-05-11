@@ -7,6 +7,7 @@ import Qt.labs.settings
 import "ShortcutCatalog.js" as ShortcutCatalog
 import PDFClowne
 import PDFClowne.Backend
+import PDFClowne.Editing
 
 ApplicationWindow {
     id: window
@@ -26,7 +27,13 @@ ApplicationWindow {
     property int pageSpacing: 18
     property int activePageIndex: 0
     property int activeDocumentIndex: -1
+    property var editingController: null
+    property string editingControllerFilePath: ""
+    property int editingControllerExtractedPage: -1
     property string saveMessage: ""
+    property bool pendingEditSaveIncremental: false
+    property string pendingEditingSaveTarget: ""
+    property var pendingEditingSaveState: null
     property bool readingFullscreenEnabled: false
     property bool presentationModeEnabled: false
     property bool handToolEnabled: false
@@ -35,6 +42,24 @@ ApplicationWindow {
     property string readingPanelText: ""
     property bool readingPanelTextLoading: false
     property string topToolbarMenu: "view"
+    // "view" | "edit" | "forms" | "sign" | "annotate" | "ocr"
+    property string viewMode: "view"
+    onTopToolbarMenuChanged: {
+        if (topToolbarMenu === "edit")      viewMode = "edit"
+        else if (viewMode === "edit")       viewMode = "view"
+    }
+    onViewModeChanged: {
+        if (viewMode === "forms" && pdfViewer && pdfViewer.pdfDocument
+                && pdfViewer.pdfDocument.isLoaded)
+            formController.loadForms(pdfViewer.pdfDocument.filePath)
+        else if (viewMode !== "forms")
+            formController.clear()
+
+        if (viewMode === "edit")
+            Qt.callLater(function() { requestEditExtractionForActivePage() })
+        else if (editingController)
+            editingController.selectBlock("")
+    }
     property bool searchOverlayVisible: false
     property bool openInProgress: false
     property string pendingOpenSource: ""
@@ -110,10 +135,18 @@ ApplicationWindow {
     onActiveDocumentIndexChanged: {
         if (typeof pageSearchField !== "undefined")
             pageSearchField.text = activeDocumentSearchQuery()
+        editingControllerExtractedPage = -1
+        editingControllerFilePath = ""
+        if (editingController)
+            editingController.closeDocument()
+        if (viewMode === "edit")
+            Qt.callLater(function() { requestEditExtractionForActivePage() })
         Qt.callLater(function() { refreshReadingPanelText(false) })
     }
     onActivePageIndexChanged: {
         renderWindowMaintenanceTimer.restart()
+        if (viewMode === "edit")
+            Qt.callLater(function() { requestEditExtractionForActivePage() })
         if (!reflowModeEnabled)
             Qt.callLater(function() { refreshReadingPanelText(false) })
     }
@@ -127,11 +160,67 @@ ApplicationWindow {
             activeEditTool = "text"
             searchOverlayVisible = false
             pendingSearchFocusResult = null
+            editingControllerExtractedPage = -1
+            editingControllerFilePath = ""
+            if (editingController)
+                editingController.closeDocument()
         }
     }
 
     PdfDocument {
         id: pdfDocument
+    }
+
+    PdfEditSession {
+        id: pdfEditSession
+        onJournalJsonChanged: pdfDocument.pendingEditJournalJson = journalJson
+    }
+
+    PdfAnnotationController {
+        id: pdfAnnotationController
+    }
+
+    OcrService {
+        id: ocrService
+    }
+
+    PdfFormController {
+        id: formController
+        onLoadFailed: function(error) { console.warn("PdfFormController:", error) }
+    }
+
+    Connections {
+        target: window.editingController
+        ignoreUnknownSignals: true
+
+        function onBusyChanged() {
+            if (window.viewMode === "edit"
+                    && window.editingController
+                    && !window.editingController.busy)
+                Qt.callLater(function() { window.requestEditExtractionForActivePage() })
+        }
+
+        function onExtractionError(message) {
+            window.saveMessage = message
+        }
+
+        function onEditWarning(message) {
+            window.saveMessage = message
+        }
+
+        function onOcrSuggested(message) {
+            window.saveMessage = message
+        }
+
+        function onSaveCompleted(outputPath) {
+            window.completeEditingControllerSave(outputPath)
+        }
+
+        function onSaveError(message) {
+            window.pendingEditingSaveTarget = ""
+            window.pendingEditingSaveState = null
+            window.saveMessage = message
+        }
     }
 
     Settings {
@@ -1031,6 +1120,67 @@ ApplicationWindow {
         var normalizedLeft = pathToFileUrl(left)
         var normalizedRight = pathToFileUrl(right)
         return normalizedLeft.length > 0 && normalizedLeft === normalizedRight
+    }
+
+    function localPathFromUrl(value) {
+        var text = String(value || "")
+        if (text.indexOf("file:///") === 0) {
+            var local = text.substring(8)
+            if (/^[A-Za-z]:/.test(local))
+                return decodeURIComponent(local)
+            return decodeURIComponent("/" + local)
+        }
+        if (text.indexOf("file://") === 0)
+            return decodeURIComponent(text.substring(7))
+        return text
+    }
+
+    function ensureEditingController() {
+        if (editingController)
+            return editingController
+
+        try {
+            editingController = Qt.createQmlObject(
+                        'import PDFClowne.Editing; PdfEditSessionController {}',
+                        window,
+                        "PdfEditSessionController")
+        } catch (e) {
+            console.warn("PdfEditSessionController unavailable:", e)
+            editingController = null
+        }
+
+        return editingController
+    }
+
+    function requestEditExtractionForActivePage() {
+        if (viewMode !== "edit" || !hasActiveDocument || !pdfDocument.isLoaded)
+            return
+
+        var controller = ensureEditingController()
+        if (!controller)
+            return
+
+        var filePath = String(pdfDocument.filePath || "")
+        if (filePath.length === 0)
+            return
+
+        if (editingControllerFilePath !== filePath || !controller.ready) {
+            editingControllerExtractedPage = -1
+            if (!controller.loadDocumentWithPassword(pdfDocument.filePath, pdfDocument.password || ""))
+                return
+            editingControllerFilePath = filePath
+        }
+
+        var sourcePage = sourcePageForActivePage(activePageIndex)
+        if (sourcePage < 0)
+            return
+        if (editingControllerExtractedPage === sourcePage)
+            return
+        if (controller.busy)
+            return
+
+        editingControllerExtractedPage = sourcePage
+        controller.extractBlocksForPage(sourcePage)
     }
 
     function isDocumentSaveInProgress(path) {
@@ -1966,6 +2116,11 @@ ApplicationWindow {
         if (parseJsonArray(doc.editAnnotationsJson || "[]", []).length > 0)
             return true
 
+        if (index === activeDocumentIndex
+                && editingController
+                && editingController.hasPendingEdits)
+            return true
+
         return false
     }
 
@@ -2495,6 +2650,98 @@ ApplicationWindow {
         return false
     }
 
+    function captureActiveViewerStateForEditingSave(targetPath) {
+        if (!hasActiveDocument)
+            return null
+
+        return {
+            oldPath: String(documentModel.get(activeDocumentIndex).path || ""),
+            targetPath: String(targetPath || ""),
+            activePageIndex: activePageIndex,
+            zoom: viewerZoom,
+            layoutMode: layoutMode,
+            zoomMode: zoomMode,
+            navigationPanelVisible: navigationPanelVisible,
+            sidePanelMode: navigationSidePanelMode,
+            snapToPage: pageSnapEnabled,
+            pageSpacing: pageSpacing,
+            viewMode: viewMode,
+            topToolbarMenu: topToolbarMenu,
+            selectedBlockId: editingController ? String(editingController.selectedBlockId || "") : ""
+        }
+    }
+
+    function completeEditingControllerSave(outputPath) {
+        var target = localPathFromUrl(outputPath || pendingEditingSaveTarget)
+        var state = pendingEditingSaveState || captureActiveViewerStateForEditingSave(target)
+        pendingEditingSaveTarget = ""
+        pendingEditingSaveState = null
+
+        if (!hasActiveDocument || target.length === 0)
+            return
+
+        var index = activeDocumentIndex
+        var oldPath = state ? String(state.oldPath || documentModel.get(index).path || "") : String(documentModel.get(index).path || "")
+        var oldSessionId = Number(documentModel.get(index).renderSessionId || 0)
+        documentSearchController.cancelSearchSync()
+        if (oldPath.length > 0)
+            documentRenderController.releaseDocumentSync(oldPath, oldSessionId)
+
+        if (!loadPdfWithPasswordPrompt(target, documentModel.get(index).password || "")) {
+            saveMessage = qsTr("El PDF se guardó, pero no se pudo reabrir la copia.")
+            return
+        }
+
+        var sources = loadedPageSources()
+        var thumbnails = loadedThumbnailSources()
+        var sessionId = ++renderSessionSerial
+        documentModel.setProperty(index, "path", pdfDocument.filePath)
+        documentModel.setProperty(index, "title", pdfDocument.title)
+        documentModel.setProperty(index, "password", pdfDocument.password)
+        documentModel.setProperty(index, "previewSource", pdfDocument.previewSource)
+        documentModel.setProperty(index, "pageSourcesJson", JSON.stringify(sources))
+        documentModel.setProperty(index, "thumbnailSourcesJson", JSON.stringify(thumbnails))
+        documentModel.setProperty(index, "pageSizesJson", pdfDocument.pageSizesJson)
+        documentModel.setProperty(index, "outlineJson", pdfDocument.outlineJson)
+        documentModel.setProperty(index, "pageLinksJson", pdfDocument.pageLinksJson)
+        documentModel.setProperty(index, "pageCount", pdfDocument.pageCount)
+        documentModel.setProperty(index, "fileSizeBytes", pdfDocument.fileSizeBytes)
+        documentModel.setProperty(index, "pageOrderJson", "[]")
+        documentModel.setProperty(index, "pageRotationsJson", "[]")
+        documentModel.setProperty(index, "editAnnotationsJson", "[]")
+        documentModel.setProperty(index, "editUndoJson", "[]")
+        documentModel.setProperty(index, "editRedoJson", "[]")
+        documentModel.setProperty(index, "zoom", state ? state.zoom : viewerZoom)
+        documentModel.setProperty(index, "layoutMode", state ? state.layoutMode : layoutMode)
+        documentModel.setProperty(index, "zoomMode", state ? state.zoomMode : zoomMode)
+        documentModel.setProperty(index, "navigationPanelVisible", state ? state.navigationPanelVisible : navigationPanelVisible)
+        documentModel.setProperty(index, "sidePanelMode", state ? state.sidePanelMode : navigationSidePanelMode)
+        documentModel.setProperty(index, "snapToPage", state ? state.snapToPage : pageSnapEnabled)
+        documentModel.setProperty(index, "pageSpacing", state ? state.pageSpacing : pageSpacing)
+        documentModel.setProperty(index, "activePageIndex", Math.min(state ? state.activePageIndex : activePageIndex,
+                                                                     Math.max(0, pdfDocument.pageCount - 1)))
+        documentModel.setProperty(index, "renderSessionId", sessionId)
+        documentModel.setProperty(index, "pageTextCacheJson", "{}")
+        documentModel.setProperty(index, "searchResultsJson", "[]")
+        documentModel.setProperty(index, "activeSearchResultIndex", -1)
+        documentModel.setProperty(index, "searchInProgress", false)
+        documentRenderController.markDocumentOpened(pdfDocument.filePath, sessionId, pdfDocument.password)
+        editingControllerExtractedPage = -1
+        editingControllerFilePath = ""
+        if (editingController)
+            editingController.closeDocument()
+        setActiveDocument(index)
+        if (state) {
+            topToolbarMenu = state.topToolbarMenu || topToolbarMenu
+            viewMode = state.viewMode || viewMode
+        }
+        jumpToPageRequested(activePageIndex)
+        if (viewMode === "edit")
+            Qt.callLater(function() { requestEditExtractionForActivePage() })
+        saveMessage = qsTr("Guardado: ") + fileNameFromPath(target)
+        saveCurrentSession(true)
+    }
+
     function saveDocumentChanges(index, target, refreshAfterSave) {
         return performDocumentSaveTransaction(index, target, refreshAfterSave)
     }
@@ -2503,7 +2750,20 @@ ApplicationWindow {
         if (!hasActiveDocument)
             return
 
-        saveDocumentChanges(activeDocumentIndex, target, isSameFilePath(documentModel.get(activeDocumentIndex).path, target))
+        var targetPath = localPathFromUrl(target)
+        if (editingController
+                && editingController.ready
+                && editingController.hasPendingEdits) {
+            pendingEditingSaveTarget = targetPath
+            pendingEditingSaveState = captureActiveViewerStateForEditingSave(targetPath)
+            if (!editingController.saveDocument(targetPath, pendingEditSaveIncremental)) {
+                pendingEditingSaveTarget = ""
+                pendingEditingSaveState = null
+            }
+            return
+        }
+
+        saveDocumentChanges(activeDocumentIndex, targetPath, isSameFilePath(documentModel.get(activeDocumentIndex).path, targetPath))
     }
 
     function refreshActiveDocumentFromDisk() {
@@ -2722,7 +2982,7 @@ ApplicationWindow {
     }
 
     function prepareActiveTextEdit(pageIndex, point) {
-        if (!hasActiveDocument || topToolbarMenu !== "edit" || activeEditTool !== "text")
+        if (!hasActiveDocument || topToolbarMenu !== "edit" || (activeEditTool !== "text" && activeEditTool !== "freeText"))
             return null
 
         var sourcePage = sourcePageForActivePage(pageIndex)
@@ -2730,10 +2990,27 @@ ApplicationWindow {
             return null
 
         var seed = {}
-        try {
-            seed = JSON.parse(pdfDocument.textEditAt(sourcePage, point) || "{}")
-        } catch(e) {
-            seed = {}
+        if (activeEditTool === "freeText") {
+            seed = {
+                found: false,
+                type: "freeText",
+                text: "Texto",
+                originalText: "",
+                rect: { x: point.x, y: point.y, width: 180, height: 32 },
+                originalRect: { x: point.x, y: point.y, width: 180, height: 32 },
+                fontFamily: editFontFamily,
+                fontSize: editFontSize,
+                color: editTextColor,
+                bold: editBoldEnabled,
+                italic: editItalicEnabled,
+                underline: editUnderlineEnabled
+            }
+        } else {
+            try {
+                seed = JSON.parse(pdfDocument.textEditAt(sourcePage, point) || "{}")
+            } catch(e) {
+                seed = {}
+            }
         }
 
         syncingPdfTextStyle = true
@@ -2800,7 +3077,7 @@ ApplicationWindow {
 
         var replacement = {
             id: draft.id || nextEditAnnotationId("text"),
-            type: "replaceTextBlock",
+            type: (draft.type === "freeText" || draft.found === false) ? "freeText" : "replaceTextBlock",
             pageIndex: sourcePage,
             rect: draft.rect || { x: 72, y: 72, width: 180, height: 24 },
             originalRect: draft.originalRect || draft.rect || { x: 72, y: 72, width: 180, height: 24 },
@@ -2814,7 +3091,7 @@ ApplicationWindow {
             italic: draft.italic !== undefined ? !!draft.italic : editItalicEnabled,
             underline: draft.underline !== undefined ? !!draft.underline : editUnderlineEnabled,
             opacity: 1.0,
-            spans: draft.spans || [],
+            spans: (draft.editableDocumentModel && draft.editableDocumentModel.spans) || draft.spans || [],
             lines: draft.lines || [],
             writingMode: draft.writingMode !== undefined ? Number(draft.writingMode) : 0,
             paragraphDirection: draft.paragraphDirection || [1, 0],
@@ -2867,7 +3144,11 @@ ApplicationWindow {
     }
 
     function commitActiveHighlightFromSelection() {
-        if (!hasActiveDocument || topToolbarMenu !== "edit" || activeEditTool !== "highlight")
+        if (!hasActiveDocument
+                || topToolbarMenu !== "edit"
+                || (activeEditTool !== "highlight"
+                    && activeEditTool !== "underline"
+                    && activeEditTool !== "strikeout"))
             return false
 
         if (pdfDocument.selectionPage < 0 || String(pdfDocument.selectionText || "").trim().length === 0)
@@ -2880,12 +3161,12 @@ ApplicationWindow {
         var doc = documentModel.get(activeDocumentIndex)
         var annotations = parseJsonArray(doc.editAnnotationsJson || "[]", [])
         annotations.push({
-            id: nextEditAnnotationId("highlight"),
-            type: "highlight",
+            id: nextEditAnnotationId(activeEditTool),
+            type: activeEditTool,
             pageIndex: pdfDocument.selectionPage,
             quads: quads,
-            color: editHighlightColor,
-            opacity: 0.42,
+            color: activeEditTool === "highlight" ? editHighlightColor : editTextColor,
+            opacity: activeEditTool === "highlight" ? 0.42 : 0.85,
             text: pdfDocument.selectionText || ""
         })
 
@@ -2895,6 +3176,57 @@ ApplicationWindow {
         if (committed)
             pdfDocument.clearSelection()
         return committed
+    }
+
+    function createActiveEditAnnotation(pageIndex, tool, point, points) {
+        if (!hasActiveDocument || topToolbarMenu !== "edit")
+            return false
+
+        var sourcePage = sourcePageForActivePage(pageIndex)
+        if (sourcePage < 0)
+            return false
+
+        var px = Number(point.x || 0)
+        var py = Number(point.y || 0)
+        var rect = { x: px, y: py, width: 96, height: 48 }
+        var annotation = {
+            id: nextEditAnnotationId(tool),
+            type: tool,
+            pageIndex: sourcePage,
+            rect: rect,
+            color: editTextColor,
+            opacity: 1.0
+        }
+
+        if (tool === "stickyNote") {
+            annotation.text = "Nota"
+            annotation.color = editHighlightColor
+            annotation.rect = { x: px, y: py, width: 24, height: 24 }
+        } else if (tool === "rect" || tool === "circle") {
+            annotation.borderWidth = 1.5
+            annotation.rect = { x: px, y: py, width: 120, height: 72 }
+        } else if (tool === "ink") {
+            annotation.points = points || []
+            annotation.borderWidth = 1.8
+        } else if (tool === "freeText") {
+            annotation.text = "Texto"
+            annotation.fontFamily = editFontFamily
+            annotation.fontSize = editFontSize
+            annotation.bold = editBoldEnabled
+            annotation.italic = editItalicEnabled
+            annotation.underline = editUnderlineEnabled
+            annotation.rect = { x: px, y: py, width: 180, height: 32 }
+        } else {
+            return false
+        }
+
+        var doc = documentModel.get(activeDocumentIndex)
+        var annotations = parseJsonArray(doc.editAnnotationsJson || "[]", [])
+        annotations.push(annotation)
+
+        var nextState = captureDocumentEditState(doc)
+        nextState.editAnnotations = annotations
+        return commitDocumentEdit(activeDocumentIndex, nextState, sourcePage)
     }
 
     function eraseActiveEditAnnotation(annotationId) {
@@ -4912,6 +5244,25 @@ ApplicationWindow {
                         }
                         spacing: 8
 
+                        EditToolbar {
+                            currentTool: window.activeEditTool
+                            canUndo: window.activeDocumentCanUndoEdits()
+                            canRedo: window.activeDocumentCanRedoEdits()
+                            Layout.preferredWidth: Math.min(540, implicitWidth)
+                            Layout.preferredHeight: 30
+                            onUndoRequested: window.undoActiveDocumentEdit()
+                            onRedoRequested: window.redoActiveDocumentEdit()
+                            onToolSelected: function(toolName) {
+                                window.activeEditTool = toolName
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.preferredWidth: 1
+                            Layout.fillHeight: true
+                            color: Theme.border
+                        }
+
                         Button {
                             id: editTextToolButton
                             text: "T"
@@ -5218,9 +5569,10 @@ ApplicationWindow {
                         selectedText: pdfDocument.selectionText
                         selectionGeometryJson: pdfDocument.selectionGeometryJson
                         selectionPageIndex: window.activeSelectionVisualPageIndex()
-                        editModeEnabled: window.topToolbarMenu === "edit"
+                        viewMode: window.viewMode
                         editTool: window.activeEditTool
                         editAnnotations: window.activeDocumentEditAnnotations()
+                        editingController: window.editingController
                         editFontFamily: window.displayEditFontFamily(window.editFontFamily)
                         editFontSize: window.editFontSize
                         editTextColor: window.editTextColor
@@ -5259,10 +5611,64 @@ ApplicationWindow {
                         textBlocksForPageAction: window.activeTextBlocksForPage
                         commitTextEditAction: window.commitActiveTextEdit
                         commitHighlightAction: window.commitActiveHighlightFromSelection
+                        createAnnotationAction: window.createActiveEditAnnotation
                         eraseAnnotationAction: window.eraseActiveEditAnnotation
                         movePageAction: window.moveActiveDocumentPage
                         deletePageAction: window.deleteActiveDocumentPage
                         rotatePageAction: window.rotateDocumentPage
+                        formController: formController
+                        onFormFieldSelected: function(field) {
+                            formInspector.selectedField = field
+                        }
+                    }
+
+                    EditInspector {
+                        id: editInspector
+                        anchors {
+                            top: parent.top
+                            right: parent.right
+                            margins: 14
+                        }
+                        visible: window.hasActiveDocument
+                                 && window.topToolbarMenu === "edit"
+                                 && pdfViewer
+                                 && pdfViewer.inlineTextEditingActive
+                        selectedElement: visible && pdfViewer ? pdfViewer.activeTextDraft : null
+                        onTextCommitted: function(text) {
+                            if (pdfViewer && pdfViewer.inlineTextEditingActive)
+                                pdfViewer.updateActiveDraftText(text)
+                        }
+                        onStyleChanged: function(patch) {
+                            if (pdfViewer)
+                                pdfViewer.updateActiveTextDraftStyle(patch)
+                        }
+                        onSaveCopyRequested: function(incremental) {
+                            window.pendingEditSaveIncremental = incremental
+                            saveRotatedDialog.open()
+                        }
+                    }
+
+                    FormInspector {
+                        id: formInspector
+                        anchors {
+                            top: parent.top
+                            right: parent.right
+                            margins: 14
+                        }
+                        visible: window.hasActiveDocument && window.viewMode === "forms"
+                        selectedField: null
+                        onTextValueCommitted: function(fieldId, value) {
+                            formController.setTextValue(fieldId, value)
+                        }
+                        onCheckStateToggled: function(fieldId, checked) {
+                            formController.setCheckState(fieldId, checked)
+                        }
+                        onComboValueChanged: function(fieldId, value) {
+                            formController.setComboValue(fieldId, value)
+                        }
+                        onSaveFilledRequested: function(outPath) {
+                            formController.saveFilled(outPath)
+                        }
                     }
 
                     Rectangle {

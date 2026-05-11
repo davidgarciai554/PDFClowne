@@ -9,6 +9,9 @@ namespace PDFClowne::Editing {
 
 class TextBlockModel : public QAbstractListModel {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(int editableCount READ editableCount NOTIFY countChanged)
+    Q_PROPERTY(int recoverableTextCount READ recoverableTextCount NOTIFY countChanged)
 
 public:
     enum Roles {
@@ -24,6 +27,11 @@ public:
         DominantColorRole,
         PageNumberRole,
         PlainTextRole,
+        LineRectsRole,
+        SourceKindRole,
+        EditabilityRole,
+        EditStrategyRole,
+        UnicodeQualityRole,
     };
 
     explicit TextBlockModel(QObject* parent = nullptr);
@@ -36,6 +44,12 @@ public:
     void clear();
 
     const QList<PdfTextBlock>& blocks() const { return m_blocks; }
+    int count() const;
+    int editableCount() const;
+    int recoverableTextCount() const;
+
+signals:
+    void countChanged();
 
 private:
     QList<PdfTextBlock> m_blocks;
