@@ -6,6 +6,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -60,6 +61,7 @@ inline int findRegion(const PDFClowne::Editing::PdfTextExtractor::PageText &page
             if (regionText(page, i).contains(needle, Qt::CaseInsensitive))
                 return i;
         }
+        return -1;
     }
     return page.regions.isEmpty() ? -1 : 0;
 }
@@ -80,7 +82,12 @@ inline bool beginRegionEdit(PDFClowne::Editing::PdfEditSessionController &contro
 
 inline QString outputPath(const QString &name)
 {
-    return QDir(QCoreApplication::applicationDirPath()).absoluteFilePath(name);
+    const QFileInfo info(name);
+    const QString uniqueName = QStringLiteral("%1.%2.%3")
+        .arg(info.completeBaseName())
+        .arg(QCoreApplication::applicationPid())
+        .arg(info.suffix().isEmpty() ? QStringLiteral("pdf") : info.suffix());
+    return QDir(QCoreApplication::applicationDirPath()).absoluteFilePath(uniqueName);
 }
 
 inline int saveOneEdit(const QString &sourcePath,
@@ -98,7 +105,9 @@ inline int saveOneEdit(const QString &sourcePath,
 
     const int regionIndex = findRegion(page, needle);
     if (regionIndex < 0)
-        return fail(QStringLiteral("Fixture PDF did not expose editable regions."));
+        return fail(needle.isEmpty()
+                        ? QStringLiteral("Fixture PDF did not expose editable regions.")
+                        : QStringLiteral("Fixture PDF did not contain requested editable text: %1").arg(needle));
 
     PDFClowne::Editing::PdfEditSessionController controller;
     if (!controller.loadDocument(sourcePath))

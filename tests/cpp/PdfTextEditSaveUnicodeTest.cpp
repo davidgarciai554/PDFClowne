@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 
     QString targetPath;
     QString originalText;
-    const QString replacement = QStringLiteral("Edición niño café");
+    const QString replacement = QStringLiteral("Edición técnica número 123 áéíóú ñ Ñ");
     const int saved = PdfTextEditSaveTestUtils::saveOneEdit(app.arguments().at(1),
                                                             QString(),
                                                             replacement,
