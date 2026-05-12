@@ -1,6 +1,9 @@
 #include "PdfGlyphOverlayItem.h"
 
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QKeyEvent>
+#include <QKeySequence>
 #include <QQuickWindow>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
@@ -72,6 +75,38 @@ void PdfGlyphOverlayItem::keyPressEvent(QKeyEvent *event)
         return;
     }
 
+    if (event->matches(QKeySequence::Copy)) {
+        QGuiApplication::clipboard()->setText(m_controller->activeText());
+        event->accept();
+        return;
+    }
+
+    if (event->matches(QKeySequence::Paste)) {
+        const QString text = QGuiApplication::clipboard()->text();
+        if (!text.isEmpty())
+            m_controller->handleKeyText(text);
+        event->accept();
+        return;
+    }
+
+    if (event->key() == Qt::Key_Left) {
+        m_controller->moveCursorLeft();
+        event->accept();
+        return;
+    }
+
+    if (event->key() == Qt::Key_Right) {
+        m_controller->moveCursorRight();
+        event->accept();
+        return;
+    }
+
+    if (event->key() == Qt::Key_Delete) {
+        m_controller->handleDelete();
+        event->accept();
+        return;
+    }
+
     if (event->key() == Qt::Key_Backspace) {
         m_controller->handleBackspace();
         event->accept();
@@ -85,7 +120,7 @@ void PdfGlyphOverlayItem::keyPressEvent(QKeyEvent *event)
     }
 
     if (event->key() == Qt::Key_Escape) {
-        m_controller->clearSession();
+        m_controller->cancelActiveEdit();
         event->accept();
         return;
     }

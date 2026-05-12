@@ -2731,6 +2731,12 @@ ApplicationWindow {
         if (editingController)
             editingController.closeDocument()
         setActiveDocument(index)
+        if (editingController) {
+            editingController.loadDocumentWithPassword(pdfDocument.filePath, pdfDocument.password || "")
+            editingController.extractPage(activePageIndex)
+            editingControllerFilePath = pdfDocument.filePath
+            editingControllerExtractedPage = activePageIndex
+        }
         if (state) {
             topToolbarMenu = state.topToolbarMenu || topToolbarMenu
             viewMode = state.viewMode || viewMode
@@ -5606,10 +5612,6 @@ ApplicationWindow {
                         endSelectionAction: pdfDocument.endSelection
                         clearSelectionAction: pdfDocument.clearSelection
                         copySelectionAction: window.copySelectedText
-                        textEditSeedAction: window.prepareActiveTextEdit
-                        textElementsForPageAction: window.activeTextElementsForPage
-                        textBlocksForPageAction: window.activeTextBlocksForPage
-                        commitTextEditAction: window.commitActiveTextEdit
                         commitHighlightAction: window.commitActiveHighlightFromSelection
                         createAnnotationAction: window.createActiveEditAnnotation
                         eraseAnnotationAction: window.eraseActiveEditAnnotation

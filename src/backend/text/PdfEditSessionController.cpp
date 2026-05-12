@@ -1,12 +1,14 @@
 #include "PdfEditSessionController.h"
 
 #include "../pdf/PdfContentWriter.h"
+#include "../pdf/PdfFontResourceWriter.h"
 #include "../pdf/PdfSaveCoordinator.h"
 
 #include <QBuffer>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
+#include <QHash>
 #include <QPainter>
 #include <QUrl>
 
@@ -43,22 +45,6 @@ QString toLocalPath(const QString &source)
     return source;
 }
 
-QString resourceNameFromKey(const QString &fontResourceKey)
-{
-    const QString marker = QStringLiteral("/font:");
-    const QString endMarker = QStringLiteral("/xref:");
-    const int start = fontResourceKey.indexOf(marker);
-    if (start < 0)
-        return {};
-
-    const int valueStart = start + marker.size();
-    const int valueEnd = fontResourceKey.indexOf(endMarker, valueStart);
-    if (valueEnd <= valueStart)
-        return {};
-
-    return fontResourceKey.mid(valueStart, valueEnd - valueStart);
-}
-
 fz_quad toFzQuad(const QPolygonF &quad)
 {
     fz_quad value;
@@ -71,66 +57,6 @@ fz_quad toFzQuad(const QPolygonF &quad)
     value.lr = fz_make_point(static_cast<float>(lr.x()), static_cast<float>(lr.y()));
     value.ll = fz_make_point(static_cast<float>(ll.x()), static_cast<float>(ll.y()));
     return value;
-}
-
-pdf_obj *ensurePageResources(fz_context *ctx, pdf_document *doc, pdf_page *page)
-{
-    pdf_obj *resources = pdf_page_resources(ctx, page);
-    if (resources)
-        return resources;
-
-    resources = pdf_new_dict(ctx, doc, 4);
-    pdf_dict_put_drop(ctx, page->obj, PDF_NAME(Resources), resources);
-    return pdf_page_resources(ctx, page);
-}
-
-QString ensureWritableFontResource(fz_context *ctx,
-                                   pdf_document *doc,
-                                   pdf_page *page,
-                                   const QString &preferredResourceName,
-                                   QString *error)
-{
-    pdf_obj *resources = ensurePageResources(ctx, doc, page);
-    pdf_obj *fonts = pdf_dict_get(ctx, resources, PDF_NAME(Font));
-    if (!fonts)
-        fonts = pdf_dict_put_dict(ctx, resources, PDF_NAME(Font), 4);
-
-    if (!preferredResourceName.isEmpty()
-            && pdf_dict_gets(ctx, fonts, preferredResourceName.toUtf8().constData()))
-        return preferredResourceName;
-
-    fz_font *font = nullptr;
-    QString resourceName;
-    fz_try(ctx)
-    {
-        font = fz_new_base14_font(ctx, "Helvetica");
-        pdf_obj *fontRef = pdf_add_simple_font(ctx, doc, font, PDF_SIMPLE_ENCODING_LATIN);
-        for (int i = 0; i < 100; ++i) {
-            const QString candidate = i == 0
-                ? QStringLiteral("PclEditF")
-                : QStringLiteral("PclEditF%1").arg(i);
-            if (!pdf_dict_gets(ctx, fonts, candidate.toUtf8().constData())) {
-                pdf_dict_puts(ctx, fonts, candidate.toUtf8().constData(), fontRef);
-                resourceName = candidate;
-                break;
-            }
-        }
-    }
-    fz_always(ctx)
-    {
-        if (font)
-            fz_drop_font(ctx, font);
-    }
-    fz_catch(ctx)
-    {
-        if (error)
-            *error = QString::fromUtf8(fz_caught_message(ctx));
-        resourceName.clear();
-    }
-
-    if (resourceName.isEmpty() && error && error->isEmpty())
-        *error = QStringLiteral("No se pudo declarar un recurso de fuente para el texto editado.");
-    return resourceName;
 }
 
 void appendContentStream(fz_context *ctx,
@@ -198,6 +124,11 @@ bool PdfEditSessionController::loadDocumentWithPassword(const QString &filePath,
     clearSession();
     m_filePath = filePath;
     m_password = password;
+    if (!m_textEdits.isEmpty() || m_hasPendingEdits) {
+        m_textEdits.clear();
+        m_hasPendingEdits = false;
+        emit pendingEditsChanged();
+    }
     m_currentPageIndex = -1;
     m_pageText = {};
     m_runsJson = QStringLiteral("[]");
@@ -212,6 +143,9 @@ bool PdfEditSessionController::extractPage(int pageIndex)
 {
     if (!m_ready || pageIndex < 0)
         return false;
+
+    if (m_currentPageIndex != pageIndex)
+        clearSession();
 
     setBusy(true);
     setStatusMessage(tr("Extrayendo glifos PDF"));
@@ -247,6 +181,11 @@ void PdfEditSessionController::selectBlock(const QString &blockId)
 void PdfEditSessionController::closeDocument()
 {
     clearSession();
+    if (!m_textEdits.isEmpty() || m_hasPendingEdits) {
+        m_textEdits.clear();
+        m_hasPendingEdits = false;
+        emit pendingEditsChanged();
+    }
     m_filePath.clear();
     m_password.clear();
     m_currentPageIndex = -1;
@@ -283,9 +222,13 @@ void PdfEditSessionController::clearSession()
     m_originalActiveText.clear();
     m_selectionQuadsJson = QStringLiteral("[]");
     m_editLayerImage = {};
+    const bool cursorChangedNow = m_cursorPosition != 0;
+    m_cursorPosition = 0;
     if (wasActive)
         emit activeChanged();
     emit activeTextChanged();
+    if (cursorChangedNow)
+        emit cursorChanged();
     emit editLayerImageChanged();
 }
 
@@ -295,27 +238,60 @@ void PdfEditSessionController::updateActiveText(const QString &text)
         return;
 
     m_activeText = text;
-    if (m_activeText != m_originalActiveText && !m_hasPendingEdits) {
-        m_hasPendingEdits = true;
-        emit pendingEditsChanged();
-    }
     emit activeTextChanged();
     regenerateEditLayer();
 }
 
 bool PdfEditSessionController::commitActiveText()
 {
-    if (!m_active)
+    if (!m_active || m_activeRegionIndex < 0)
         return false;
 
-    if (m_activeText == m_originalActiveText)
+    if (m_activeText == m_originalActiveText) {
         clearSession();
+        return true;
+    }
+
+    PdfTextEditOperation operation;
+    operation.id = QStringLiteral("text-edit-%1-%2")
+        .arg(m_currentPageIndex)
+        .arg(m_activeRegionIndex);
+    operation.pageIndex = m_currentPageIndex;
+    operation.regionIndex = m_activeRegionIndex;
+    operation.originalText = m_originalActiveText;
+    operation.replacementText = m_activeText;
+    operation.replacementRuns = activeReplacementRuns();
+    operation.redactionQuads = activeRedactionQuads();
+    operation.committed = true;
+
+    for (const QPolygonF &quad : operation.redactionQuads)
+        operation.dirtyRect = operation.dirtyRect.united(quad.boundingRect());
+    if (!operation.dirtyRect.isNull())
+        operation.dirtyRect = operation.dirtyRect.adjusted(-4, -4, 4, 4);
+
+    auto existing = std::find_if(
+        m_textEdits.begin(),
+        m_textEdits.end(),
+        [&](const PdfTextEditOperation &candidate) {
+            return candidate.pageIndex == operation.pageIndex
+                && candidate.regionIndex == operation.regionIndex;
+        });
+
+    if (existing == m_textEdits.end())
+        m_textEdits.append(operation);
+    else
+        *existing = operation;
+
+    m_hasPendingEdits = !m_textEdits.isEmpty();
+    emit pendingEditsChanged();
+
+    regenerateEditLayer();
     return true;
 }
 
 bool PdfEditSessionController::saveDocument(const QString &outputPath, bool incremental)
 {
-    if (!m_hasPendingEdits || !m_active) {
+    if (m_textEdits.isEmpty()) {
         emit saveError(tr("No hay cambios de texto pendientes."));
         return false;
     }
@@ -339,6 +315,7 @@ bool PdfEditSessionController::saveDocument(const QString &outputPath, bool incr
         return false;
     }
 
+    m_textEdits.clear();
     m_hasPendingEdits = false;
     emit pendingEditsChanged();
     emit saveCompleted(result.finalPath);
@@ -349,16 +326,60 @@ void PdfEditSessionController::handleKeyText(const QString &text)
 {
     if (!m_active || text.isEmpty())
         return;
-    updateActiveText(m_activeText + text);
+
+    QString next = m_activeText;
+    next.insert(m_cursorPosition, text);
+    m_cursorPosition += text.size();
+    emit cursorChanged();
+    updateActiveText(next);
 }
 
 void PdfEditSessionController::handleBackspace()
 {
-    if (!m_active || m_activeText.isEmpty())
+    if (!m_active || m_cursorPosition <= 0)
         return;
+
     QString next = m_activeText;
-    next.chop(1);
+    next.remove(m_cursorPosition - 1, 1);
+    --m_cursorPosition;
+    emit cursorChanged();
     updateActiveText(next);
+}
+
+void PdfEditSessionController::handleDelete()
+{
+    if (!m_active || m_cursorPosition >= m_activeText.size())
+        return;
+
+    QString next = m_activeText;
+    next.remove(m_cursorPosition, 1);
+    emit cursorChanged();
+    updateActiveText(next);
+}
+
+void PdfEditSessionController::moveCursorLeft()
+{
+    if (!m_active || m_cursorPosition <= 0)
+        return;
+
+    --m_cursorPosition;
+    emit cursorChanged();
+    regenerateEditLayer();
+}
+
+void PdfEditSessionController::moveCursorRight()
+{
+    if (!m_active || m_cursorPosition >= m_activeText.size())
+        return;
+
+    ++m_cursorPosition;
+    emit cursorChanged();
+    regenerateEditLayer();
+}
+
+void PdfEditSessionController::cancelActiveEdit()
+{
+    clearSession();
 }
 
 void PdfEditSessionController::inputMethodCommit(const QString &commitText)
@@ -428,9 +449,11 @@ void PdfEditSessionController::selectRegionAt(const QPointF &point)
 
     m_originalActiveText = text;
     m_activeText = text;
+    m_cursorPosition = m_activeText.size();
     m_active = true;
     rebuildSelectionJson();
     emit activeTextChanged();
+    emit cursorChanged();
     emit activeChanged();
 }
 
@@ -532,11 +555,9 @@ QVector<QPolygonF> PdfEditSessionController::activeRedactionQuads() const
 
 bool PdfEditSessionController::writeEditedPdfCopy(const QString &tempPath, QString *error) const
 {
-    const QVector<PdfRun> replacementRuns = activeReplacementRuns();
-    const QVector<QPolygonF> redactionQuads = activeRedactionQuads();
-    if (replacementRuns.isEmpty() || redactionQuads.isEmpty()) {
+    if (m_textEdits.isEmpty()) {
         if (error)
-            *error = QStringLiteral("No hay una region editable activa para guardar.");
+            *error = QStringLiteral("No hay cambios de texto pendientes.");
         return false;
     }
 
@@ -569,37 +590,59 @@ bool PdfEditSessionController::writeEditedPdfCopy(const QString &tempPath, QStri
         if (!pdfDoc)
             fz_throw(ctx, FZ_ERROR_GENERIC, "The active document is not a writable PDF.");
 
-        page = pdf_load_page(ctx, pdfDoc, m_currentPageIndex);
-        for (const QPolygonF &quad : redactionQuads) {
-            const fz_quad fzQuad = toFzQuad(quad);
-            pdf_annot *annot = pdf_create_annot(ctx, page, PDF_ANNOT_REDACT);
-            pdf_set_annot_rect(ctx, annot, fz_rect_from_quad(fzQuad));
-            pdf_set_annot_quad_points(ctx, annot, 1, &fzQuad);
-        }
-
-        pdf_redact_options redactionOptions = {};
-        redactionOptions.black_boxes = 0;
-        redactionOptions.image_method = PDF_REDACT_IMAGE_NONE;
-        redactionOptions.line_art = PDF_REDACT_LINE_ART_NONE;
-        redactionOptions.text = PDF_REDACT_TEXT_REMOVE;
-        pdf_redact_page(ctx, pdfDoc, page, &redactionOptions);
+        QHash<int, QVector<PdfTextEditOperation>> editsByPage;
+        for (const PdfTextEditOperation &edit : m_textEdits)
+            editsByPage[edit.pageIndex].append(edit);
 
         PdfContentWriter contentWriter;
-        for (const PdfRun &run : replacementRuns) {
-            QString localError;
-            const QString resourceName = ensureWritableFontResource(ctx,
-                                                                    pdfDoc,
-                                                                    page,
-                                                                    resourceNameFromKey(run.fontResourceKey),
-                                                                    &localError);
-            if (resourceName.isEmpty())
-                fz_throw(ctx, FZ_ERROR_GENERIC, localError.toUtf8().constData());
+        PdfFontResourceWriter fontWriter;
+        for (auto it = editsByPage.constBegin(); it != editsByPage.constEnd(); ++it) {
+            const int editedPageIndex = it.key();
+            const QVector<PdfTextEditOperation> pageEdits = it.value();
 
-            const PdfContentWriter::StreamBuildResult stream =
-                contentWriter.buildReplacementTextStream(run, m_activeText, resourceName);
-            if (stream.contentStream.isEmpty())
-                fz_throw(ctx, FZ_ERROR_GENERIC, "Replacement text stream was empty.");
-            appendContentStream(ctx, pdfDoc, page, stream.contentStream);
+            page = pdf_load_page(ctx, pdfDoc, editedPageIndex);
+
+            for (const PdfTextEditOperation &edit : pageEdits) {
+                for (const QPolygonF &quad : edit.redactionQuads) {
+                    const fz_quad fzQuad = toFzQuad(quad);
+                    pdf_annot *annot = pdf_create_annot(ctx, page, PDF_ANNOT_REDACT);
+                    pdf_set_annot_rect(ctx, annot, fz_rect_from_quad(fzQuad));
+                    pdf_set_annot_quad_points(ctx, annot, 1, &fzQuad);
+                }
+            }
+
+            pdf_redact_options redactionOptions = {};
+            redactionOptions.black_boxes = 0;
+            redactionOptions.image_method = PDF_REDACT_IMAGE_NONE;
+            redactionOptions.line_art = PDF_REDACT_LINE_ART_NONE;
+            redactionOptions.text = PDF_REDACT_TEXT_REMOVE;
+            pdf_redact_page(ctx, pdfDoc, page, &redactionOptions);
+
+            for (const PdfTextEditOperation &edit : pageEdits) {
+                for (const PdfRun &run : edit.replacementRuns) {
+                    QString localError;
+                    const PdfFontWritePlan fontPlan =
+                        fontWriter.ensureFontForText(ctx,
+                                                     pdfDoc,
+                                                     page,
+                                                     run,
+                                                     edit.replacementText,
+                                                     &localError);
+                    if (fontPlan.resourceName.isEmpty())
+                        fz_throw(ctx, FZ_ERROR_GENERIC, localError.toUtf8().constData());
+
+                    const PdfContentWriter::StreamBuildResult stream =
+                        contentWriter.buildReplacementTextStream(run,
+                                                                 edit.replacementText,
+                                                                 fontPlan);
+                    if (stream.contentStream.isEmpty())
+                        fz_throw(ctx, FZ_ERROR_GENERIC, "Replacement text stream was empty.");
+                    appendContentStream(ctx, pdfDoc, page, stream.contentStream);
+                }
+            }
+
+            pdf_drop_page(ctx, page);
+            page = nullptr;
         }
 
         pdf_write_options writeOptions = pdf_default_write_options;

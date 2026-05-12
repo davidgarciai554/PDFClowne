@@ -11,6 +11,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 
 namespace {
 
@@ -26,10 +27,10 @@ QRect scaledBoxRect(const QJsonObject &box, qreal scale, const QSize &bounds)
     const qreal y = box.value(QStringLiteral("y")).toDouble() * scale;
     const qreal width = box.value(QStringLiteral("width")).toDouble() * scale;
     const qreal height = box.value(QStringLiteral("height")).toDouble() * scale;
-    QRect rect(std::floor(x) - 12,
-               std::floor(y) - 12,
-               std::ceil(width) + 24,
-               std::ceil(height) + 24);
+    QRect rect(std::floor(x) - 64,
+               std::floor(y) - 64,
+               std::ceil(width) + 128,
+               std::ceil(height) + 128);
     return rect.intersected(QRect(QPoint(0, 0), bounds));
 }
 
@@ -54,10 +55,10 @@ QRect scaledQuadRect(const QJsonArray &quad, qreal scale, const QSize &bounds)
         maxY = std::max(maxY, y);
     }
 
-    QRect rect(std::floor(minX) - 12,
-               std::floor(minY) - 12,
-               std::ceil(maxX - minX) + 24,
-               std::ceil(maxY - minY) + 24);
+    QRect rect(std::floor(minX) - 64,
+               std::floor(minY) - 64,
+               std::ceil(maxX - minX) + 128,
+               std::ceil(maxY - minY) + 128);
     return rect.intersected(QRect(QPoint(0, 0), bounds));
 }
 

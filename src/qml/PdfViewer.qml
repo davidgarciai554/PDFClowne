@@ -107,7 +107,7 @@ FocusScope {
     property var deletePageAction: null
     property var rotatePageAction: null
     readonly property bool searchPanelAvailable: searchQuery.trim().length > 0 || searchResults.length > 0 || sidePanelMode === "search"
-    readonly property bool inlineTextEditingActive: !!activeTextDraft
+    readonly property bool inlineTextEditingActive: false
     readonly property real editOverlayPaddingPx: 2
     readonly property real editHitPaddingPx: 4
     readonly property real editMinimumEditorHeightPx: 14
@@ -290,7 +290,7 @@ FocusScope {
 
     Rectangle {
         anchors.fill: parent
-        color: root.presentationMode ? "#050608" : Theme.isDark ? "#12121F" : "#D8D9E8"
+        color: root.presentationMode ? "#050608" : Theme.viewerCanvas
     }
 
     Rectangle {

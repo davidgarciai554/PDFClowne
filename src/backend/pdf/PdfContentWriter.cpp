@@ -14,12 +14,11 @@ QByteArray number(qreal value)
 
 } // namespace
 
-QByteArray PdfContentWriter::escapedPdfString(const QString &text)
+QByteArray PdfContentWriter::escapedPdfBytes(const QByteArray &text)
 {
     QByteArray output;
-    const QByteArray utf16 = QString(text).toUtf8();
-    output.reserve(utf16.size() + 8);
-    for (char ch : utf16) {
+    output.reserve(text.size() + 8);
+    for (char ch : text) {
         switch (ch) {
         case '(':
         case ')':
@@ -47,11 +46,11 @@ QByteArray PdfContentWriter::escapedPdfString(const QString &text)
 PdfContentWriter::StreamBuildResult PdfContentWriter::buildReplacementTextStream(
     const PdfRun &run,
     const QString &newText,
-    const QString &writerFontResourceName) const
+    const PdfFontWritePlan &fontPlan) const
 {
     StreamBuildResult result;
     result.fontResourceKey = run.fontResourceKey;
-    if (run.glyphs.isEmpty() || newText.isEmpty() || writerFontResourceName.isEmpty())
+    if (run.glyphs.isEmpty() || newText.isEmpty() || fontPlan.resourceName.isEmpty() || fontPlan.encodedText.isEmpty())
         return result;
 
     const PdfGlyph &first = run.glyphs.constFirst();
@@ -68,7 +67,7 @@ PdfContentWriter::StreamBuildResult PdfContentWriter::buildReplacementTextStream
     stream.append(" rg\n");
     stream.append("BT\n");
     stream.append("/");
-    stream.append(writerFontResourceName.toUtf8());
+    stream.append(fontPlan.resourceName.toUtf8());
     stream.append(" ");
     stream.append(number(fontSize));
     stream.append(" Tf\n");
@@ -97,14 +96,26 @@ PdfContentWriter::StreamBuildResult PdfContentWriter::buildReplacementTextStream
     }
 
     if (simpleAdvances) {
-        stream.append("(");
-        stream.append(escapedPdfString(newText));
-        stream.append(") Tj\n");
+        if (fontPlan.hexString) {
+            stream.append("<");
+            stream.append(fontPlan.encodedText.toHex().toUpper());
+            stream.append("> Tj\n");
+        } else {
+            stream.append("(");
+            stream.append(escapedPdfBytes(fontPlan.encodedText));
+            stream.append(") Tj\n");
+        }
     } else {
         result.usesTJ = true;
-        stream.append("[(");
-        stream.append(escapedPdfString(newText));
-        stream.append(")] TJ\n");
+        if (fontPlan.hexString) {
+            stream.append("[<");
+            stream.append(fontPlan.encodedText.toHex().toUpper());
+            stream.append(">] TJ\n");
+        } else {
+            stream.append("[(");
+            stream.append(escapedPdfBytes(fontPlan.encodedText));
+            stream.append(")] TJ\n");
+        }
     }
 
     stream.append("ET\n");

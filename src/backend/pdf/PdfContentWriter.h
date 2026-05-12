@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PdfFontWritePlan.h"
 #include "../text/PdfGlyphRunModel.h"
 
 #include <QByteArray>
@@ -21,10 +22,10 @@ public:
 
     StreamBuildResult buildReplacementTextStream(const PdfRun &run,
                                                  const QString &newText,
-                                                 const QString &writerFontResourceName) const;
+                                                 const PdfFontWritePlan &fontPlan) const;
 
 private:
-    static QByteArray escapedPdfString(const QString &text);
+    static QByteArray escapedPdfBytes(const QByteArray &text);
 };
 
 } // namespace PDFClowne::Editing

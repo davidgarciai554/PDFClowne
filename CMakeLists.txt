@@ -14,7 +14,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Qml Svg)
 find_package(harfbuzz CONFIG REQUIRED)
 find_package(Freetype REQUIRED)
 
-option(PDFCLOWNE_ENABLE_PDFIUM_EDITING "Enable direct PDFium-backed PDF text editing" OFF)
+set(PDFCLOWNE_ENABLE_PDFIUM_EDITING OFF CACHE BOOL "PDFium editing is retired; MuPDF PdfEditSessionController is the only text editing pipeline." FORCE)
 option(ENABLE_OCR "Enable OCR fallback" OFF)
 option(ENABLE_FORMS "Enable PDF AcroForm filling via PoDoFo" ON)
 option(ENABLE_SIGNATURES "Enable PDF visual and digital signatures" ON)
@@ -170,12 +170,12 @@ set(CPP_SOURCES
     src/backend/render/PdfGlyphOverlayItem.cpp
     src/backend/render/PdfScratchPageRenderer.cpp
     src/backend/pdf/PdfContentWriter.cpp
+    src/backend/pdf/PdfFontResourceWriter.cpp
     src/backend/pdf/PdfSaveCoordinator.cpp
     src/core/editing/FontFallbackManager.cpp
     src/core/editing/PdfExtractionDebugRenderer.cpp
     src/core/editing/TextBlockBuilder.cpp
     src/core/editing/TextBlockModel.cpp
-    src/core/pdf/PdfiumInitializer.cpp
 )
 
 if(PDFCLOWNE_ENABLE_PDFIUM_EDITING)
@@ -214,7 +214,10 @@ set(CPP_HEADERS
     src/backend/render/PdfGlyphOverlayItem.h
     src/backend/render/PdfScratchPageRenderer.h
     src/backend/pdf/PdfContentWriter.h
+    src/backend/pdf/PdfFontResourceWriter.h
+    src/backend/pdf/PdfFontWritePlan.h
     src/backend/pdf/PdfSaveCoordinator.h
+    src/backend/pdf/PdfTextEditOperation.h
     src/core/editing/EditingHeuristics.h
     src/core/editing/FontFallbackManager.h
     src/core/editing/PdfCoordTransform.h
@@ -266,7 +269,6 @@ qt_add_qml_module(PDFClowne
         src/qml/EditToolbar.qml
         src/qml/editor/PdfEditOverlay.qml
         src/qml/Theme.qml
-        src/qml/EditableTextBox.qml
         src/qml/ResizeHandles.qml
         src/qml/EditingToolbar.qml
         src/qml/PclToolButton.qml
@@ -402,6 +404,7 @@ add_executable(PdfEditSessionVisualSnapshotTest
     src/backend/text/PdfEditSessionController.cpp
     src/backend/render/PdfScratchPageRenderer.cpp
     src/backend/pdf/PdfContentWriter.cpp
+    src/backend/pdf/PdfFontResourceWriter.cpp
     src/backend/pdf/PdfSaveCoordinator.cpp
 )
 
@@ -424,6 +427,73 @@ target_link_libraries(PdfEditSessionVisualSnapshotTest PRIVATE
 add_test(NAME PdfEditSessionVisualSnapshot
     COMMAND PdfEditSessionVisualSnapshotTest "${CMAKE_SOURCE_DIR}/tests/pdfs/01-base.pdf")
 
+function(add_pdf_text_edit_save_test target_name source_file test_name)
+    add_executable(${target_name}
+        ${source_file}
+        src/backend/text/PdfGlyphRunModel.cpp
+        src/backend/text/PdfTextExtractor.cpp
+        src/backend/text/PdfFontResolver.cpp
+        src/backend/text/PdfEditSessionController.cpp
+        src/backend/render/PdfScratchPageRenderer.cpp
+        src/backend/pdf/PdfContentWriter.cpp
+        src/backend/pdf/PdfFontResourceWriter.cpp
+        src/backend/pdf/PdfSaveCoordinator.cpp
+    )
+    target_include_directories(${target_name} PRIVATE
+        src/backend
+        src/backend/text
+        src/backend/render
+        src/backend/pdf
+        ${MUPDF_INCLUDE_DIR}
+    )
+    target_link_libraries(${target_name} PRIVATE
+        Qt6::Core
+        Qt6::Gui
+        Freetype::Freetype
+        harfbuzz::harfbuzz
+        ${MUPDF_LIBRARIES}
+    )
+    add_test(NAME ${test_name}
+        COMMAND ${target_name} "${CMAKE_SOURCE_DIR}/tests/pdfs/01-base.pdf")
+
+    if(WIN32 AND DEFINED VCPKG_INSTALLED_DIR)
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set(_PDFCLOWNE_VCPKG_RUNTIME_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/bin")
+        else()
+            set(_PDFCLOWNE_VCPKG_RUNTIME_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin")
+        endif()
+
+        if(EXISTS "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}")
+            add_custom_command(TARGET ${target_name} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/harfbuzz.dll"
+                    "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/freetyped.dll"
+                    "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/bz2d.dll"
+                    "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/libpng16d.dll"
+                    "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/brotlicommon.dll"
+                    "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/brotlidec.dll"
+                    "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/zd.dll"
+                    "$<TARGET_FILE_DIR:${target_name}>"
+                COMMENT "Deploying vcpkg runtime dependencies for ${target_name}..."
+                VERBATIM
+            )
+        endif()
+    endif()
+endfunction()
+
+add_pdf_text_edit_save_test(PdfTextEditSaveSingleLineTest
+    tests/cpp/PdfTextEditSaveSingleLineTest.cpp
+    PdfTextEditSaveSingleLine)
+add_pdf_text_edit_save_test(PdfTextEditSaveMultipleEditsTest
+    tests/cpp/PdfTextEditSaveMultipleEditsTest.cpp
+    PdfTextEditSaveMultipleEdits)
+add_pdf_text_edit_save_test(PdfTextEditSaveUnicodeTest
+    tests/cpp/PdfTextEditSaveUnicodeTest.cpp
+    PdfTextEditSaveUnicode)
+add_pdf_text_edit_save_test(PdfTextEditSaveReopenExtractionTest
+    tests/cpp/PdfTextEditSaveReopenExtractionTest.cpp
+    PdfTextEditSaveReopenExtraction)
+
 if(WIN32 AND DEFINED VCPKG_INSTALLED_DIR)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(_PDFCLOWNE_VCPKG_RUNTIME_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/bin")
@@ -433,8 +503,14 @@ if(WIN32 AND DEFINED VCPKG_INSTALLED_DIR)
 
     if(EXISTS "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}")
         add_custom_command(TARGET PdfEditSessionVisualSnapshotTest POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy_directory
-                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/harfbuzz.dll"
+                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/freetyped.dll"
+                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/bz2d.dll"
+                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/libpng16d.dll"
+                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/brotlicommon.dll"
+                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/brotlidec.dll"
+                "${_PDFCLOWNE_VCPKG_RUNTIME_DIR}/zd.dll"
                 "$<TARGET_FILE_DIR:PdfEditSessionVisualSnapshotTest>"
             COMMENT "Deploying vcpkg runtime dependencies for PDF edit snapshot tests..."
             VERBATIM

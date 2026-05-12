@@ -3,6 +3,7 @@
 #include "PdfFontResolver.h"
 #include "PdfGlyphRunModel.h"
 #include "PdfTextExtractor.h"
+#include "../pdf/PdfTextEditOperation.h"
 #include "../render/PdfScratchPageRenderer.h"
 
 #include <QImage>
@@ -27,6 +28,7 @@ class PdfEditSessionController : public QObject {
     Q_PROPERTY(QString editableRegionsJson READ editableRegionsJson NOTIFY pageChanged)
     Q_PROPERTY(QString selectionQuadsJson READ selectionQuadsJson NOTIFY activeChanged)
     Q_PROPERTY(QString activeText READ activeText WRITE updateActiveText NOTIFY activeTextChanged)
+    Q_PROPERTY(int cursorPosition READ cursorPosition NOTIFY cursorChanged)
     Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY statusMessageChanged)
     Q_PROPERTY(QImage editLayerImage READ editLayerImage NOTIFY editLayerImageChanged)
     Q_PROPERTY(bool scannedDocumentSuspected READ scannedDocumentSuspected NOTIFY pageChanged)
@@ -45,6 +47,7 @@ public:
     QString editableRegionsJson() const { return m_regionsJson; }
     QString selectionQuadsJson() const { return m_selectionQuadsJson; }
     QString activeText() const { return m_activeText; }
+    int cursorPosition() const { return m_cursorPosition; }
     QString statusMessage() const { return m_statusMessage; }
     QImage editLayerImage() const { return m_editLayerImage; }
     bool scannedDocumentSuspected() const { return m_ready && m_currentPageIndex >= 0 && m_pageText.glyphs.isEmpty(); }
@@ -67,6 +70,10 @@ public:
     Q_INVOKABLE bool saveDocument(const QString &outputPath, bool incremental = false);
     Q_INVOKABLE void handleKeyText(const QString &text);
     Q_INVOKABLE void handleBackspace();
+    Q_INVOKABLE void handleDelete();
+    Q_INVOKABLE void moveCursorLeft();
+    Q_INVOKABLE void moveCursorRight();
+    Q_INVOKABLE void cancelActiveEdit();
     Q_INVOKABLE void inputMethodCommit(const QString &commitText);
 
 signals:
@@ -77,6 +84,7 @@ signals:
     void pendingEditsChanged();
     void pageChanged();
     void activeTextChanged();
+    void cursorChanged();
     void statusMessageChanged();
     void editLayerImageChanged();
     void saveCompleted(const QString &outputPath);
@@ -114,6 +122,8 @@ private:
     bool m_hasPendingEdits = false;
     int m_currentPageIndex = -1;
     int m_activeRegionIndex = -1;
+    QVector<PdfTextEditOperation> m_textEdits;
+    int m_cursorPosition = 0;
     QSize m_pixelSize;
     qreal m_scale = 1.0;
 };

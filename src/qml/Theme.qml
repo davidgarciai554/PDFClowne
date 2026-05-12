@@ -57,25 +57,28 @@ QtObject {
     readonly property string modeName: ["Light", "Dark"][mode]
     readonly property string modeIcon: ["☀", "☾"][mode]
 
-    // Palette derived from logo color #626d90 (slate indigo)
-    readonly property color background:    isDark ? "#181828" : "#F4F4F8"
-    readonly property color surface:       isDark ? "#23233A" : "#FFFFFF"
-    readonly property color surfaceAlt:    isDark ? "#2C2C48" : "#EEEEF4"
-    readonly property color text:          isDark ? "#D8DAEA" : "#1C1C2E"
-    readonly property color accent:        isDark ? "#8EA3D4" : "#5B6FA8"
+    readonly property color brandBlue: isDark ? "#6FA8DC" : "#3D7AB0"
+    readonly property color brandRed: isDark ? "#FF7A73" : "#D8423C"
+
+    readonly property color background:    isDark ? "#0F1620" : "#F7FAFC"
+    readonly property color surface:       isDark ? "#18212E" : "#FFFFFF"
+    readonly property color surfaceAlt:    isDark ? "#223147" : "#EDF3F9"
+    readonly property color text:          isDark ? "#F5F7FA" : "#14202B"
+    readonly property color accent:        brandBlue
     readonly property color accentText:    "#FFFFFF"
-    readonly property color border:        isDark ? "#3A3A5C" : "#DCDCE8"
-    readonly property color secondaryText: isDark ? "#9090B8" : "#626d90"
-    readonly property color hover:         isDark ? "#2E2E50" : "#EAEAF4"
-    readonly property color tabActive:     isDark ? "#2C2C48" : "#ECECfA"
-    readonly property color danger:        isDark ? "#F08090" : "#C83040"
+    readonly property color border:        isDark ? "#32465F" : "#D5E1EC"
+    readonly property color secondaryText: isDark ? "#A9B6C9" : "#5A6B7E"
+    readonly property color hover:         isDark ? "#2A3D57" : "#E4EEF8"
+    readonly property color tabActive:     isDark ? "#27405F" : "#DCEAF7"
+    readonly property color danger:        brandRed
+    readonly property color viewerCanvas:  isDark ? "#0B1119" : "#DFE9F4"
     readonly property color controlFill:   surfaceAlt
     readonly property color controlFillHover: hover
     readonly property color controlFillPressed: tabActive
-    readonly property color controlDisabled: isDark ? "#1E1E32" : "#E2E2EC"
+    readonly property color controlDisabled: isDark ? "#17202C" : "#E4ECF4"
     readonly property color focusRing:     accent
     readonly property color editSelection: accent
-    readonly property color editSelectionSoft: isDark ? "#263A66" : "#DDE7FF"
+    readonly property color editSelectionSoft: isDark ? "#193957" : "#DCEAF7"
 
     readonly property int radius: 6
     readonly property int radiusLg: 10
