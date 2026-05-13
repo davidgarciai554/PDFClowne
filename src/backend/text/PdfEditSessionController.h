@@ -29,6 +29,9 @@ class PdfEditSessionController : public QObject {
     Q_PROPERTY(QString selectionQuadsJson READ selectionQuadsJson NOTIFY activeChanged)
     Q_PROPERTY(QString activeText READ activeText WRITE updateActiveText NOTIFY activeTextChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition NOTIFY cursorChanged)
+    Q_PROPERTY(bool replaceSelectionOnInput READ replaceSelectionOnInput NOTIFY inputStateChanged)
+    Q_PROPERTY(int selectionStart READ selectionStart NOTIFY inputStateChanged)
+    Q_PROPERTY(int selectionLength READ selectionLength NOTIFY inputStateChanged)
     Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY statusMessageChanged)
     Q_PROPERTY(QImage editLayerImage READ editLayerImage NOTIFY editLayerImageChanged)
     Q_PROPERTY(bool scannedDocumentSuspected READ scannedDocumentSuspected NOTIFY pageChanged)
@@ -48,6 +51,9 @@ public:
     QString selectionQuadsJson() const { return m_selectionQuadsJson; }
     QString activeText() const { return m_activeText; }
     int cursorPosition() const { return m_cursorPosition; }
+    bool replaceSelectionOnInput() const { return m_replaceSelectionOnInput; }
+    int selectionStart() const { return m_selectionStart; }
+    int selectionLength() const { return m_selectionLength; }
     QString statusMessage() const { return m_statusMessage; }
     QImage editLayerImage() const { return m_editLayerImage; }
     bool scannedDocumentSuspected() const { return m_ready && m_currentPageIndex >= 0 && m_pageText.glyphs.isEmpty(); }
@@ -85,6 +91,7 @@ signals:
     void pageChanged();
     void activeTextChanged();
     void cursorChanged();
+    void inputStateChanged();
     void statusMessageChanged();
     void editLayerImageChanged();
     void saveCompleted(const QString &outputPath);
@@ -99,6 +106,9 @@ private:
     void rebuildPageJson();
     void rebuildSelectionJson();
     void regenerateEditLayer();
+    int cursorIndexForPoint(const PdfEditableRegion &region, const QPointF &point) const;
+    void replaceSelectionWithText(const QString &text);
+    void clearInputSelection();
     QVector<PdfRun> activeReplacementRuns() const;
     QVector<QPolygonF> activeRedactionQuads() const;
     bool writeEditedPdfCopy(const QString &tempPath, QString *error) const;
@@ -124,6 +134,9 @@ private:
     int m_activeRegionIndex = -1;
     QVector<PdfTextEditOperation> m_textEdits;
     int m_cursorPosition = 0;
+    bool m_replaceSelectionOnInput = false;
+    int m_selectionStart = 0;
+    int m_selectionLength = 0;
     QSize m_pixelSize;
     qreal m_scale = 1.0;
 };

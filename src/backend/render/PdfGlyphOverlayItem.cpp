@@ -17,6 +17,7 @@ PdfGlyphOverlayItem::PdfGlyphOverlayItem(QQuickItem *parent)
     setFlag(ItemAcceptsInputMethod, true);
     setAcceptedMouseButtons(Qt::AllButtons);
     setFocus(true);
+    setActiveFocusOnTab(true);
 }
 
 void PdfGlyphOverlayItem::setController(PDFClowne::Editing::PdfEditSessionController *controller)
@@ -38,6 +39,9 @@ void PdfGlyphOverlayItem::setController(PDFClowne::Editing::PdfEditSessionContro
                 this,
                 [this]() {
                     setFocus(true);
+                    forceActiveFocus(Qt::MouseFocusReason);
+                    if (window())
+                        window()->requestActivate();
                     update();
                 });
     }

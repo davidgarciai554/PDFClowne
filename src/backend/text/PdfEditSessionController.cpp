@@ -16,6 +16,8 @@
 #include <mupdf/pdf.h>
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 namespace PDFClowne::Editing {
 namespace {
@@ -223,12 +225,18 @@ void PdfEditSessionController::clearSession()
     m_selectionQuadsJson = QStringLiteral("[]");
     m_editLayerImage = {};
     const bool cursorChangedNow = m_cursorPosition != 0;
+    const bool inputStateChangedNow = m_replaceSelectionOnInput || m_selectionStart != 0 || m_selectionLength != 0;
     m_cursorPosition = 0;
+    m_replaceSelectionOnInput = false;
+    m_selectionStart = 0;
+    m_selectionLength = 0;
     if (wasActive)
         emit activeChanged();
     emit activeTextChanged();
     if (cursorChangedNow)
         emit cursorChanged();
+    if (inputStateChangedNow)
+        emit inputStateChanged();
     emit editLayerImageChanged();
 }
 
@@ -327,39 +335,86 @@ void PdfEditSessionController::handleKeyText(const QString &text)
     if (!m_active || text.isEmpty())
         return;
 
+    if (m_replaceSelectionOnInput || m_selectionLength > 0) {
+        replaceSelectionWithText(text);
+        return;
+    }
+
     QString next = m_activeText;
-    next.insert(m_cursorPosition, text);
-    m_cursorPosition += text.size();
+    const int nextSize = static_cast<int>(next.size());
+    const int safeCursor = std::max(0, std::min(m_cursorPosition, nextSize));
+
+    next.insert(safeCursor, text);
+    m_cursorPosition = safeCursor + static_cast<int>(text.size());
     emit cursorChanged();
     updateActiveText(next);
 }
 
 void PdfEditSessionController::handleBackspace()
 {
-    if (!m_active || m_cursorPosition <= 0)
+    if (!m_active)
+        return;
+
+    if (m_replaceSelectionOnInput || m_selectionLength > 0) {
+        replaceSelectionWithText(QString());
+        return;
+    }
+
+    if (m_cursorPosition <= 0)
         return;
 
     QString next = m_activeText;
-    next.remove(m_cursorPosition - 1, 1);
-    --m_cursorPosition;
+    const int nextSize = static_cast<int>(next.size());
+    const int safeCursor = std::max(0, std::min(m_cursorPosition, nextSize));
+
+    if (safeCursor <= 0)
+        return;
+
+    next.remove(safeCursor - 1, 1);
+    m_cursorPosition = safeCursor - 1;
     emit cursorChanged();
     updateActiveText(next);
 }
 
 void PdfEditSessionController::handleDelete()
 {
-    if (!m_active || m_cursorPosition >= m_activeText.size())
+    if (!m_active)
+        return;
+
+    if (m_replaceSelectionOnInput || m_selectionLength > 0) {
+        replaceSelectionWithText(QString());
+        return;
+    }
+
+    if (m_cursorPosition >= static_cast<int>(m_activeText.size()))
         return;
 
     QString next = m_activeText;
-    next.remove(m_cursorPosition, 1);
+    const int nextSize = static_cast<int>(next.size());
+    const int safeCursor = std::max(0, std::min(m_cursorPosition, nextSize));
+
+    if (safeCursor >= nextSize)
+        return;
+
+    next.remove(safeCursor, 1);
     emit cursorChanged();
     updateActiveText(next);
 }
 
 void PdfEditSessionController::moveCursorLeft()
 {
-    if (!m_active || m_cursorPosition <= 0)
+    if (!m_active)
+        return;
+
+    if (m_replaceSelectionOnInput || m_selectionLength > 0) {
+        m_cursorPosition = std::max(0, m_selectionStart);
+        clearInputSelection();
+        emit cursorChanged();
+        regenerateEditLayer();
+        return;
+    }
+
+    if (m_cursorPosition <= 0)
         return;
 
     --m_cursorPosition;
@@ -369,7 +424,19 @@ void PdfEditSessionController::moveCursorLeft()
 
 void PdfEditSessionController::moveCursorRight()
 {
-    if (!m_active || m_cursorPosition >= m_activeText.size())
+    if (!m_active)
+        return;
+
+    if (m_replaceSelectionOnInput || m_selectionLength > 0) {
+        const int activeTextSize = static_cast<int>(m_activeText.size());
+        m_cursorPosition = std::max(0, std::min(m_selectionStart + m_selectionLength, activeTextSize));
+        clearInputSelection();
+        emit cursorChanged();
+        regenerateEditLayer();
+        return;
+    }
+
+    if (m_cursorPosition >= static_cast<int>(m_activeText.size()))
         return;
 
     ++m_cursorPosition;
@@ -436,7 +503,50 @@ void PdfEditSessionController::selectRegionAt(const QPointF &point)
         return;
     }
 
-    const PdfEditableRegion &region = m_pageText.regions.at(m_activeRegionIndex);
+    PdfEditableRegion &region = m_pageText.regions[m_activeRegionIndex];
+    const int regionFirst = std::max(0, region.glyphRange.first);
+    const int regionGlyphCount = static_cast<int>(m_pageText.glyphs.size());
+    const int regionEnd = std::min(regionGlyphCount, regionFirst + region.glyphRange.second);
+    if (regionFirst < regionEnd) {
+        const PdfGlyph &anchorGlyph = m_pageText.glyphs.at(regionFirst);
+        const QRectF anchorBox = anchorGlyph.bbox.normalized();
+        const qreal anchorY = anchorBox.center().y();
+        const qreal lineTolerance = std::max<qreal>(2.0, anchorGlyph.fontSize * 0.65);
+        int lineFirst = regionFirst;
+        int lineEnd = regionEnd;
+
+        for (int i = 0; i < regionGlyphCount; ++i) {
+            const PdfGlyph &candidate = m_pageText.glyphs.at(i);
+            if (candidate.blockIndex != anchorGlyph.blockIndex)
+                continue;
+
+            const QRectF candidateBox = candidate.bbox.normalized();
+            if (std::abs(candidateBox.center().y() - anchorY) > lineTolerance)
+                continue;
+
+            lineFirst = std::min(lineFirst, i);
+            lineEnd = std::max(lineEnd, i + 1);
+        }
+
+        QRectF lineBox;
+        for (int i = lineFirst; i < lineEnd; ++i) {
+            const QRectF glyphBox = m_pageText.glyphs.at(i).bbox.normalized();
+            lineBox = lineBox.isNull() ? glyphBox : lineBox.united(glyphBox);
+        }
+
+        QPolygonF lineQuad;
+        lineQuad << lineBox.topLeft()
+                 << lineBox.topRight()
+                 << lineBox.bottomRight()
+                 << lineBox.bottomLeft();
+
+        region.glyphRange = {lineFirst, lineEnd - lineFirst};
+        region.box = lineBox;
+        region.unionQuad = lineQuad;
+        region.baselineStart = m_pageText.glyphs.at(lineFirst).origin;
+        region.baselineEnd = m_pageText.glyphs.at(lineEnd - 1).origin;
+    }
+
     QString text;
     const int first = std::max(0, region.glyphRange.first);
     const int glyphCount = static_cast<int>(m_pageText.glyphs.size());
@@ -449,11 +559,18 @@ void PdfEditSessionController::selectRegionAt(const QPointF &point)
 
     m_originalActiveText = text;
     m_activeText = text;
-    m_cursorPosition = m_activeText.size();
+    const int clickedCursor = cursorIndexForPoint(region, point);
+    const int activeTextSize = static_cast<int>(m_activeText.size());
+    m_cursorPosition = std::max(0, std::min(clickedCursor, activeTextSize));
+    m_selectionStart = 0;
+    m_selectionLength = activeTextSize;
+    m_replaceSelectionOnInput = true;
     m_active = true;
     rebuildSelectionJson();
+    regenerateEditLayer();
     emit activeTextChanged();
     emit cursorChanged();
+    emit inputStateChanged();
     emit activeChanged();
 }
 
@@ -506,6 +623,68 @@ void PdfEditSessionController::regenerateEditLayer()
 
     m_editLayerImage = base;
     emit editLayerImageChanged();
+}
+
+int PdfEditSessionController::cursorIndexForPoint(const PdfEditableRegion &region, const QPointF &point) const
+{
+    const int first = std::max(0, region.glyphRange.first);
+    const int glyphCount = static_cast<int>(m_pageText.glyphs.size());
+    const int end = std::min(glyphCount, first + region.glyphRange.second);
+
+    if (first >= end)
+        return 0;
+
+    int bestIndex = 0;
+    qreal bestDistance = std::numeric_limits<qreal>::max();
+
+    for (int i = first; i < end; ++i) {
+        const PdfGlyph &glyph = m_pageText.glyphs.at(i);
+        const QRectF box = glyph.bbox.normalized();
+
+        const qreal midX = box.center().x();
+        const qreal distance = std::abs(point.x() - midX);
+
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            bestIndex = i - first + (point.x() > midX ? 1 : 0);
+        }
+    }
+
+    return std::max(0, std::min(bestIndex, end - first));
+}
+
+void PdfEditSessionController::clearInputSelection()
+{
+    const bool changed = m_replaceSelectionOnInput || m_selectionStart != 0 || m_selectionLength != 0;
+
+    m_replaceSelectionOnInput = false;
+    m_selectionStart = 0;
+    m_selectionLength = 0;
+
+    if (changed)
+        emit inputStateChanged();
+}
+
+void PdfEditSessionController::replaceSelectionWithText(const QString &text)
+{
+    if (!m_active)
+        return;
+
+    QString next = m_activeText;
+    const int nextSize = static_cast<int>(next.size());
+
+    const int safeStart = std::max(0, std::min(m_selectionStart, nextSize));
+    const int safeLength = std::max(0, std::min(m_selectionLength, nextSize - safeStart));
+
+    next.remove(safeStart, safeLength);
+    next.insert(safeStart, text);
+
+    m_cursorPosition = safeStart + static_cast<int>(text.size());
+
+    clearInputSelection();
+
+    emit cursorChanged();
+    updateActiveText(next);
 }
 
 QVector<PdfRun> PdfEditSessionController::activeReplacementRuns() const

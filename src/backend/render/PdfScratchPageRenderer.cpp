@@ -285,8 +285,20 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
 
             const PDFClowne::Editing::PdfFontResolver::ResolvedFont resolved =
                 fontResolver.resolveEmbeddedFont(filePath, password, run.fontResourceKey);
+            bool forceFallbackFont = false;
+
+            QString originalFromGlyphs;
+            for (const PDFClowne::Editing::PdfGlyph &glyph : run.glyphs) {
+                const char32_t scalar = static_cast<char32_t>(glyph.unicode);
+                if (scalar)
+                    originalFromGlyphs.append(QString::fromUcs4(&scalar, 1));
+            }
+
+            if (run.plainText != originalFromGlyphs)
+                forceFallbackFont = true;
+
             fz_font *font = nullptr;
-            if (!resolved.fontProgram.isEmpty()) {
+            if (!forceFallbackFont && !resolved.fontProgram.isEmpty()) {
                 font = fz_new_font_from_memory(ctx,
                                                resolved.originalSubsetName.toUtf8().constData(),
                                                reinterpret_cast<const unsigned char *>(resolved.fontProgram.constData()),
@@ -297,13 +309,28 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
                 font = fz_new_base14_font(ctx, "Helvetica");
             }
 
-            QVector<PDFClowne::Editing::PdfShapedGlyph> shaped = shapeRun(run, resolved.fontProgram);
-            if (shaped.isEmpty()) {
-                shaped.reserve(run.glyphs.size());
-                for (const PDFClowne::Editing::PdfGlyph &glyph : run.glyphs) {
+            QVector<PDFClowne::Editing::PdfShapedGlyph> shaped;
+            if (!forceFallbackFont && !resolved.fontProgram.isEmpty())
+                shaped = shapeRun(run, resolved.fontProgram);
+
+            if (shaped.isEmpty() || forceFallbackFont) {
+                shaped.clear();
+                shaped.reserve(run.plainText.size());
+
+                for (const QChar &ch : run.plainText) {
+                    const int unicode = ch.unicode();
+                    int gid = fz_encode_character(ctx, font, unicode);
+                    if (gid <= 0)
+                        gid = fz_encode_character(ctx, font, '?');
+
                     PDFClowne::Editing::PdfShapedGlyph shapedGlyph;
-                    shapedGlyph.glyphId = static_cast<uint>(glyph.originalGid);
-                    shapedGlyph.advance = glyph.fontSize > 0.0 ? glyph.advance / glyph.fontSize : glyph.advance;
+                    shapedGlyph.glyphId = static_cast<uint>(std::max(0, gid));
+                    shapedGlyph.cluster = static_cast<uint>(shaped.size());
+                    const float advance = fz_advance_glyph(ctx,
+                                                           font,
+                                                           static_cast<int>(shapedGlyph.glyphId),
+                                                           run.wmode);
+                    shapedGlyph.advance = QPointF(advance, 0.0);
                     shaped.append(shapedGlyph);
                 }
             }
