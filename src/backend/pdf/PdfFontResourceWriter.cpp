@@ -1,6 +1,21 @@
 #include "PdfFontResourceWriter.h"
 
 namespace PDFClowne::Editing {
+namespace {
+
+QString resourceNameFromKey(const QString &key)
+{
+    const QString marker = QStringLiteral("/font:");
+    const int start = key.indexOf(marker);
+    if (start < 0)
+        return {};
+
+    const int nameStart = start + marker.size();
+    const int end = key.indexOf(QLatin1Char('/'), nameStart);
+    return end < 0 ? key.mid(nameStart) : key.mid(nameStart, end - nameStart);
+}
+
+} // namespace
 
 bool PdfFontResourceWriter::canUseWinAnsi(const QString &text)
 {
@@ -46,8 +61,6 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
                                                           const QString &newText,
                                                           QString *error) const
 {
-    Q_UNUSED(run)
-
     PdfFontWritePlan plan;
 
     pdf_obj *resources = pdf_page_resources(ctx, page);
@@ -60,6 +73,21 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
     pdf_obj *fonts = pdf_dict_get(ctx, resources, PDF_NAME(Font));
     if (!fonts)
         fonts = pdf_dict_put_dict(ctx, resources, PDF_NAME(Font), 4);
+
+    const QString originalResourceName = resourceNameFromKey(run.fontResourceKey);
+    const bool winAnsi = canUseWinAnsi(newText);
+    if (winAnsi && !originalResourceName.isEmpty()
+        && pdf_dict_gets(ctx, fonts, originalResourceName.toUtf8().constData())) {
+        plan.resourceName = originalResourceName;
+        plan.debugFontName = run.glyphs.isEmpty()
+            ? originalResourceName
+            : run.glyphs.constFirst().fontName;
+        plan.winAnsi = true;
+        plan.hexString = false;
+        plan.fallbackFont = false;
+        plan.encodedText = encodeWinAnsi(newText);
+        return plan;
+    }
 
     fz_font *font = nullptr;
     fz_try(ctx)
@@ -85,7 +113,7 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
 
         plan.resourceName = resourceName;
         plan.debugFontName = QStringLiteral("Helvetica");
-        plan.winAnsi = canUseWinAnsi(newText);
+        plan.winAnsi = winAnsi;
         plan.hexString = !plan.winAnsi;
         plan.fallbackFont = true;
 

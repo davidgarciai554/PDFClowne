@@ -1,5 +1,6 @@
 #include "PdfSaveCoordinator.h"
 
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -23,6 +24,13 @@ QString ensurePdfSuffix(const QString &path)
     if (info.suffix().compare(QLatin1String("pdf"), Qt::CaseInsensitive) == 0)
         return path;
     return path + QStringLiteral(".pdf");
+}
+
+bool saveTraceEnabled()
+{
+    static const bool enabled = qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_SAVE")
+        || qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_EDIT_INPUT");
+    return enabled;
 }
 
 } // namespace
@@ -138,6 +146,8 @@ PdfSaveCoordinator::SaveResult PdfSaveCoordinator::saveAsCopy(const QString &tar
         QFile::remove(tempPath);
         return result;
     }
+    if (saveTraceEnabled())
+        qInfo().noquote() << QStringLiteral("[PDF_SAVE_EXPORT] tempPath=\"%1\" editsWritten=true overwriteCurrent=false").arg(tempPath);
 
     if (!canOpenAsPdf(tempPath, &result.error)) {
         QFile::remove(tempPath);
@@ -152,6 +162,8 @@ PdfSaveCoordinator::SaveResult PdfSaveCoordinator::saveAsCopy(const QString &tar
     }
 
     result.ok = true;
+    if (saveTraceEnabled())
+        qInfo().noquote() << QStringLiteral("[PDF_SAVE_DONE] ok=true currentFilePath=\"%1\" documentDirty=false").arg(result.finalPath);
     return result;
 }
 
@@ -177,6 +189,8 @@ PdfSaveCoordinator::SaveResult PdfSaveCoordinator::replaceOriginalTransaction(
         QFile::remove(tempPath);
         return result;
     }
+    if (saveTraceEnabled())
+        qInfo().noquote() << QStringLiteral("[PDF_SAVE_EXPORT] tempPath=\"%1\" editsWritten=true overwriteCurrent=true").arg(tempPath);
 
     if (!canOpenAsPdf(tempPath, &result.error)) {
         QFile::remove(tempPath);
@@ -193,10 +207,14 @@ PdfSaveCoordinator::SaveResult PdfSaveCoordinator::replaceOriginalTransaction(
 
     if (!replaceFileWithBackup(result.finalPath, tempPath, &result.backupPath, &result.error)) {
         QFile::remove(tempPath);
+        if (saveTraceEnabled())
+            qWarning().noquote() << QStringLiteral("[PDF_SAVE_ERROR] message=\"%1\"").arg(result.error);
         return result;
     }
 
     result.ok = true;
+    if (saveTraceEnabled())
+        qInfo().noquote() << QStringLiteral("[PDF_SAVE_REPLACE] tempCreated=true backupCreated=true replaced=true reloaded=pending");
     return result;
 }
 

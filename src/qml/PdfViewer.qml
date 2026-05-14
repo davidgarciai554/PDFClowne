@@ -80,6 +80,7 @@ FocusScope {
 
     signal formFieldSelected(var field)
     property string editTool: "text"
+    readonly property bool nativeTextEditToolActive: editTool === "text" || editTool === "block"
     property var editAnnotations: []
     property string editFontFamily: "Arial"
     property int editFontSize: 12
@@ -244,8 +245,11 @@ FocusScope {
         prefetchTimer.restart()
     }
     onEditModeEnabledChanged: {
-        if (!editModeEnabled)
+        if (!editModeEnabled) {
             activeTextDraft = null
+            if (editingController && editingController.active)
+                editingController.commitActiveText("ModeChanged")
+        }
         clearTextBlockCache()
     }
     onEditToolChanged: {
@@ -987,10 +991,13 @@ FocusScope {
                                 id: pdfEditOverlay
                                 anchors.fill: parent
                                 visible: pageImage.status === Image.Ready
-                                         && root.editModeEnabled
-                                         && root.editTool === "text"
                                          && root.editingController !== null
-                                z: 4
+                                         && ((root.editModeEnabled && root.nativeTextEditToolActive)
+                                             || (root.editingController.hasPendingEdits
+                                                 && root.editingController.hasConfirmedEdits(pageFrame.pageIndex))
+                                             || root.editingController.active)
+                                inputEnabled: root.editModeEnabled && root.nativeTextEditToolActive
+                                z: 7
                                 controller: root.editingController
                                 pageIndex: pageFrame.pageIndex
                                 pageScale: pagePaper.pageScale

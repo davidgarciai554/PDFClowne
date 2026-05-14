@@ -82,7 +82,8 @@ Assert-Matches $controllerHeader 'class\s+PdfEditSessionController\s*:\s*public\
 Assert-Matches $controllerHeader 'beginSession' 'PdfEditSessionController must expose beginSession for first-click editing.'
 Assert-Matches $controllerHeader 'QInputMethodEvent|inputMethod' 'PdfEditSessionController must own keyboard/IME state outside visible QML text.'
 Assert-Matches $controllerSource 'saveAsCopy|replaceOriginalTransaction' 'PdfEditSessionController must save through the temp/validated save coordinator.'
-Assert-Matches $controllerSource 'pdf_redact_page' 'PdfEditSessionController must redact original text before writing replacement streams.'
+Assert-Matches $controllerSource 'pdf_apply_redaction|pdf_redact_page' 'PdfEditSessionController must apply real text redaction before writing replacement streams.'
+Assert-Matches $controllerSource 'PDF_REDACTION_SPACE_CONFIRMED' 'PdfEditSessionController must log the redaction coordinate-space contract used by the physical save path.'
 Assert-Matches $controllerSource 'pdf_save_document' 'PdfEditSessionController must write a real edited PDF document.'
 Assert-NotMatches $controllerSource 'writer tipografico MuPDF esta preparado' 'PdfEditSessionController.saveDocument must not be a non-writing stub.'
 

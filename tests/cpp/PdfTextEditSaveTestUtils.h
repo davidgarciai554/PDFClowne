@@ -14,6 +14,7 @@
 #include <QString>
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 
 namespace PdfTextEditSaveTestUtils {
@@ -66,10 +67,53 @@ inline int findRegion(const PDFClowne::Editing::PdfTextExtractor::PageText &page
     return page.regions.isEmpty() ? -1 : 0;
 }
 
+inline int findRegionNearBox(const PDFClowne::Editing::PdfTextExtractor::PageText &page,
+                             const QString &needle,
+                             const QRectF &box)
+{
+    const QRectF expandedBox = box.adjusted(-8.0, -8.0, 8.0, 8.0);
+    for (int i = 0; i < page.regions.size(); ++i) {
+        if (!regionText(page, i).contains(needle, Qt::CaseInsensitive))
+            continue;
+        if (expandedBox.intersects(page.regions.at(i).box) || expandedBox.contains(page.regions.at(i).box.center()))
+            return i;
+    }
+    return -1;
+}
+
 inline QPointF regionCenter(const PDFClowne::Editing::PdfTextExtractor::PageText &page, int regionIndex)
 {
     const QRectF box = page.regions.at(regionIndex).box;
     return QPointF(box.center().x(), box.center().y());
+}
+
+inline PDFClowne::Editing::PdfGlyph firstGlyphForRegion(
+    const PDFClowne::Editing::PdfTextExtractor::PageText &page,
+    int regionIndex)
+{
+    const PDFClowne::Editing::PdfEditableRegion &region = page.regions.at(regionIndex);
+    const int first = std::max(0, region.glyphRange.first);
+    if (first >= 0 && first < page.glyphs.size())
+        return page.glyphs.at(first);
+    return {};
+}
+
+inline PDFClowne::Editing::PdfGlyph firstGlyphForNeedleInRegion(
+    const PDFClowne::Editing::PdfTextExtractor::PageText &page,
+    int regionIndex,
+    const QString &needle)
+{
+    if (regionIndex < 0 || regionIndex >= page.regions.size())
+        return {};
+
+    const PDFClowne::Editing::PdfEditableRegion &region = page.regions.at(regionIndex);
+    const QString text = regionText(page, regionIndex);
+    const int textOffset = needle.isEmpty() ? 0 : text.indexOf(needle, 0, Qt::CaseInsensitive);
+    const int glyphOffset = textOffset < 0 ? 0 : textOffset;
+    const int first = std::max(0, region.glyphRange.first) + glyphOffset;
+    if (first >= 0 && first < page.glyphs.size())
+        return page.glyphs.at(first);
+    return firstGlyphForRegion(page, regionIndex);
 }
 
 inline bool beginRegionEdit(PDFClowne::Editing::PdfEditSessionController &controller,
@@ -95,7 +139,8 @@ inline int saveOneEdit(const QString &sourcePath,
                        const QString &replacement,
                        const QString &targetName,
                        QString *targetPath,
-                       QString *originalText)
+                       QString *originalText,
+                       bool overwriteSource = false)
 {
     PDFClowne::Editing::PdfTextExtractor extractor;
     const PDFClowne::Editing::PdfTextExtractor::PageText page =
@@ -124,10 +169,23 @@ inline int saveOneEdit(const QString &sourcePath,
     if (!controller.hasPendingEdits())
         return fail(QStringLiteral("Committed text edit did not mark pending operations."));
 
-    const QString out = outputPath(targetName);
-    QFile::remove(out);
-    if (!controller.saveDocument(out, false))
-        return fail(QStringLiteral("Could not save edited PDF copy."));
+    const QString out = overwriteSource ? sourcePath : outputPath(targetName);
+    if (!overwriteSource)
+        QFile::remove(out);
+    QString saveError;
+    QObject::connect(&controller,
+                     &PDFClowne::Editing::PdfEditSessionController::saveError,
+                     [&](const QString &message) {
+                         saveError = message;
+                     });
+    if (!controller.saveDocument(out, overwriteSource)) {
+        const QString detail = saveError.isEmpty() ? controller.statusMessage() : saveError;
+        return fail(detail.isEmpty()
+                        ? QStringLiteral("Could not save edited PDF copy for %1 -> %2.")
+                              .arg(needle, replacement)
+                        : QStringLiteral("Could not save edited PDF copy for %1 -> %2: %3")
+                              .arg(needle, replacement, detail));
+    }
 
     if (targetPath)
         *targetPath = out;
@@ -151,6 +209,91 @@ inline int assertSavedText(const QString &targetPath,
 
     if (requireOriginalRemoved && !originalText.isEmpty() && text.contains(originalText))
         return fail(QStringLiteral("Saved PDF text still contains original text: %1").arg(originalText));
+
+    return 0;
+}
+
+inline int assertSavedReplacementGeometry(const QString &sourcePath,
+                                          const QString &targetPath,
+                                          const QString &originalNeedle,
+                                          const QString &replacement,
+                                          qreal baselineTolerance = 2.0)
+{
+    PDFClowne::Editing::PdfTextExtractor extractor;
+    const PDFClowne::Editing::PdfTextExtractor::PageText original =
+        extractor.extractPage(sourcePath, QString(), 0);
+    if (!original.error.isEmpty())
+        return fail(original.error);
+    const PDFClowne::Editing::PdfTextExtractor::PageText saved =
+        extractor.extractPage(targetPath, QString(), 0);
+    if (!saved.error.isEmpty())
+        return fail(saved.error);
+
+    const int originalRegion = findRegion(original, originalNeedle);
+    if (originalRegion < 0)
+        return fail(QStringLiteral("Could not find original geometry region: %1").arg(originalNeedle));
+    const int savedRegion = findRegionNearBox(saved,
+                                              replacement,
+                                              original.regions.at(originalRegion).box);
+    if (savedRegion < 0)
+        return fail(QStringLiteral("Could not find saved replacement geometry region near original: %1").arg(replacement));
+
+    const PDFClowne::Editing::PdfGlyph originalGlyph = firstGlyphForRegion(original, originalRegion);
+    const PDFClowne::Editing::PdfGlyph savedGlyph = firstGlyphForRegion(saved, savedRegion);
+    if (std::abs(originalGlyph.origin.x() - savedGlyph.origin.x()) > baselineTolerance)
+        return fail(QStringLiteral("Saved replacement X moved too far. original=%1 saved=%2")
+                        .arg(originalGlyph.origin.x())
+                        .arg(savedGlyph.origin.x()));
+    if (std::abs(originalGlyph.origin.y() - savedGlyph.origin.y()) > baselineTolerance)
+        return fail(QStringLiteral("Saved replacement baseline moved too far. original=%1 saved=%2")
+                        .arg(originalGlyph.origin.y())
+                        .arg(savedGlyph.origin.y()));
+
+    const qreal minSize = std::max<qreal>(1.0, originalGlyph.fontSize * 0.70);
+    const qreal maxSize = std::max<qreal>(minSize + 0.01, originalGlyph.fontSize * 1.30);
+    if (savedGlyph.fontSize < minSize || savedGlyph.fontSize > maxSize) {
+        return fail(QStringLiteral("Saved replacement font size drifted. original=%1 saved=%2")
+                        .arg(originalGlyph.fontSize)
+                        .arg(savedGlyph.fontSize));
+    }
+
+    return 0;
+}
+
+inline int assertOriginalTailRemovedInEditedRegion(const QString &sourcePath,
+                                                   const QString &targetPath,
+                                                   const QString &originalNeedle,
+                                                   const QString &staleNeedle)
+{
+    PDFClowne::Editing::PdfTextExtractor extractor;
+    const PDFClowne::Editing::PdfTextExtractor::PageText original =
+        extractor.extractPage(sourcePath, QString(), 0);
+    if (!original.error.isEmpty())
+        return fail(original.error);
+    const PDFClowne::Editing::PdfTextExtractor::PageText saved =
+        extractor.extractPage(targetPath, QString(), 0);
+    if (!saved.error.isEmpty())
+        return fail(saved.error);
+
+    const int originalRegion = findRegion(original, originalNeedle);
+    if (originalRegion < 0)
+        return fail(QStringLiteral("Could not find original stale-text region: %1").arg(originalNeedle));
+
+    const QRectF editedBox = original.regions.at(originalRegion).box.adjusted(-2.0, -4.0, 2.0, 4.0);
+    QString savedTextInEditedBox;
+    for (const PDFClowne::Editing::PdfGlyph &glyph : saved.glyphs) {
+        if (!editedBox.intersects(glyph.bbox) && !editedBox.contains(glyph.origin))
+            continue;
+
+        const char32_t scalar = static_cast<char32_t>(glyph.unicode);
+        if (scalar)
+            savedTextInEditedBox.append(QString::fromUcs4(&scalar, 1));
+    }
+
+    if (savedTextInEditedBox.contains(staleNeedle, Qt::CaseInsensitive)) {
+        return fail(QStringLiteral("Edited region still contains stale text '%1': %2")
+                        .arg(staleNeedle, savedTextInEditedBox));
+    }
 
     return 0;
 }

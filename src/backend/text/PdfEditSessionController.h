@@ -72,13 +72,18 @@ public:
                                   qreal scale);
     Q_INVOKABLE void clearSession();
     Q_INVOKABLE void updateActiveText(const QString &text);
-    Q_INVOKABLE bool commitActiveText();
+    Q_INVOKABLE bool commitActiveText(const QString &reason = QStringLiteral("Explicit"));
     Q_INVOKABLE bool saveDocument(const QString &outputPath, bool incremental = false);
+    Q_INVOKABLE void updatePageViewMetrics(int pageIndex, int pixelWidth, int pixelHeight, qreal scale);
+    Q_INVOKABLE bool hasActiveEdit() const { return m_active; }
+    Q_INVOKABLE bool hasConfirmedEdits(int pageIndex) const;
     Q_INVOKABLE void handleKeyText(const QString &text);
     Q_INVOKABLE void handleBackspace();
     Q_INVOKABLE void handleDelete();
     Q_INVOKABLE void moveCursorLeft();
     Q_INVOKABLE void moveCursorRight();
+    Q_INVOKABLE void moveCursorHome();
+    Q_INVOKABLE void moveCursorEnd();
     Q_INVOKABLE void cancelActiveEdit();
     Q_INVOKABLE void inputMethodCommit(const QString &commitText);
 
@@ -94,6 +99,8 @@ signals:
     void inputStateChanged();
     void statusMessageChanged();
     void editLayerImageChanged();
+    void editCommitted(int pageIndex, const QString &editId);
+    void editCancelled(int pageIndex, const QString &editId);
     void saveCompleted(const QString &outputPath);
     void saveError(const QString &message);
 
@@ -109,6 +116,13 @@ private:
     int cursorIndexForPoint(const PdfEditableRegion &region, const QPointF &point) const;
     void replaceSelectionWithText(const QString &text);
     void clearInputSelection();
+    void clearActiveTransientState(bool emitActiveSignals);
+    int confirmedEditCount(int pageIndex = -1) const;
+    void clearEditLayerIfNoVisibleEdits(const QString &reason);
+    PdfTextEditOperation activeOperationSnapshot() const;
+    QVector<PdfRun> replacementRunsForOperation(const PdfTextEditOperation &operation) const;
+    QVector<PdfRun> replacementRunsForPage(int pageIndex) const;
+    QVector<QPolygonF> redactionQuadsForPage(int pageIndex) const;
     QVector<PdfRun> activeReplacementRuns() const;
     QVector<QPolygonF> activeRedactionQuads() const;
     bool writeEditedPdfCopy(const QString &tempPath, QString *error) const;

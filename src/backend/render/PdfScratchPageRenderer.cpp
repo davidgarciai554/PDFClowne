@@ -1,6 +1,7 @@
 #include "PdfScratchPageRenderer.h"
 
 #include <QColor>
+#include <QDebug>
 #include <QUrl>
 
 #include <hb.h>
@@ -9,9 +10,22 @@
 #include <mupdf/pdf.h>
 
 #include <algorithm>
+#include <cmath>
 
 namespace PDFClowne::Render {
 namespace {
+
+bool editTraceEnabled()
+{
+    static const bool enabled = qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_EDIT_INPUT");
+    return enabled;
+}
+
+void editTrace(const char *prefix, const QString &message)
+{
+    if (editTraceEnabled())
+        qInfo().noquote() << prefix << message;
+}
 
 QString toLocalPath(const QString &source)
 {
@@ -28,6 +42,57 @@ fz_matrix toFzMatrix(const QTransform &transform)
                           static_cast<float>(transform.m22()),
                           static_cast<float>(transform.dx()),
                           static_cast<float>(transform.dy()));
+}
+
+QString matrixToString(const QTransform &transform)
+{
+    return QStringLiteral("(%1,%2,%3,%4,%5,%6)")
+        .arg(transform.m11())
+        .arg(transform.m12())
+        .arg(transform.m21())
+        .arg(transform.m22())
+        .arg(transform.dx())
+        .arg(transform.dy());
+}
+
+QString rectToString(const QRectF &rect)
+{
+    return QStringLiteral("(%1,%2,%3,%4)")
+        .arg(rect.x())
+        .arg(rect.y())
+        .arg(rect.width())
+        .arg(rect.height());
+}
+
+QPointF normalizedDirection(QPointF direction)
+{
+    const qreal length = std::hypot(direction.x(), direction.y());
+    if (length <= 0.0001)
+        return QPointF(1.0, 0.0);
+    return direction / length;
+}
+
+QTransform textMatrixFromVisualSpace(const PDFClowne::Editing::PdfRun &run,
+                                     const QPointF &visualPen,
+                                     const PDFClowne::Editing::PdfShapedGlyph &shapedGlyph,
+                                     qreal fontSize,
+                                     qreal pageHeight)
+{
+    const PDFClowne::Editing::PdfGlyph &anchor = run.glyphs.constFirst();
+    const QPointF visualDirection = normalizedDirection(run.direction);
+    const QPointF pdfDirection(visualDirection.x(), -visualDirection.y());
+    const QPointF visualDelta = visualPen - anchor.origin;
+
+    const qreal x = anchor.origin.x() + visualDelta.x() + shapedGlyph.offset.x() * fontSize;
+    const qreal visualY = anchor.origin.y() + visualDelta.y() + shapedGlyph.offset.y() * fontSize;
+    const qreal y = pageHeight - visualY;
+
+    return QTransform(fontSize * pdfDirection.x(),
+                      fontSize * pdfDirection.y(),
+                      -fontSize * pdfDirection.y(),
+                      fontSize * pdfDirection.x(),
+                      x,
+                      y);
 }
 
 fz_quad toFzQuad(const QPolygonF &quad)
@@ -275,9 +340,17 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
     fz_try(ctx)
     {
         const fz_irect bbox = fz_make_irect(0, 0, pixelSize.width(), pixelSize.height());
+        const qreal pageWidth = pixelSize.width() / scale;
+        const qreal pageHeight = pixelSize.height() / scale;
+        const fz_matrix overlayDeviceMatrix = fz_make_matrix(static_cast<float>(scale),
+                                                             0.0f,
+                                                             0.0f,
+                                                             static_cast<float>(-scale),
+                                                             0.0f,
+                                                             static_cast<float>(pixelSize.height()));
         pix = fz_new_pixmap_with_bbox(ctx, fz_device_rgb(ctx), bbox, nullptr, 1);
         fz_clear_pixmap(ctx, pix);
-        device = fz_new_draw_device(ctx, fz_scale(static_cast<float>(scale), static_cast<float>(scale)), pix);
+        device = fz_new_draw_device(ctx, overlayDeviceMatrix, pix);
 
         for (const PDFClowne::Editing::PdfRun &run : runs) {
             if (run.glyphs.isEmpty())
@@ -338,11 +411,53 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
             fz_text *text = fz_new_text(ctx);
             QPointF pen = run.glyphs.constFirst().origin;
             const qreal fontSize = std::max<qreal>(1.0, run.glyphs.constFirst().fontSize);
+            const QRectF sourceBox = PDFClowne::Editing::unionGlyphBoxes(run.glyphs, 0, run.glyphs.size());
+            const QPointF baselineStart = run.glyphs.constFirst().origin;
+            const QPointF baselineEnd = run.glyphs.constLast().origin + run.glyphs.constLast().advance;
+            const qreal ascent = fontSize * 0.78;
+            const qreal descent = fontSize * 0.22;
+            editTrace("[PDF_EDIT_TRANSFORM]",
+                      QStringLiteral("page=%1 pageWidth=%2 pageHeight=%3 zoom=%4 devicePixelRatio=1 sourcePdfRect=%5 visualRect=%5 baselineStart=(%6,%7) baselineEnd=(%8,%9) textMatrix=%10 renderMatrix=(%11,%12,%13,%14,%15,%16) finalTransform=pending yInversion=true rotation=false translatePageHeight=true scaleYMinusOne=false")
+                          .arg(run.glyphs.constFirst().pageIndex)
+                          .arg(pageWidth)
+                          .arg(pageHeight)
+                          .arg(scale)
+                          .arg(rectToString(sourceBox))
+                          .arg(baselineStart.x())
+                          .arg(baselineStart.y())
+                          .arg(baselineEnd.x())
+                          .arg(baselineEnd.y())
+                          .arg(matrixToString(run.glyphs.constFirst().trm))
+                          .arg(overlayDeviceMatrix.a)
+                          .arg(overlayDeviceMatrix.b)
+                          .arg(overlayDeviceMatrix.c)
+                          .arg(overlayDeviceMatrix.d)
+                          .arg(overlayDeviceMatrix.e)
+                          .arg(overlayDeviceMatrix.f));
+
             for (int i = 0; i < shaped.size(); ++i) {
                 const auto &shapedGlyph = shaped.at(i);
-                QTransform trm = run.glyphs.constFirst().trm;
-                trm.translate((pen.x() - run.glyphs.constFirst().origin.x()) / fontSize + shapedGlyph.offset.x(),
-                              (pen.y() - run.glyphs.constFirst().origin.y()) / fontSize + shapedGlyph.offset.y());
+                const QTransform trm = textMatrixFromVisualSpace(run, pen, shapedGlyph, fontSize, pageHeight);
+                if (editTraceEnabled()) {
+                    editTrace("[PDF_EDIT_PAINT_TEXT]",
+                              QStringLiteral("pageIndex=%1 editId=%2 text=\"%3\" text.length=%4 visualRect=%5 baseline=(%6,%7) painter.transform=(1,0,0,1,0,0) finalTransform=%8 usingScaleYMinusOne=false usingScaleXMinusOne=false drawMode=MuPDF::fz_show_glyph fontPixelSize=%9 ascent=%10 descent=%11")
+                                  .arg(run.glyphs.constFirst().pageIndex)
+                                  .arg(run.fontResourceKey)
+                                  .arg(run.plainText.left(80))
+                                  .arg(run.plainText.size())
+                                  .arg(rectToString(sourceBox.normalized()))
+                                  .arg(pen.x())
+                                  .arg(pen.y())
+                                  .arg(matrixToString(trm))
+                                  .arg(fontSize)
+                                  .arg(ascent)
+                                  .arg(descent));
+                    if (trm.m11() < 0.0 || trm.m22() < 0.0)
+                        editTrace("[PDF_EDIT_TRANSFORM_ERROR]",
+                                  QStringLiteral("negative transform while painting editable text m11=%1 m22=%2")
+                                      .arg(trm.m11())
+                                      .arg(trm.m22()));
+                }
                 fz_show_glyph(ctx,
                               text,
                               font,
@@ -357,6 +472,13 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
             }
 
             const QColor color = run.fillColor.isValid() ? run.fillColor : Qt::black;
+            editTrace("[PDF_EDIT_PAINT]",
+                      QStringLiteral("run textLength=%1 glyphs=%2 shaped=%3 fontSize=%4 forceFallback=%5")
+                          .arg(run.plainText.size())
+                          .arg(run.glyphs.size())
+                          .arg(shaped.size())
+                          .arg(fontSize)
+                          .arg(forceFallbackFont));
             float components[3] = {
                 static_cast<float>(color.redF()),
                 static_cast<float>(color.greenF()),

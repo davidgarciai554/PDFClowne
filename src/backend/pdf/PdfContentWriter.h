@@ -4,6 +4,8 @@
 #include "../text/PdfGlyphRunModel.h"
 
 #include <QByteArray>
+#include <QPointF>
+#include <QRectF>
 #include <QString>
 #include <QVector>
 
@@ -22,7 +24,17 @@ public:
 
     StreamBuildResult buildReplacementTextStream(const PdfRun &run,
                                                  const QString &newText,
-                                                 const PdfFontWritePlan &fontPlan) const;
+                                                 const PdfFontWritePlan &fontPlan,
+                                                 qreal pageHeight,
+                                                 const QString &editId = QString()) const;
+    QByteArray buildRedactionCoverStream(const PdfRun &run,
+                                         qreal pageHeight,
+                                         const QString &editId = QString()) const;
+
+    static QPointF visualPointToPdfPoint(const QPointF &visualPoint, qreal pageHeight);
+    static QPointF visualBaselineToPdfBaseline(const QPointF &visualBaseline, qreal pageHeight);
+    static QRectF visualRectToPdfRect(const QRectF &visualRect, qreal pageHeight);
+    static QRectF expandVisualRedactionRect(const QRectF &visualRect, qreal fontSize);
 
 private:
     static QByteArray escapedPdfBytes(const QByteArray &text);

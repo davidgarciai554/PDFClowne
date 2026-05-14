@@ -57,8 +57,8 @@ ApplicationWindow {
 
         if (viewMode === "edit")
             Qt.callLater(function() { requestEditExtractionForActivePage() })
-        else if (editingController)
-            editingController.selectBlock("")
+        else if (editingController && editingController.active)
+            editingController.commitActiveText("ModeChanged")
     }
     property bool searchOverlayVisible: false
     property bool openInProgress: false
@@ -2118,7 +2118,7 @@ ApplicationWindow {
 
         if (index === activeDocumentIndex
                 && editingController
-                && editingController.hasPendingEdits)
+                && (editingController.hasPendingEdits || editingController.active))
             return true
 
         return false
@@ -2684,8 +2684,10 @@ ApplicationWindow {
         var oldPath = state ? String(state.oldPath || documentModel.get(index).path || "") : String(documentModel.get(index).path || "")
         var oldSessionId = Number(documentModel.get(index).renderSessionId || 0)
         documentSearchController.cancelSearchSync()
-        if (oldPath.length > 0)
+        if (oldPath.length > 0) {
             documentRenderController.releaseDocumentSync(oldPath, oldSessionId)
+            setDocumentSaveInProgress(oldPath, false)
+        }
 
         if (!loadPdfWithPasswordPrompt(target, documentModel.get(index).password || "")) {
             saveMessage = qsTr("El PDF se guardó, pero no se pudo reabrir la copia.")
@@ -2749,6 +2751,33 @@ ApplicationWindow {
     }
 
     function saveDocumentChanges(index, target, refreshAfterSave) {
+        if (index === activeDocumentIndex
+                && editingController
+                && editingController.ready
+                && (editingController.hasPendingEdits || editingController.active)) {
+            var targetPath = localPathFromUrl(target)
+            var overwriteCurrent = isSameFilePath(documentModel.get(index).path, targetPath)
+            var sessionId = Number(documentModel.get(index).renderSessionId || 0)
+            var password = documentModel.get(index).password || ""
+            pendingEditingSaveTarget = targetPath
+            pendingEditingSaveState = captureActiveViewerStateForEditingSave(targetPath)
+            if (overwriteCurrent) {
+                documentSearchController.cancelSearchSync()
+                setDocumentSaveInProgress(documentModel.get(index).path, true)
+                documentRenderController.releaseDocumentSync(documentModel.get(index).path, sessionId)
+            }
+            if (!editingController.saveDocument(targetPath, overwriteCurrent)) {
+                if (overwriteCurrent) {
+                    setDocumentSaveInProgress(documentModel.get(index).path, false)
+                    restoreDocumentAfterFailedSave(index, password, sessionId)
+                }
+                pendingEditingSaveTarget = ""
+                pendingEditingSaveState = null
+                return false
+            }
+            return true
+        }
+
         return performDocumentSaveTransaction(index, target, refreshAfterSave)
     }
 
@@ -2759,10 +2788,22 @@ ApplicationWindow {
         var targetPath = localPathFromUrl(target)
         if (editingController
                 && editingController.ready
-                && editingController.hasPendingEdits) {
+                && (editingController.hasPendingEdits || editingController.active)) {
             pendingEditingSaveTarget = targetPath
             pendingEditingSaveState = captureActiveViewerStateForEditingSave(targetPath)
+            var overwriteCurrent = isSameFilePath(documentModel.get(activeDocumentIndex).path, targetPath)
+            var sessionId = Number(documentModel.get(activeDocumentIndex).renderSessionId || 0)
+            var password = documentModel.get(activeDocumentIndex).password || ""
+            if (overwriteCurrent) {
+                documentSearchController.cancelSearchSync()
+                setDocumentSaveInProgress(documentModel.get(activeDocumentIndex).path, true)
+                documentRenderController.releaseDocumentSync(documentModel.get(activeDocumentIndex).path, sessionId)
+            }
             if (!editingController.saveDocument(targetPath, pendingEditSaveIncremental)) {
+                if (overwriteCurrent) {
+                    setDocumentSaveInProgress(documentModel.get(activeDocumentIndex).path, false)
+                    restoreDocumentAfterFailedSave(activeDocumentIndex, password, sessionId)
+                }
                 pendingEditingSaveTarget = ""
                 pendingEditingSaveState = null
             }

@@ -13,20 +13,38 @@ CLAUDE.md
 
 # Local PDF test files
 PDFTest/
+manual-validation/
 
 # Local build output
 build/
+out/
+install/
+vcpkg_installed/
+CMakeUserPresets.json
+compile_commands.json
+Testing/
 
 # Local Python runtime cache
 Python/_cache/
+__pycache__/
+*.pyc
 
 # Local workflow / memory state
 .swarm/
 ruvector.db
 agentdb.rvf
 agentdb.rvf.lock
+*.rvf
+*.rvf.lock
 
 # Common Windows / Qt / CMake local artifacts
+*.user
+*.suo
+*.tmp
+*.temp
+*.log
+*.bak
+*.cache
 *.obj
 *.pdb
 *.ilk
@@ -37,6 +55,14 @@ agentdb.rvf.lock
 *.exp
 *.aotstats
 *.qmlls.ini
+
+# Accidental shell/input fragments generated in the repository root
+/Enter
+/(field).SetChecked(checked)
+/(field).SetText(value.toStdString())
+/(idx))
+/m_fields.size())
+/Save(outPath.toStdString())
 
 # Local IDE state
 .vs/

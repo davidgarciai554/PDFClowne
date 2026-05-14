@@ -1,6 +1,7 @@
 #include "PdfGlyphOverlayItem.h"
 
 #include <QClipboard>
+#include <QDebug>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QKeySequence>
@@ -9,13 +10,28 @@
 #include <QSGTexture>
 
 namespace PDFClowne::Render {
+namespace {
+
+bool editTraceEnabled()
+{
+    static const bool enabled = qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_EDIT_INPUT");
+    return enabled;
+}
+
+void editTrace(const char *prefix, const QString &message)
+{
+    if (editTraceEnabled())
+        qInfo().noquote() << prefix << message;
+}
+
+} // namespace
 
 PdfGlyphOverlayItem::PdfGlyphOverlayItem(QQuickItem *parent)
     : QQuickItem(parent)
 {
     setFlag(ItemHasContents, true);
     setFlag(ItemAcceptsInputMethod, true);
-    setAcceptedMouseButtons(Qt::AllButtons);
+    setAcceptedMouseButtons(Qt::NoButton);
     setFocus(true);
     setActiveFocusOnTab(true);
 }
@@ -42,6 +58,12 @@ void PdfGlyphOverlayItem::setController(PDFClowne::Editing::PdfEditSessionContro
                     forceActiveFocus(Qt::MouseFocusReason);
                     if (window())
                         window()->requestActivate();
+                    editTrace("[PDF_EDIT_FOCUS]",
+                              QStringLiteral("activeChanged controllerActive=%1 activeFocus=%2 focus=%3 window=%4")
+                                  .arg(m_controller ? m_controller->isActive() : false)
+                                  .arg(hasActiveFocus())
+                                  .arg(hasFocus())
+                                  .arg(window() != nullptr));
                     update();
                 });
     }
@@ -79,6 +101,14 @@ void PdfGlyphOverlayItem::keyPressEvent(QKeyEvent *event)
         return;
     }
 
+    editTrace("[PDF_EDIT_KEY]",
+              QStringLiteral("cxx key=%1 textLength=%2 activeFocus=%3 focus=%4 controllerActive=%5")
+                  .arg(event->key())
+                  .arg(event->text().size())
+                  .arg(hasActiveFocus())
+                  .arg(hasFocus())
+                  .arg(m_controller->isActive()));
+
     if (event->matches(QKeySequence::Copy)) {
         QGuiApplication::clipboard()->setText(m_controller->activeText());
         event->accept();
@@ -105,6 +135,18 @@ void PdfGlyphOverlayItem::keyPressEvent(QKeyEvent *event)
         return;
     }
 
+    if (event->key() == Qt::Key_Home) {
+        m_controller->moveCursorHome();
+        event->accept();
+        return;
+    }
+
+    if (event->key() == Qt::Key_End) {
+        m_controller->moveCursorEnd();
+        event->accept();
+        return;
+    }
+
     if (event->key() == Qt::Key_Delete) {
         m_controller->handleDelete();
         event->accept();
@@ -118,7 +160,7 @@ void PdfGlyphOverlayItem::keyPressEvent(QKeyEvent *event)
     }
 
     if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-        m_controller->commitActiveText();
+        m_controller->commitActiveText(QStringLiteral("EnterPressed"));
         event->accept();
         return;
     }
