@@ -166,6 +166,8 @@ set(CPP_SOURCES
     src/backend/text/PdfGlyphRunModel.cpp
     src/backend/text/PdfTextExtractor.cpp
     src/backend/text/PdfFontResolver.cpp
+    src/backend/text/PdfEditFontDecision.cpp
+    src/backend/text/PdfEditTextLayout.cpp
     src/backend/text/PdfEditSessionController.cpp
     src/backend/render/PdfGlyphOverlayItem.cpp
     src/backend/render/PdfScratchPageRenderer.cpp
@@ -210,6 +212,8 @@ set(CPP_HEADERS
     src/backend/text/PdfGlyphRunModel.h
     src/backend/text/PdfTextExtractor.h
     src/backend/text/PdfFontResolver.h
+    src/backend/text/PdfEditFontDecision.h
+    src/backend/text/PdfEditTextLayout.h
     src/backend/text/PdfEditSessionController.h
     src/backend/render/PdfGlyphOverlayItem.h
     src/backend/render/PdfScratchPageRenderer.h
@@ -401,6 +405,8 @@ add_executable(PdfEditSessionVisualSnapshotTest
     src/backend/text/PdfGlyphRunModel.cpp
     src/backend/text/PdfTextExtractor.cpp
     src/backend/text/PdfFontResolver.cpp
+    src/backend/text/PdfEditFontDecision.cpp
+    src/backend/text/PdfEditTextLayout.cpp
     src/backend/text/PdfEditSessionController.cpp
     src/backend/render/PdfScratchPageRenderer.cpp
     src/backend/pdf/PdfContentWriter.cpp
@@ -433,6 +439,8 @@ function(add_pdf_text_edit_save_test target_name source_file test_name)
         src/backend/text/PdfGlyphRunModel.cpp
         src/backend/text/PdfTextExtractor.cpp
         src/backend/text/PdfFontResolver.cpp
+        src/backend/text/PdfEditFontDecision.cpp
+        src/backend/text/PdfEditTextLayout.cpp
         src/backend/text/PdfEditSessionController.cpp
         src/backend/render/PdfScratchPageRenderer.cpp
         src/backend/pdf/PdfContentWriter.cpp
@@ -496,6 +504,18 @@ add_pdf_text_edit_save_test(PdfTextEditSaveInPlaceTest
 add_pdf_text_edit_save_test(PdfTextEditSaveNoWhiteCoverTest
     tests/cpp/PdfTextEditSaveNoWhiteCoverTest.cpp
     PdfTextEditSaveNoWhiteCover)
+add_pdf_text_edit_save_test(PdfEditCaretMetricsTest
+    tests/cpp/PdfEditCaretMetricsTest.cpp
+    PdfEditCaretMetrics)
+add_pdf_text_edit_save_test(PdfEditEmbeddedFontPreviewTest
+    tests/cpp/PdfEditEmbeddedFontPreviewTest.cpp
+    PdfEditEmbeddedFontPreview)
+add_pdf_text_edit_save_test(PdfEditRejectSubsetFontForEditedTextTest
+    tests/cpp/PdfEditRejectSubsetFontForEditedTextTest.cpp
+    PdfEditRejectSubsetFontForEditedText)
+add_pdf_text_edit_save_test(PdfEditSavedTextIsReadableTest
+    tests/cpp/PdfEditSavedTextIsReadableTest.cpp
+    PdfEditSavedTextIsReadable)
 add_pdf_text_edit_save_test(PdfTextEditSaveReopenExtractionTest
     tests/cpp/PdfTextEditSaveReopenExtractionTest.cpp
     PdfTextEditSaveReopenExtraction)

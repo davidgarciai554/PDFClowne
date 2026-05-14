@@ -3,14 +3,17 @@
 #include "../pdf/PdfContentWriter.h"
 #include "../pdf/PdfFontResourceWriter.h"
 #include "../pdf/PdfSaveCoordinator.h"
+#include "PdfEditTextLayout.h"
 
 #include <QBuffer>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonObject>
 #include <QJsonDocument>
 #include <QHash>
 #include <QPainter>
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QUrl>
 
 #include <mupdf/fitz.h>
@@ -26,6 +29,12 @@ namespace {
 bool editTraceEnabled()
 {
     static const bool enabled = qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_EDIT_INPUT");
+    return enabled;
+}
+
+bool editMetricsTraceEnabled()
+{
+    static const bool enabled = qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_EDIT_METRICS");
     return enabled;
 }
 
@@ -160,6 +169,12 @@ void appendContentStream(fz_context *ctx,
 PdfEditSessionController::PdfEditSessionController(QObject *parent)
     : QObject(parent)
 {
+    m_editLayerRenderTimer.setSingleShot(true);
+    m_editLayerRenderTimer.setInterval(12);
+    connect(&m_editLayerRenderTimer, &QTimer::timeout, this, [this]() {
+        m_editLayerRenderPending = false;
+        regenerateEditLayer();
+    });
 }
 
 bool PdfEditSessionController::loadDocument(const QString &filePath)
@@ -172,6 +187,26 @@ QString PdfEditSessionController::selectedBlockId() const
     if (m_activeRegionIndex < 0)
         return {};
     return QStringLiteral("glyph-region-%1-%2").arg(m_currentPageIndex).arg(m_activeRegionIndex);
+}
+
+QImage PdfEditSessionController::editLayerImage()
+{
+    if (m_editLayerRenderPending) {
+        m_editLayerRenderTimer.stop();
+        m_editLayerRenderPending = false;
+        regenerateEditLayer();
+    }
+    return m_editLayerImage;
+}
+
+QString PdfEditSessionController::lastResolvedEditFontDebug()
+{
+    if (m_editLayerRenderPending) {
+        m_editLayerRenderTimer.stop();
+        m_editLayerRenderPending = false;
+        regenerateEditLayer();
+    }
+    return m_lastResolvedEditFontDebug;
 }
 
 bool PdfEditSessionController::loadDocumentWithPassword(const QString &filePath, const QString &password)
@@ -188,6 +223,9 @@ bool PdfEditSessionController::loadDocumentWithPassword(const QString &filePath,
         emit pendingEditsChanged();
     }
     m_editLayerImage = {};
+    m_lastResolvedEditFontDebug.clear();
+    m_redactedBaseCacheImage = {};
+    m_redactedBaseCacheKey.clear();
     emit editLayerImageChanged();
     m_currentPageIndex = -1;
     m_pageText = {};
@@ -276,6 +314,10 @@ void PdfEditSessionController::closeDocument()
         emit pendingEditsChanged();
     }
     m_editLayerImage = {};
+    m_lastResolvedEditFontDebug.clear();
+    m_resolvedFontCache.clear();
+    m_redactedBaseCacheImage = {};
+    m_redactedBaseCacheKey.clear();
     emit editLayerImageChanged();
     m_filePath.clear();
     m_password.clear();
@@ -344,6 +386,7 @@ void PdfEditSessionController::clearSession()
     m_replaceSelectionOnInput = false;
     m_selectionStart = 0;
     m_selectionLength = 0;
+    rebuildActiveLayout();
     if (wasActive)
         emit activeChanged();
     emit activeTextChanged();
@@ -353,7 +396,7 @@ void PdfEditSessionController::clearSession()
         emit inputStateChanged();
 
     if (hasConfirmedEdits(m_currentPageIndex) && !m_pixelSize.isEmpty())
-        regenerateEditLayer();
+        scheduleRegenerateEditLayer(QStringLiteral("clearSession"));
     else
         clearEditLayerIfNoVisibleEdits(QStringLiteral("clearSession"));
 
@@ -377,7 +420,53 @@ void PdfEditSessionController::updateActiveText(const QString &text)
                   .arg(text.size()));
     m_activeText = text;
     emit activeTextChanged();
-    regenerateEditLayer();
+    rebuildActiveLayout();
+    scheduleRegenerateEditLayer(QStringLiteral("updateActiveText"));
+}
+
+void PdfEditSessionController::updateActiveStyle(const QString &styleJson)
+{
+    if (!m_active)
+        return;
+
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(styleJson.toUtf8(), &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject())
+        return;
+
+    const QVector<PdfRun> runs = activeReplacementRuns();
+    if (runs.isEmpty())
+        return;
+
+    QJsonObject obj = doc.object();
+    PdfDetectedTextStyle style = m_activeLayout.valid
+        ? m_activeLayout.style
+        : PdfEditTextLayout::detectedStyleFromRun(runs.constFirst());
+
+    if (obj.contains(QStringLiteral("fontSize")))
+        style.effectiveFontSize = std::max<qreal>(1.0, obj.value(QStringLiteral("fontSize")).toDouble(style.effectiveFontSize));
+
+    if (obj.contains(QStringLiteral("color"))) {
+        QColor color(obj.value(QStringLiteral("color")).toString());
+        if (color.isValid())
+            style.fillColor = color;
+    }
+
+    if (obj.contains(QStringLiteral("bold")))
+        style.bold = obj.value(QStringLiteral("bold")).toBool(style.bold);
+    if (obj.contains(QStringLiteral("italic")))
+        style.italic = obj.value(QStringLiteral("italic")).toBool(style.italic);
+    if (obj.contains(QStringLiteral("underline")))
+        style.underline = obj.value(QStringLiteral("underline")).toBool(style.underline);
+    if (obj.contains(QStringLiteral("strikeout")))
+        style.strikeout = obj.value(QStringLiteral("strikeout")).toBool(style.strikeout);
+
+    const PdfRun &run = runs.constFirst();
+    m_activeLayout = layoutForReplacementRun(run, m_activeText, style);
+
+    rebuildActiveEditGeometryFromLayout();
+    rebuildActiveStyleJsonFromLayout();
+    scheduleRegenerateEditLayer(QStringLiteral("updateActiveStyle"));
 }
 
 bool PdfEditSessionController::commitActiveText(const QString &reason)
@@ -586,6 +675,8 @@ void PdfEditSessionController::updatePageViewMetrics(int pageIndex, int pixelWid
 
     m_pixelSize = nextPixelSize;
     m_scale = nextScale;
+    m_redactedBaseCacheImage = {};
+    m_redactedBaseCacheKey.clear();
     if (m_active || hasConfirmedEdits(pageIndex))
         regenerateEditLayer();
 }
@@ -722,7 +813,7 @@ void PdfEditSessionController::moveCursorLeft()
         m_cursorPosition = std::max(0, m_selectionStart);
         clearInputSelection();
         emit cursorChanged();
-        regenerateEditLayer();
+        rebuildActiveEditGeometryFromLayout();
         return;
     }
 
@@ -731,7 +822,7 @@ void PdfEditSessionController::moveCursorLeft()
 
     --m_cursorPosition;
     emit cursorChanged();
-    regenerateEditLayer();
+    rebuildActiveEditGeometryFromLayout();
 }
 
 void PdfEditSessionController::moveCursorRight()
@@ -744,7 +835,7 @@ void PdfEditSessionController::moveCursorRight()
         m_cursorPosition = std::max(0, std::min(m_selectionStart + m_selectionLength, activeTextSize));
         clearInputSelection();
         emit cursorChanged();
-        regenerateEditLayer();
+        rebuildActiveEditGeometryFromLayout();
         return;
     }
 
@@ -753,7 +844,7 @@ void PdfEditSessionController::moveCursorRight()
 
     ++m_cursorPosition;
     emit cursorChanged();
-    regenerateEditLayer();
+    rebuildActiveEditGeometryFromLayout();
 }
 
 void PdfEditSessionController::moveCursorHome()
@@ -767,7 +858,7 @@ void PdfEditSessionController::moveCursorHome()
 
     m_cursorPosition = 0;
     emit cursorChanged();
-    regenerateEditLayer();
+    rebuildActiveEditGeometryFromLayout();
 }
 
 void PdfEditSessionController::moveCursorEnd()
@@ -782,7 +873,7 @@ void PdfEditSessionController::moveCursorEnd()
 
     m_cursorPosition = end;
     emit cursorChanged();
-    regenerateEditLayer();
+    rebuildActiveEditGeometryFromLayout();
 }
 
 void PdfEditSessionController::cancelActiveEdit()
@@ -902,7 +993,7 @@ void PdfEditSessionController::selectRegionAt(const QPointF &point)
         m_cursorPosition = safeCursor;
         clearInputSelection();
         rebuildSelectionJson();
-        regenerateEditLayer();
+        rebuildActiveEditGeometryFromLayout();
         editTrace("[PDF_EDIT_HIT]",
                   QStringLiteral("activeHit keptSession region=%1 textLength=%2 cursor=%3")
                       .arg(m_activeRegionIndex)
@@ -945,6 +1036,9 @@ void PdfEditSessionController::selectRegionAt(const QPointF &point)
             const QRectF glyphBox = m_pageText.glyphs.at(i).bbox.normalized();
             lineBox = lineBox.isNull() ? glyphBox : lineBox.united(glyphBox);
         }
+
+        const qreal verticalInset = std::max<qreal>(0.2, lineBox.height() * 0.03);
+        lineBox = lineBox.adjusted(0, verticalInset, 0, -verticalInset);
 
         QPolygonF lineQuad;
         lineQuad << lineBox.topLeft()
@@ -993,7 +1087,8 @@ void PdfEditSessionController::selectRegionAt(const QPointF &point)
                   .arg(m_activeRegionIndex)
                   .arg(m_activeText.size()));
     rebuildSelectionJson();
-    regenerateEditLayer();
+    rebuildActiveLayout();
+    scheduleRegenerateEditLayer(QStringLiteral("selectRegionAt"));
     editTrace("[PDF_EDIT_HIT]",
               QStringLiteral("hit region=%1 textLength=%2 cursor=%3 selectionLength=%4")
                   .arg(m_activeRegionIndex)
@@ -1021,8 +1116,243 @@ void PdfEditSessionController::rebuildSelectionJson()
     m_selectionQuadsJson = jsonArrayToCompactString(array);
 }
 
+void PdfEditSessionController::rebuildActiveEditGeometry()
+{
+    rebuildActiveLayout();
+}
+
+PdfFontResolver::ResolvedFont PdfEditSessionController::cachedResolvedFontForRun(const PdfRun &run) const
+{
+    const QString key = m_filePath + QStringLiteral("|") + run.fontResourceKey;
+    auto it = m_resolvedFontCache.constFind(key);
+    if (it != m_resolvedFontCache.constEnd())
+        return it.value();
+
+    PdfFontResolver::ResolvedFont resolved =
+        m_fontResolver.resolveEmbeddedFont(m_filePath, m_password, run.fontResourceKey);
+    m_resolvedFontCache.insert(key, resolved);
+    return resolved;
+}
+
+PdfEditTextLayoutResult PdfEditSessionController::layoutForReplacementRun(
+    const PdfRun &run,
+    const QString &replacementText,
+    const PdfDetectedTextStyle &style) const
+{
+    const PdfFontResolver::ResolvedFont resolved = cachedResolvedFontForRun(run);
+    const bool hasStyleOverride = !style.fontResourceKey.isEmpty()
+        || !style.fontFamily.isEmpty()
+        || !style.fontFaceName.isEmpty();
+    const bool bold = hasStyleOverride ? style.bold : run.bold;
+    const bool italic = hasStyleOverride ? style.italic : run.italic;
+    const PdfEditFontDecision decision =
+        m_fontDecisionService.decideFontForEditedText(resolved, replacementText, bold, italic);
+
+    if (qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_EDIT_METRICS")
+        || qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_SAVE")) {
+        qInfo().noquote()
+            << QStringLiteral("[PDF_EDIT_FONT_DECISION] preview text=\"%1\" original=\"%2\" selected=\"%3\" embeddedOriginal=%4 bundledFallback=%5 subsetRejected=%6 reason=%7")
+                   .arg(replacementText.left(60))
+                   .arg(resolved.originalSubsetName)
+                   .arg(decision.fontName)
+                   .arg(decision.useEmbeddedOriginal)
+                   .arg(decision.useBundledFallback)
+                   .arg(decision.subsetOriginalRejected)
+                   .arg(decision.reason);
+    }
+
+    PdfEditTextLayoutResult layout = m_textLayout.layoutRun(run,
+                                                            replacementText,
+                                                            decision.fontProgram,
+                                                            decision.fontName,
+                                                            style);
+    layout.usedEmbeddedFont = decision.useEmbeddedOriginal;
+    layout.usedFallbackFont = decision.useBundledFallback || !decision.useEmbeddedOriginal;
+    layout.debugFontName = decision.fontName;
+    layout.debugReason = decision.reason;
+    layout.fontName = decision.fontName;
+    layout.fontProgram = decision.fontProgram;
+    return layout;
+}
+
+void PdfEditSessionController::rebuildActiveLayout()
+{
+    m_activeLayout = {};
+    if (!m_active || m_activeRegionIndex < 0 || m_currentPageIndex < 0) {
+        rebuildActiveEditGeometryFromLayout();
+        rebuildActiveStyleJsonFromLayout();
+        return;
+    }
+
+    const QVector<PdfRun> runs = activeReplacementRuns();
+    if (runs.isEmpty()) {
+        rebuildActiveEditGeometryFromLayout();
+        rebuildActiveStyleJsonFromLayout();
+        return;
+    }
+
+    const PdfRun &run = runs.constFirst();
+    m_activeLayout = layoutForReplacementRun(run, m_activeText);
+    rebuildActiveEditGeometryFromLayout();
+    rebuildActiveStyleJsonFromLayout();
+}
+
+void PdfEditSessionController::rebuildActiveEditGeometryFromLayout()
+{
+    QJsonObject root;
+
+    if (!m_active || !m_activeLayout.valid) {
+        const QString empty = QStringLiteral("{}");
+        if (m_activeEditGeometryJson != empty) {
+            m_activeEditGeometryJson = empty;
+            emit activeEditGeometryChanged();
+        }
+        return;
+    }
+
+    QRectF visualBox = m_activeLayout.visualBox.normalized();
+    if (m_activeRegionIndex >= 0 && m_activeRegionIndex < m_pageText.regions.size()) {
+        QRectF frameBox = m_pageText.regions.at(m_activeRegionIndex).box.normalized();
+        const QRectF laidOut = m_activeLayout.visualBox.normalized();
+        frameBox.setWidth(std::max(frameBox.width(), laidOut.right() - frameBox.left()));
+        visualBox = frameBox.normalized();
+    }
+    const int caretCount = static_cast<int>(m_activeLayout.carets.size());
+    const int safeCursor = std::max(0, std::min(m_cursorPosition, caretCount - 1));
+    const PdfEditCaret caretData = m_activeLayout.carets.isEmpty()
+        ? PdfEditCaret{}
+        : m_activeLayout.carets.at(safeCursor);
+
+    QJsonObject box;
+    box.insert(QStringLiteral("x"), visualBox.x());
+    box.insert(QStringLiteral("y"), visualBox.y());
+    box.insert(QStringLiteral("width"), visualBox.width());
+    box.insert(QStringLiteral("height"), visualBox.height());
+
+    QJsonObject caret;
+    caret.insert(QStringLiteral("x"), caretData.x);
+    caret.insert(QStringLiteral("y"), visualBox.y());
+    caret.insert(QStringLiteral("height"), visualBox.height());
+
+    QJsonObject baseline;
+    baseline.insert(QStringLiteral("startX"), m_activeLayout.baselineStart.x());
+    baseline.insert(QStringLiteral("startY"), m_activeLayout.baselineStart.y());
+    baseline.insert(QStringLiteral("endX"), m_activeLayout.baselineEnd.x());
+    baseline.insert(QStringLiteral("endY"), m_activeLayout.baselineEnd.y());
+
+    root.insert(QStringLiteral("box"), box);
+    root.insert(QStringLiteral("caret"), caret);
+    root.insert(QStringLiteral("baseline"), baseline);
+    root.insert(QStringLiteral("text"), m_activeText);
+    root.insert(QStringLiteral("cursor"), safeCursor);
+    root.insert(QStringLiteral("font"), m_activeLayout.debugFontName);
+    root.insert(QStringLiteral("embedded"), m_activeLayout.usedEmbeddedFont);
+    root.insert(QStringLiteral("fallback"), m_activeLayout.usedFallbackFont);
+    root.insert(QStringLiteral("fontDecision"), m_activeLayout.debugReason);
+
+    if (editMetricsTraceEnabled()) {
+        const int logCaretIndex = std::max(0, std::min(m_cursorPosition, caretCount - 1));
+        const qreal logCaretX = m_activeLayout.carets.isEmpty() ? 0.0 : m_activeLayout.carets.at(logCaretIndex).x;
+        qInfo().noquote()
+            << QStringLiteral("[PDF_EDIT_METRICS] page=%1 region=%2 text=\"%3\" cursor=%4 box=(%5,%6,%7,%8) caretX=%9 baseline=(%10,%11)->(%12,%13) font=\"%14\" embedded=%15 fallback=%16 hScale=%17")
+                   .arg(m_currentPageIndex)
+                   .arg(m_activeRegionIndex)
+                   .arg(m_activeText.left(80))
+                   .arg(m_cursorPosition)
+                   .arg(visualBox.x())
+                   .arg(visualBox.y())
+                   .arg(visualBox.width())
+                   .arg(visualBox.height())
+                   .arg(logCaretX)
+                   .arg(m_activeLayout.baselineStart.x())
+                   .arg(m_activeLayout.baselineStart.y())
+                   .arg(m_activeLayout.baselineEnd.x())
+                   .arg(m_activeLayout.baselineEnd.y())
+                   .arg(m_activeLayout.debugFontName)
+                   .arg(m_activeLayout.usedEmbeddedFont)
+                   .arg(m_activeLayout.usedFallbackFont)
+                   .arg(m_activeLayout.horizontalScale);
+    }
+
+    const QString next = QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
+    if (m_activeEditGeometryJson != next) {
+        m_activeEditGeometryJson = next;
+        emit activeEditGeometryChanged();
+    }
+}
+
+void PdfEditSessionController::rebuildActiveStyleJsonFromLayout()
+{
+    QJsonObject style;
+
+    if (!m_active || !m_activeLayout.valid) {
+        const QString empty = QStringLiteral("{}");
+        if (m_activeStyleJson != empty) {
+            m_activeStyleJson = empty;
+            emit activeStyleChanged();
+        }
+        return;
+    }
+
+    const PdfDetectedTextStyle &s = m_activeLayout.style;
+    style.insert(QStringLiteral("fontFamily"), s.fontFamily);
+    style.insert(QStringLiteral("fontFaceName"), s.fontFaceName);
+    style.insert(QStringLiteral("fontResourceKey"), s.fontResourceKey);
+    style.insert(QStringLiteral("fontSize"), s.effectiveFontSize);
+    style.insert(QStringLiteral("color"), s.fillColor.name(QColor::HexRgb));
+    style.insert(QStringLiteral("bold"), s.bold);
+    style.insert(QStringLiteral("italic"), s.italic);
+    style.insert(QStringLiteral("underline"), s.underline);
+    style.insert(QStringLiteral("strikeout"), s.strikeout);
+    style.insert(QStringLiteral("filled"), s.filled);
+    style.insert(QStringLiteral("stroked"), s.stroked);
+    style.insert(QStringLiteral("horizontalScale"), s.horizontalScale);
+
+    const QString next = QString::fromUtf8(QJsonDocument(style).toJson(QJsonDocument::Compact));
+    if (m_activeStyleJson != next) {
+        m_activeStyleJson = next;
+        emit activeStyleChanged();
+    }
+
+    if (editMetricsTraceEnabled()) {
+        qInfo().noquote()
+            << QStringLiteral("[PDF_EDIT_STYLE] bold=%1 italic=%2 underline=%3 fontSize=%4 color=%5")
+                   .arg(s.bold)
+                   .arg(s.italic)
+                   .arg(s.underline)
+                   .arg(s.effectiveFontSize)
+                   .arg(s.fillColor.name(QColor::HexRgb));
+    }
+}
+
+void PdfEditSessionController::scheduleRegenerateEditLayer(const QString &reason)
+{
+    m_lastRenderReason = reason;
+    m_editLayerRenderPending = true;
+    if (!m_editLayerRenderTimer.isActive())
+        m_editLayerRenderTimer.start();
+}
+
+QString PdfEditSessionController::redactedBaseCacheKey(int pageIndex, const QVector<QPolygonF> &quads) const
+{
+    QJsonObject root;
+    root.insert(QStringLiteral("filePath"), m_filePath);
+    root.insert(QStringLiteral("pageIndex"), pageIndex);
+    root.insert(QStringLiteral("scale"), m_scale);
+    root.insert(QStringLiteral("pixelWidth"), m_pixelSize.width());
+    root.insert(QStringLiteral("pixelHeight"), m_pixelSize.height());
+    QJsonArray quadArray;
+    for (const QPolygonF &quad : quads)
+        quadArray.append(quadToJson(quad));
+    root.insert(QStringLiteral("quads"), quadArray);
+    return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
+}
+
 void PdfEditSessionController::regenerateEditLayer()
 {
+    QElapsedTimer timer;
+    timer.start();
+
     const int confirmedCount = static_cast<int>(std::count_if(
         m_textEdits.cbegin(),
         m_textEdits.cend(),
@@ -1049,25 +1379,40 @@ void PdfEditSessionController::regenerateEditLayer()
     }
 
     QString error;
-    QImage base = m_scratchRenderer.renderRedactedBase(m_filePath,
-                                                       m_password,
-                                                       m_currentPageIndex,
-                                                       redactionQuadsForPage(m_currentPageIndex),
-                                                       m_scale,
-                                                       &error);
+    const QVector<QPolygonF> redactionQuads = redactionQuadsForPage(m_currentPageIndex);
+    const QString baseKey = redactedBaseCacheKey(m_currentPageIndex, redactionQuads);
+    const bool baseCacheHit = baseKey == m_redactedBaseCacheKey && !m_redactedBaseCacheImage.isNull();
+    QImage base = baseCacheHit
+        ? m_redactedBaseCacheImage.copy()
+        : m_scratchRenderer.renderRedactedBase(m_filePath,
+                                               m_password,
+                                               m_currentPageIndex,
+                                               redactionQuads,
+                                               m_scale,
+                                               &error);
     if (base.isNull()) {
         editTrace("[PDF_EDIT_RENDER]", QStringLiteral("redactedBase failed errorLength=%1").arg(error.size()));
         setStatusMessage(error);
         return;
     }
 
-    QImage overlay = m_scratchRenderer.renderGlyphOverlay(replacementRunsForPage(m_currentPageIndex),
-                                                          m_fontResolver,
-                                                          m_filePath,
-                                                          m_password,
-                                                          m_pixelSize,
-                                                          m_scale,
-                                                          &error);
+    if (!baseCacheHit) {
+        m_redactedBaseCacheImage = base.copy();
+        m_redactedBaseCacheKey = baseKey;
+    }
+
+    const QVector<PdfEditTextLayoutResult> layouts = replacementLayoutsForPage(m_currentPageIndex);
+    QImage overlay = m_scratchRenderer.renderGlyphOverlayFromLayouts(layouts,
+                                                                     m_pixelSize,
+                                                                     m_scale,
+                                                                     &error);
+    if (!layouts.isEmpty()) {
+        const PdfEditTextLayoutResult &layout = layouts.constFirst();
+        m_lastResolvedEditFontDebug = QStringLiteral("embedded:%1 fallback:%2 fontName:%3")
+            .arg(layout.usedEmbeddedFont ? QStringLiteral("true") : QStringLiteral("false"))
+            .arg(layout.usedFallbackFont ? QStringLiteral("true") : QStringLiteral("false"))
+            .arg(layout.debugFontName);
+    }
     if (!overlay.isNull()) {
         QPainter painter(&base);
         painter.drawImage(QPoint(0, 0), overlay);
@@ -1079,6 +1424,13 @@ void PdfEditSessionController::regenerateEditLayer()
                   .arg(m_editLayerImage.width())
                   .arg(m_editLayerImage.height())
                   .arg(overlay.isNull()));
+    qInfo().noquote()
+        << QStringLiteral("[PDF_EDIT_PERF] regenerateEditLayer reason=%1 elapsedMs=%2 active=%3 textLength=%4 cachedBase=%5")
+              .arg(m_lastRenderReason)
+              .arg(timer.elapsed())
+              .arg(m_active)
+              .arg(m_activeText.size())
+              .arg(baseCacheHit);
     emit editLayerImageChanged();
 }
 
@@ -1159,6 +1511,7 @@ void PdfEditSessionController::clearActiveTransientState(bool emitActiveSignals)
     m_replaceSelectionOnInput = false;
     m_selectionStart = 0;
     m_selectionLength = 0;
+    rebuildActiveLayout();
 
     if (emitActiveSignals && wasActive)
         emit activeChanged();
@@ -1272,13 +1625,58 @@ QVector<PdfRun> PdfEditSessionController::activeReplacementRuns() const
         const PdfGlyph &glyph = run.glyphs.constFirst();
         run.fontResourceKey = glyph.fontResourceKey;
         run.fillColor = glyph.fillColor;
+        run.bold = glyph.bold;
+        run.italic = glyph.italic;
+        run.underline = glyph.underline;
+        run.strikeout = glyph.strikeout;
+        run.filled = glyph.filled;
+        run.stroked = glyph.stroked;
+        run.clipped = glyph.clipped;
+        run.renderMode = glyph.renderMode;
         run.wmode = glyph.wmode;
         run.bidiLevel = glyph.bidiLevel;
         run.direction = glyph.direction;
         run.trm = glyph.trm;
+        run.effectiveFontSize = effectiveVisualFontSize(run);
+        if (m_activeLayout.valid && m_activeLayout.text == m_activeText) {
+            run.visualWidth = m_activeLayout.visualBox.width();
+            run.naturalWidth = m_activeLayout.naturalWidth;
+            run.horizontalScale = m_activeLayout.horizontalScale;
+            run.effectiveFontSize = m_activeLayout.style.effectiveFontSize;
+            run.fillColor = m_activeLayout.style.fillColor;
+            run.bold = m_activeLayout.style.bold;
+            run.italic = m_activeLayout.style.italic;
+            run.underline = m_activeLayout.style.underline;
+            run.strikeout = m_activeLayout.style.strikeout;
+            run.filled = m_activeLayout.style.filled;
+            run.stroked = m_activeLayout.style.stroked;
+            run.clipped = m_activeLayout.style.clipped;
+            run.renderMode = m_activeLayout.style.renderMode;
+        }
     }
     replacementRuns.append(run);
     return replacementRuns;
+}
+
+QVector<PdfEditTextLayoutResult> PdfEditSessionController::replacementLayoutsForPage(int pageIndex) const
+{
+    QVector<PdfEditTextLayoutResult> layouts;
+
+    for (const PdfTextEditOperation &operation : m_textEdits) {
+        if (operation.pageIndex != pageIndex)
+            continue;
+
+        for (PdfRun run : replacementRunsForOperation(operation)) {
+            PdfEditTextLayoutResult layout = layoutForReplacementRun(run, operation.replacementText);
+            if (layout.valid)
+                layouts.append(layout);
+        }
+    }
+
+    if (m_active && m_currentPageIndex == pageIndex && m_activeLayout.valid)
+        layouts.append(m_activeLayout);
+
+    return layouts;
 }
 
 QVector<QPolygonF> PdfEditSessionController::activeRedactionQuads() const
@@ -1374,13 +1772,20 @@ bool PdfEditSessionController::writeEditedPdfCopy(const QString &tempPath, QStri
             for (const PdfTextEditOperation &edit : pageEdits) {
                 for (const PdfRun &run : edit.replacementRuns) {
                     QString localError;
+                    const PdfFontResolver::ResolvedFont resolved =
+                        m_fontResolver.resolveEmbeddedFont(m_filePath, m_password, run.fontResourceKey);
                     const PdfFontWritePlan fontPlan =
-                        fontWriter.ensureFontForText(ctx,
-                                                     pdfDoc,
-                                                     page,
-                                                     run,
-                                                     edit.replacementText,
-                                                     &localError);
+                        fontWriter.ensureFontForTextWithOriginalProgram(
+                            ctx,
+                            pdfDoc,
+                            page,
+                            run,
+                            edit.replacementText,
+                            resolved.fontProgram,
+                            resolved.originalSubsetName.isEmpty()
+                                ? (run.glyphs.isEmpty() ? QString() : run.glyphs.constFirst().fontName)
+                                : resolved.originalSubsetName,
+                            &localError);
                     if (fontPlan.resourceName.isEmpty())
                         fz_throw(ctx, FZ_ERROR_GENERIC, localError.toUtf8().constData());
 

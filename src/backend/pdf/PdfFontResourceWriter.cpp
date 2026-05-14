@@ -1,5 +1,7 @@
 #include "PdfFontResourceWriter.h"
 
+#include "../text/PdfEditTextLayout.h"
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -41,6 +43,14 @@ QString bundledFontFileNameForText(const QString &text)
         return QStringLiteral("NotoSansCJK-Regular.otf");
 
     return QStringLiteral("DejaVuSans.ttf");
+}
+
+bool originalFontLooksSubset(const PdfRun &run)
+{
+    if (run.fontResourceKey.contains(QLatin1Char('+')))
+        return true;
+    return !run.glyphs.isEmpty()
+        && run.glyphs.constFirst().fontName.contains(QLatin1Char('+'));
 }
 
 const char *bundledFontNameForFileName(const QString &fileName)
@@ -109,6 +119,22 @@ QByteArray encodeIdentityHGlyphs(fz_context *ctx, fz_font *font, const QString &
     return output;
 }
 
+void applyLayoutMetrics(PdfFontWritePlan *plan, const PdfRun &run)
+{
+    if (!plan)
+        return;
+    plan->horizontalScale = run.horizontalScale > 0.0 ? run.horizontalScale : 1.0;
+    plan->effectiveFontSize = run.effectiveFontSize > 0.0
+        ? run.effectiveFontSize
+        : (run.glyphs.isEmpty() ? 0.0 : std::max<qreal>(1.0, run.glyphs.constFirst().fontSize));
+    if (!run.glyphs.isEmpty()) {
+        const PdfGlyph &first = run.glyphs.constFirst();
+        const QRectF box = first.bbox.normalized();
+        plan->baselineAdjustment = std::max(std::abs(box.bottom() - first.origin.y()),
+                                            std::abs(first.origin.y() - box.top()));
+    }
+}
+
 } // namespace
 
 bool PdfFontResourceWriter::canUseWinAnsi(const QString &text)
@@ -148,6 +174,21 @@ QByteArray PdfFontResourceWriter::encodeUtf16Be(const QString &text)
     return output;
 }
 
+PdfFontWritePlan PdfFontResourceWriter::ensureFontForTextWithOriginalProgram(
+    fz_context *ctx,
+    pdf_document *doc,
+    pdf_page *page,
+    const PdfRun &run,
+    const QString &newText,
+    const QByteArray &originalFontProgram,
+    const QString &originalFontName,
+    QString *error) const
+{
+    Q_UNUSED(originalFontProgram)
+    Q_UNUSED(originalFontName)
+    return ensureFontForText(ctx, doc, page, run, newText, error);
+}
+
 PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
                                                           pdf_document *doc,
                                                           pdf_page *page,
@@ -170,7 +211,7 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
 
     const QString originalResourceName = resourceNameFromKey(run.fontResourceKey);
     const bool winAnsi = canUseWinAnsi(newText);
-    if (winAnsi && !originalResourceName.isEmpty()
+    if (winAnsi && !originalFontLooksSubset(run) && !originalResourceName.isEmpty()
         && pdf_dict_gets(ctx, fonts, originalResourceName.toUtf8().constData())) {
         plan.resourceName = originalResourceName;
         plan.debugFontName = run.glyphs.isEmpty()
@@ -180,6 +221,13 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
         plan.hexString = false;
         plan.fallbackFont = false;
         plan.encodedText = encodeWinAnsi(newText);
+        applyLayoutMetrics(&plan, run);
+        if (qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_SAVE")) {
+            qInfo().noquote()
+                << QStringLiteral("[PDF_EDIT_FONT_DECISION] save text=\"%1\" selected=\"%2\" embeddedOriginal=false bundledFallback=false subsetRejected=false reason=safe-winansi-original-resource")
+                      .arg(newText.left(60))
+                      .arg(plan.debugFontName);
+        }
         return plan;
     }
 
@@ -187,11 +235,9 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
     fz_try(ctx)
     {
         const QString fallbackFontFileName = bundledFontFileNameForText(newText);
-        const QByteArray &fallbackFontProgram = winAnsi ? QByteArray() : bundledFontProgram(fallbackFontFileName);
+        const QByteArray &fallbackFontProgram = bundledFontProgram(fallbackFontFileName);
 
-        if (winAnsi) {
-            font = fz_new_base14_font(ctx, "Helvetica");
-        } else if (!fallbackFontProgram.isEmpty()) {
+        if (!fallbackFontProgram.isEmpty()) {
             font = fz_new_font_from_memory(ctx,
                                            bundledFontNameForFileName(fallbackFontFileName),
                                            reinterpret_cast<const unsigned char *>(fallbackFontProgram.constData()),
@@ -202,7 +248,7 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
             font = fz_new_base14_font(ctx, "Helvetica");
         }
 
-        pdf_obj *fontRef = winAnsi
+        pdf_obj *fontRef = fallbackFontProgram.isEmpty()
             ? pdf_add_simple_font(ctx, doc, font, PDF_SIMPLE_ENCODING_LATIN)
             : pdf_add_cid_font(ctx, doc, font);
 
@@ -223,9 +269,9 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
             fz_throw(ctx, FZ_ERROR_GENERIC, "No free font resource name available.");
 
         plan.resourceName = resourceName;
-        plan.debugFontName = winAnsi ? QStringLiteral("Helvetica") : fallbackFontFileName;
-        plan.winAnsi = winAnsi;
-        plan.identityH = !winAnsi;
+        plan.debugFontName = fallbackFontProgram.isEmpty() ? QStringLiteral("Helvetica") : fallbackFontFileName;
+        plan.winAnsi = fallbackFontProgram.isEmpty() && winAnsi;
+        plan.identityH = !plan.winAnsi;
         plan.hexString = !plan.winAnsi;
         plan.fallbackFont = true;
 
@@ -236,6 +282,17 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
 
         if (plan.encodedText.isEmpty())
             fz_throw(ctx, FZ_ERROR_GENERIC, "Fallback font could not encode replacement text.");
+        applyLayoutMetrics(&plan, run);
+        if (qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_SAVE")) {
+            qInfo().noquote()
+                << QStringLiteral("[PDF_EDIT_FONT_DECISION] save text=\"%1\" selected=\"%2\" embeddedOriginal=false bundledFallback=true subsetRejected=%3 reason=%4")
+                      .arg(newText.left(60))
+                      .arg(plan.debugFontName)
+                      .arg(originalFontLooksSubset(run))
+                      .arg(originalFontLooksSubset(run)
+                          ? QStringLiteral("subset-original-rejected-using-style-compatible-fallback")
+                          : QStringLiteral("embedded-original-unusable-using-style-compatible-fallback"));
+        }
     }
     fz_always(ctx)
     {

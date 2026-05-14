@@ -13,7 +13,9 @@ FocusScope {
     property bool suppressFinishForCurrentClick: false
     property bool inputEnabled: true
     property color accentColor: "#4D8DFF"
-    property var activeBox: activeSelectionBox()
+    property var activeGeometry: activeEditGeometry()
+    property var activeBox: activeGeometry && activeGeometry.box ? activeGeometry.box : { x: 0, y: 0, width: 0, height: 0 }
+    property var activeCaret: activeGeometry && activeGeometry.caret ? activeGeometry.caret : { x: 0, y: 0, height: 0 }
 
     function updateControllerMetrics() {
         if (!controller)
@@ -115,16 +117,16 @@ FocusScope {
         return { x: minX, y: minY, width: Math.max(1, maxX - minX), height: Math.max(1, maxY - minY) }
     }
 
-    function caretXInActiveBox() {
+    function activeEditGeometry() {
         if (!controller)
-            return 0
+            return {}
 
-        var textLength = Math.max(1, String(controller.activeText || "").length)
-        var cursor = Math.max(0, Math.min(Number(controller.cursorPosition || 0), textLength))
-        if (controller.replaceSelectionOnInput || controller.selectionLength > 0)
-            cursor = Number(controller.selectionStart || 0)
-
-        return activeBox.x + activeBox.width * (cursor / textLength)
+        try {
+            var parsed = JSON.parse(controller.activeEditGeometryJson || "{}")
+            return parsed ? parsed : {}
+        } catch (e) {
+            return {}
+        }
     }
 
     Timer {
@@ -224,10 +226,10 @@ FocusScope {
         visible: root.controller && root.controller.active && root.activeBox.width > 0 && root.activeBox.height > 0
         enabled: false
         z: 25
-        x: root.activeBox.x
-        y: root.activeBox.y
-        width: root.activeBox.width
-        height: root.activeBox.height
+        x: Number(root.activeBox.x || 0) * root.pageScale
+        y: Number(root.activeBox.y || 0) * root.pageScale
+        width: Math.max(1, Number(root.activeBox.width || 0) * root.pageScale)
+        height: Math.max(1, Number(root.activeBox.height || 0) * root.pageScale)
         color: "transparent"
         border.color: root.accentColor
         border.width: 1
@@ -235,13 +237,13 @@ FocusScope {
 
     Rectangle {
         id: caret
-        visible: root.controller && root.controller.active && root.activeBox.height > 0
+        visible: root.controller && root.controller.active && root.activeCaret.height > 0
         enabled: false
         z: 26
-        x: root.caretXInActiveBox()
-        y: root.activeBox.y
+        x: Number(root.activeCaret.x || 0) * root.pageScale
+        y: Number(root.activeCaret.y || 0) * root.pageScale
         width: Math.max(1, Math.round(1.5 * root.pageScale))
-        height: root.activeBox.height
+        height: Number(root.activeCaret.height || 0) * root.pageScale
         color: root.accentColor
     }
 

@@ -177,4 +177,64 @@ PdfFontResolver::ResolvedFont PdfFontResolver::resolveEmbeddedFont(const QString
     return result;
 }
 
+PdfFontResolver::FontValidationResult PdfFontResolver::validateFontProgramForText(
+    const QByteArray &fontProgram,
+    const QString &fontName,
+    const QString &text) const
+{
+    FontValidationResult result;
+    result.subsetFont = fontName.contains(QLatin1Char('+'));
+
+    if (fontProgram.isEmpty()) {
+        result.reason = QStringLiteral("empty-font-program");
+        return result;
+    }
+
+    if (result.subsetFont) {
+        result.reason = QStringLiteral("pdf-subset-font-not-safe-for-arbitrary-edited-text");
+        return result;
+    }
+
+    fz_context *ctx = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
+    if (!ctx) {
+        result.reason = QStringLiteral("no-fz-context");
+        return result;
+    }
+
+    fz_font *font = nullptr;
+    fz_try(ctx)
+    {
+        const QByteArray fontNameBytes = fontName.isEmpty()
+            ? QByteArray("PdfEditCandidate")
+            : fontName.toUtf8();
+        font = fz_new_font_from_memory(ctx,
+                                       fontNameBytes.constData(),
+                                       reinterpret_cast<const unsigned char *>(fontProgram.constData()),
+                                       static_cast<int>(fontProgram.size()),
+                                       0,
+                                       0);
+
+        const QVector<uint> codepoints = text.toUcs4();
+        for (uint codepoint : codepoints) {
+            const int gid = fz_encode_character(ctx, font, static_cast<int>(codepoint));
+            if (gid <= 0)
+                fz_throw(ctx, FZ_ERROR_GENERIC, "font cannot encode all edited characters");
+        }
+
+        result.canEncodeAllCharacters = true;
+        result.usableForEditedText = true;
+        result.reason = QStringLiteral("ok");
+    }
+    fz_catch(ctx)
+    {
+        result.usableForEditedText = false;
+        result.reason = QString::fromUtf8(fz_caught_message(ctx));
+    }
+
+    if (font)
+        fz_drop_font(ctx, font);
+    fz_drop_context(ctx);
+    return result;
+}
+
 } // namespace PDFClowne::Editing

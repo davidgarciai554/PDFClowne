@@ -73,6 +73,15 @@ QJsonObject glyphToJson(const PdfGlyph &glyph)
     object.insert(QStringLiteral("fontResourceKey"), glyph.fontResourceKey);
     object.insert(QStringLiteral("fontSize"), glyph.fontSize);
     object.insert(QStringLiteral("fillColor"), glyph.fillColor.name(QColor::HexArgb));
+    object.insert(QStringLiteral("bold"), glyph.bold);
+    object.insert(QStringLiteral("italic"), glyph.italic);
+    object.insert(QStringLiteral("underline"), glyph.underline);
+    object.insert(QStringLiteral("strikeout"), glyph.strikeout);
+    object.insert(QStringLiteral("filled"), glyph.filled);
+    object.insert(QStringLiteral("stroked"), glyph.stroked);
+    object.insert(QStringLiteral("clipped"), glyph.clipped);
+    object.insert(QStringLiteral("renderMode"), glyph.renderMode);
+    object.insert(QStringLiteral("horizontalScale"), glyph.horizontalScale);
     object.insert(QStringLiteral("wmode"), glyph.wmode);
     object.insert(QStringLiteral("bidiLevel"), glyph.bidiLevel);
     object.insert(QStringLiteral("direction"), pointToJson(glyph.direction));
@@ -91,6 +100,14 @@ QJsonObject runToJson(const PdfRun &run)
     object.insert(QStringLiteral("plainText"), run.plainText);
     object.insert(QStringLiteral("fontResourceKey"), run.fontResourceKey);
     object.insert(QStringLiteral("fillColor"), run.fillColor.name(QColor::HexArgb));
+    object.insert(QStringLiteral("bold"), run.bold);
+    object.insert(QStringLiteral("italic"), run.italic);
+    object.insert(QStringLiteral("underline"), run.underline);
+    object.insert(QStringLiteral("strikeout"), run.strikeout);
+    object.insert(QStringLiteral("filled"), run.filled);
+    object.insert(QStringLiteral("stroked"), run.stroked);
+    object.insert(QStringLiteral("clipped"), run.clipped);
+    object.insert(QStringLiteral("renderMode"), run.renderMode);
     object.insert(QStringLiteral("wmode"), run.wmode);
     object.insert(QStringLiteral("bidiLevel"), run.bidiLevel);
     object.insert(QStringLiteral("direction"), pointToJson(run.direction));
@@ -138,6 +155,14 @@ bool runCanAppendGlyph(const PdfRun &run, const PdfGlyph &glyph)
     return run.fontResourceKey == glyph.fontResourceKey &&
            qFuzzyCompare(first.fontSize, glyph.fontSize) &&
            run.fillColor == glyph.fillColor &&
+           run.bold == glyph.bold &&
+           run.italic == glyph.italic &&
+           run.underline == glyph.underline &&
+           run.strikeout == glyph.strikeout &&
+           run.filled == glyph.filled &&
+           run.stroked == glyph.stroked &&
+           run.clipped == glyph.clipped &&
+           run.renderMode == glyph.renderMode &&
            run.wmode == glyph.wmode &&
            run.bidiLevel == glyph.bidiLevel &&
            samePoint(run.direction, glyph.direction);

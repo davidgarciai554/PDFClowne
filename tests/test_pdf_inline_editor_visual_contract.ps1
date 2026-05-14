@@ -42,6 +42,7 @@ $controllerSource = Read-ProjectFile 'src/backend/text/PdfEditSessionController.
 $controllerHeader = Read-ProjectFile 'src/backend/text/PdfEditSessionController.h'
 $contentWriterHeader = Read-ProjectFile 'src/backend/pdf/PdfContentWriter.h'
 $contentWriterSource = Read-ProjectFile 'src/backend/pdf/PdfContentWriter.cpp'
+$fontWriterSource = Read-ProjectFile 'src/backend/pdf/PdfFontResourceWriter.cpp'
 
 Assert-Matches $viewerQml 'PdfEditOverlay\s*\{[\s\S]*controller:\s*root\.editingController[\s\S]*pageIndex:\s*pageFrame\.pageIndex[\s\S]*pageScale:\s*pagePaper\.pageScale' `
     'PdfViewer must mount PdfEditOverlay with controller, page index, and page scale.'
@@ -89,6 +90,42 @@ Assert-Matches $scratchRendererSource 'textMatrixFromVisualSpace' `
     'PdfScratchPageRenderer must convert visual edit coordinates through one explicit text matrix helper.'
 Assert-Matches $scratchRendererSource '\[PDF_EDIT_PAINT_TEXT\]' `
     'PdfScratchPageRenderer must keep guarded paint-transform logging for editable text.'
+Assert-NotMatches $scratchRendererSource 'run\.plainText\s*!=\s*originalFromGlyphs[\s\S]{0,120}forceFallbackFont\s*=\s*true' `
+    'PdfScratchPageRenderer must not force fallback font just because replacement text differs from original text.'
+Assert-NotMatches $editOverlay 'activeBox\.width\s*\*\s*\(cursor\s*/\s*textLength\)' `
+    'PdfEditOverlay must not compute caret position with linear text length division.'
+Assert-Matches $controllerHeader 'Q_PROPERTY\(QString\s+activeEditGeometryJson\s+READ\s+activeEditGeometryJson\s+NOTIFY\s+activeEditGeometryChanged\)' `
+    'PdfEditSessionController must expose native edit geometry for box and caret.'
+Assert-Matches $controllerHeader 'Q_PROPERTY\(QString\s+activeStyleJson\s+READ\s+activeStyleJson\s+NOTIFY\s+activeStyleChanged\)' `
+    'PdfEditSessionController must expose detected active text style.'
+Assert-Matches $editOverlay 'controller\.activeEditGeometryJson' `
+    'PdfEditOverlay must use controller-provided edit geometry.'
+Assert-Matches $mainQml 'editingController\.activeStyleJson' `
+    'main.qml must read activeStyleJson to synchronize the edit toolbar with clicked PDF text.'
+Assert-Matches $controllerSource 'rebuildActiveLayout' `
+    'PdfEditSessionController must rebuild a single active layout for geometry, preview and save.'
+Assert-Matches $controllerSource 'scheduleRegenerateEditLayer' `
+    'Edit layer rendering must be debounced to avoid slow typing.'
+Assert-Matches $controllerSource 'm_resolvedFontCache' `
+    'Embedded PDF fonts must be cached and not resolved from disk on every key press.'
+Assert-NotMatches $scratchRendererSource 'resolveEmbeddedFont' `
+    'PdfScratchPageRenderer must not resolve embedded fonts while painting every edit frame.'
+Assert-Matches $fontWriterSource 'pdf_add_cid_font' `
+    'PdfFontResourceWriter must be able to create CID Identity-H font resources for accurate edited text.'
+Assert-NotMatches $fontWriterSource 'originalFontProgram[\s\S]{0,400}pdf_add_cid_font[\s\S]{0,400}encodeIdentityHGlyphs' `
+    'PdfFontResourceWriter must not blindly create CID fonts from the original embedded subset font.'
+Assert-Matches $controllerSource 'm_resolvedFontCache' `
+    'PdfEditSessionController must cache resolved PDF fonts.'
+Assert-Matches $controllerSource 'scheduleRegenerateEditLayer' `
+    'Edit rendering must be debounced.'
+Assert-Matches $controllerSource 'redactedBaseCache' `
+    'Redacted base image must be cached and not rebuilt on every key press.'
+Assert-Matches $controllerSource 'activeStyleJson' `
+    'Active PDF text style must be exposed to QML.'
+Assert-NotMatches $scratchRendererSource 'resolved\.originalSubsetName[\s\S]{0,300}fz_new_font_from_memory' `
+    'Renderer must not blindly use original subset font for edited text.'
+Assert-Matches $scratchRendererSource 'PDF_EDIT_FONT_DECISION' `
+    'Renderer must log font decision for edited text.'
 
 $viewerQmlFull = Read-ProjectFile 'src/qml/PdfViewer.qml'
 
@@ -148,6 +185,10 @@ Assert-Matches ($contentWriterHeader + $contentWriterSource) 'visualBaselineToPd
     'PdfContentWriter must expose explicit visual-to-PDF export geometry helpers.'
 Assert-Matches $contentWriterSource 'zoomUsed=false devicePixelRatioUsed=false' `
     'Text export logs must prove zoom/device pixel ratio are not part of physical PDF font sizing.'
+Assert-Matches $contentWriterSource 'const\s+qreal\s+textMatrixBaselineLift\s*=\s*0\.0' `
+    'Text export must not use a fixed fallback baseline lift.'
+Assert-NotMatches $contentWriterSource 'fontSize\s*\*\s*0\.75' `
+    'Saved text must not use magic baseline lift.'
 Assert-NotMatches $contentWriterSource '1\s+1\s+1\s+rg[\s\S]{0,120}re\\n[\s\S]{0,80}f\\n' `
     'Physical PDF text export must not paint an extra white rectangle behind edited text.'
 Assert-NotMatches $controllerSource 'buildRedactionCoverStream\(' `

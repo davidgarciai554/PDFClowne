@@ -1,6 +1,8 @@
 #pragma once
 
 #include "PdfFontResolver.h"
+#include "PdfEditFontDecision.h"
+#include "PdfEditTextLayout.h"
 #include "PdfGlyphRunModel.h"
 #include "PdfTextExtractor.h"
 #include "../pdf/PdfTextEditOperation.h"
@@ -12,6 +14,8 @@
 #include <QPointF>
 #include <QSize>
 #include <QString>
+#include <QHash>
+#include <QTimer>
 #include <QUrl>
 
 namespace PDFClowne::Editing {
@@ -29,12 +33,15 @@ class PdfEditSessionController : public QObject {
     Q_PROPERTY(QString editableRegionsJson READ editableRegionsJson NOTIFY pageChanged)
     Q_PROPERTY(QString selectionQuadsJson READ selectionQuadsJson NOTIFY activeChanged)
     Q_PROPERTY(QString activeText READ activeText WRITE updateActiveText NOTIFY activeTextChanged)
+    Q_PROPERTY(QString activeEditGeometryJson READ activeEditGeometryJson NOTIFY activeEditGeometryChanged)
+    Q_PROPERTY(QString activeStyleJson READ activeStyleJson NOTIFY activeStyleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition NOTIFY cursorChanged)
     Q_PROPERTY(bool replaceSelectionOnInput READ replaceSelectionOnInput NOTIFY inputStateChanged)
     Q_PROPERTY(int selectionStart READ selectionStart NOTIFY inputStateChanged)
     Q_PROPERTY(int selectionLength READ selectionLength NOTIFY inputStateChanged)
     Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY statusMessageChanged)
     Q_PROPERTY(QImage editLayerImage READ editLayerImage NOTIFY editLayerImageChanged)
+    Q_PROPERTY(QString lastResolvedEditFontDebug READ lastResolvedEditFontDebug NOTIFY editLayerImageChanged)
     Q_PROPERTY(bool scannedDocumentSuspected READ scannedDocumentSuspected NOTIFY pageChanged)
 
 public:
@@ -51,12 +58,15 @@ public:
     QString editableRegionsJson() const { return m_regionsJson; }
     QString selectionQuadsJson() const { return m_selectionQuadsJson; }
     QString activeText() const { return m_activeText; }
+    QString activeEditGeometryJson() const { return m_activeEditGeometryJson; }
+    QString activeStyleJson() const { return m_activeStyleJson; }
     int cursorPosition() const { return m_cursorPosition; }
     bool replaceSelectionOnInput() const { return m_replaceSelectionOnInput; }
     int selectionStart() const { return m_selectionStart; }
     int selectionLength() const { return m_selectionLength; }
     QString statusMessage() const { return m_statusMessage; }
-    QImage editLayerImage() const { return m_editLayerImage; }
+    QImage editLayerImage();
+    QString lastResolvedEditFontDebug();
     bool scannedDocumentSuspected() const { return m_ready && m_currentPageIndex >= 0 && m_pageText.glyphs.isEmpty(); }
 
     Q_INVOKABLE bool loadDocumentWithPassword(const QString &filePath, const QString &password);
@@ -73,6 +83,7 @@ public:
                                   qreal scale);
     Q_INVOKABLE void clearSession();
     Q_INVOKABLE void updateActiveText(const QString &text);
+    Q_INVOKABLE void updateActiveStyle(const QString &styleJson);
     Q_INVOKABLE bool commitActiveText(const QString &reason = QStringLiteral("Explicit"));
     Q_INVOKABLE void commitActiveEdit();
     Q_INVOKABLE bool saveCurrentDocument();
@@ -99,6 +110,8 @@ signals:
     void pendingEditsChanged();
     void pageChanged();
     void activeTextChanged();
+    void activeEditGeometryChanged();
+    void activeStyleChanged();
     void cursorChanged();
     void inputStateChanged();
     void statusMessageChanged();
@@ -116,7 +129,17 @@ private:
     void selectRegionAt(const QPointF &point);
     void rebuildPageJson();
     void rebuildSelectionJson();
+    void rebuildActiveEditGeometry();
+    void rebuildActiveLayout();
+    void rebuildActiveEditGeometryFromLayout();
+    void rebuildActiveStyleJsonFromLayout();
     void regenerateEditLayer();
+    void scheduleRegenerateEditLayer(const QString &reason);
+    QString redactedBaseCacheKey(int pageIndex, const QVector<QPolygonF> &quads) const;
+    PdfFontResolver::ResolvedFont cachedResolvedFontForRun(const PdfRun &run) const;
+    PdfEditTextLayoutResult layoutForReplacementRun(const PdfRun &run,
+                                                    const QString &replacementText,
+                                                    const PdfDetectedTextStyle &style = {}) const;
     int cursorIndexForPoint(const PdfEditableRegion &region, const QPointF &point) const;
     void replaceSelectionWithText(const QString &text);
     void clearInputSelection();
@@ -128,6 +151,7 @@ private:
     QVector<PdfRun> replacementRunsForPage(int pageIndex) const;
     QVector<QPolygonF> redactionQuadsForPage(int pageIndex) const;
     QVector<PdfRun> activeReplacementRuns() const;
+    QVector<PdfEditTextLayoutResult> replacementLayoutsForPage(int pageIndex) const;
     QVector<QPolygonF> activeRedactionQuads() const;
     bool saveDocumentToPath(const QString &outputPath, bool overwriteOriginal);
     bool writeEditedPdfCopy(const QString &tempPath, QString *error) const;
@@ -138,14 +162,26 @@ private:
     QString m_runsJson = QStringLiteral("[]");
     QString m_regionsJson = QStringLiteral("[]");
     QString m_selectionQuadsJson = QStringLiteral("[]");
+    QString m_activeEditGeometryJson = QStringLiteral("{}");
+    QString m_activeStyleJson = QStringLiteral("{}");
     QString m_activeText;
     QString m_originalActiveText;
     QString m_statusMessage;
     QImage m_editLayerImage;
+    QString m_lastResolvedEditFontDebug;
     PdfTextExtractor::PageText m_pageText;
     PdfTextExtractor m_extractor;
     PdfFontResolver m_fontResolver;
+    PdfEditFontDecisionService m_fontDecisionService;
+    PdfEditTextLayout m_textLayout;
+    PdfEditTextLayoutResult m_activeLayout;
+    mutable QHash<QString, PdfFontResolver::ResolvedFont> m_resolvedFontCache;
     PDFClowne::Render::PdfScratchPageRenderer m_scratchRenderer;
+    QTimer m_editLayerRenderTimer;
+    bool m_editLayerRenderPending = false;
+    QString m_lastRenderReason;
+    QImage m_redactedBaseCacheImage;
+    QString m_redactedBaseCacheKey;
     bool m_ready = false;
     bool m_busy = false;
     bool m_active = false;

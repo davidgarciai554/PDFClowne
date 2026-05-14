@@ -13,6 +13,9 @@ struct PdfFontWritePlan {
     bool identityH = false;
     bool fallbackFont = false;
     QString debugFontName;
+    qreal horizontalScale = 1.0;
+    qreal effectiveFontSize = 0.0;
+    qreal baselineAdjustment = 0.0;
 };
 
 } // namespace PDFClowne::Editing

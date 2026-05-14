@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../text/PdfEditTextLayout.h"
 #include "../text/PdfFontResolver.h"
 #include "../text/PdfGlyphRunModel.h"
 
@@ -29,12 +30,17 @@ public:
                               qreal scale,
                               QString *error = nullptr) const;
 
+    QImage renderGlyphOverlayFromLayouts(const QVector<PDFClowne::Editing::PdfEditTextLayoutResult> &layouts,
+                                         const QSize &pixelSize,
+                                         qreal scale,
+                                         QString *error = nullptr) const;
+
     static QImage pixmapToImage(fz_pixmap *pixmap);
 
 private:
-    static QVector<PDFClowne::Editing::PdfShapedGlyph> shapeRun(
-        const PDFClowne::Editing::PdfRun &run,
-        const QByteArray &fontProgram);
+    static QTransform textMatrixFromLayoutGlyph(const PDFClowne::Editing::PdfEditTextLayoutResult &layout,
+                                                const PDFClowne::Editing::PdfEditLaidOutGlyph &glyph,
+                                                qreal pageHeight);
 };
 
 } // namespace PDFClowne::Render

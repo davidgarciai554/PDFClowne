@@ -1,10 +1,10 @@
 #include "PdfScratchPageRenderer.h"
 
+#include "../text/PdfEditTextLayout.h"
+
 #include <QColor>
 #include <QDebug>
 #include <QUrl>
-
-#include <hb.h>
 
 #include <mupdf/fitz.h>
 #include <mupdf/pdf.h>
@@ -145,34 +145,6 @@ QImage renderPage(fz_context *ctx, fz_document *doc, int pageIndex, qreal scale)
     return image;
 }
 
-QByteArray runTextUtf8(const PDFClowne::Editing::PdfRun &run)
-{
-    return run.plainText.toUtf8();
-}
-
-hb_script_t scriptForUnicode(uint unicode)
-{
-    if ((unicode >= 0x0590 && unicode <= 0x05FF) ||
-        (unicode >= 0xFB1D && unicode <= 0xFB4E))
-        return HB_SCRIPT_HEBREW;
-    if ((unicode >= 0x0600 && unicode <= 0x08FF) ||
-        (unicode >= 0xFB50 && unicode <= 0xFEFC))
-        return HB_SCRIPT_ARABIC;
-    if (unicode >= 0x3040 && unicode <= 0x9FFF)
-        return HB_SCRIPT_HAN;
-    return HB_SCRIPT_LATIN;
-}
-
-hb_language_t languageForScript(hb_script_t script)
-{
-    switch (script) {
-    case HB_SCRIPT_ARABIC:  return hb_language_from_string("ar", 2);
-    case HB_SCRIPT_HEBREW:  return hb_language_from_string("he", 2);
-    case HB_SCRIPT_HAN:     return hb_language_from_string("zh", 2);
-    default:                return hb_language_from_string("und", 3);
-    }
-}
-
 } // namespace
 
 QImage PdfScratchPageRenderer::pixmapToImage(fz_pixmap *pixmap)
@@ -189,59 +161,6 @@ QImage PdfScratchPageRenderer::pixmapToImage(fz_pixmap *pixmap)
         return {};
 
     return QImage(pixmap->samples, pixmap->w, pixmap->h, pixmap->stride, format).copy();
-}
-
-QVector<PDFClowne::Editing::PdfShapedGlyph> PdfScratchPageRenderer::shapeRun(
-    const PDFClowne::Editing::PdfRun &run,
-    const QByteArray &fontProgram)
-{
-    QVector<PDFClowne::Editing::PdfShapedGlyph> shaped;
-    if (run.plainText.isEmpty() || fontProgram.isEmpty())
-        return shaped;
-
-    hb_blob_t *blob = hb_blob_create(fontProgram.constData(),
-                                     static_cast<unsigned int>(fontProgram.size()),
-                                     HB_MEMORY_MODE_READONLY,
-                                     nullptr,
-                                     nullptr);
-    hb_face_t *face = hb_face_create(blob, 0);
-    hb_font_t *font = hb_font_create(face);
-    const unsigned int upem = std::max(1u, hb_face_get_upem(face));
-    hb_font_set_scale(font, static_cast<int>(upem), static_cast<int>(upem));
-
-    hb_buffer_t *buffer = hb_buffer_create();
-    const QByteArray utf8 = runTextUtf8(run);
-    hb_buffer_add_utf8(buffer, utf8.constData(), utf8.size(), 0, utf8.size());
-    const uint firstUnicode = run.plainText.isEmpty()
-        ? (run.glyphs.isEmpty() ? 0u : run.glyphs.constFirst().unicode)
-        : static_cast<uint>(run.plainText.at(0).unicode());
-    const hb_script_t hbScript = scriptForUnicode(firstUnicode);
-    hb_buffer_set_direction(buffer, run.bidiLevel % 2 ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
-    hb_buffer_set_script(buffer, hbScript);
-    hb_buffer_set_language(buffer, languageForScript(hbScript));
-    hb_shape(font, buffer, nullptr, 0);
-
-    unsigned int glyphCount = 0;
-    hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, &glyphCount);
-    hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer, &glyphCount);
-    shaped.reserve(static_cast<int>(glyphCount));
-
-    for (unsigned int i = 0; i < glyphCount; ++i) {
-        PDFClowne::Editing::PdfShapedGlyph glyph;
-        glyph.glyphId = infos[i].codepoint;
-        glyph.cluster = infos[i].cluster;
-        glyph.offset = QPointF(static_cast<qreal>(positions[i].x_offset) / upem,
-                               -static_cast<qreal>(positions[i].y_offset) / upem);
-        glyph.advance = QPointF(static_cast<qreal>(positions[i].x_advance) / upem,
-                                -static_cast<qreal>(positions[i].y_advance) / upem);
-        shaped.append(glyph);
-    }
-
-    hb_buffer_destroy(buffer);
-    hb_font_destroy(font);
-    hb_face_destroy(face);
-    hb_blob_destroy(blob);
-    return shaped;
 }
 
 QImage PdfScratchPageRenderer::renderRedactedBase(const QString &filePath,
@@ -322,8 +241,43 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
     qreal scale,
     QString *error) const
 {
-    if (runs.isEmpty() || pixelSize.isEmpty() || scale <= 0.0)
-        return QImage(pixelSize, QImage::Format_RGBA8888);
+    Q_UNUSED(runs)
+    Q_UNUSED(fontResolver)
+    Q_UNUSED(filePath)
+    Q_UNUSED(password)
+    return renderGlyphOverlayFromLayouts({}, pixelSize, scale, error);
+}
+
+QTransform PdfScratchPageRenderer::textMatrixFromLayoutGlyph(
+    const PDFClowne::Editing::PdfEditTextLayoutResult &layout,
+    const PDFClowne::Editing::PdfEditLaidOutGlyph &glyph,
+    qreal pageHeight)
+{
+    const QPointF visualDirection = normalizedDirection(layout.style.direction);
+    const QPointF pdfDirection(visualDirection.x(), -visualDirection.y());
+    const qreal fontSize = std::max<qreal>(1.0, layout.style.effectiveFontSize);
+    const qreal horizontalScale = std::max<qreal>(0.01, layout.horizontalScale);
+    const qreal x = glyph.origin.x();
+    const qreal y = pageHeight - glyph.origin.y();
+
+    return QTransform(fontSize * pdfDirection.x() * horizontalScale,
+                      fontSize * pdfDirection.y(),
+                      -fontSize * pdfDirection.y(),
+                      fontSize * pdfDirection.x(),
+                      x,
+                      y);
+}
+
+QImage PdfScratchPageRenderer::renderGlyphOverlayFromLayouts(
+    const QVector<PDFClowne::Editing::PdfEditTextLayoutResult> &layouts,
+    const QSize &pixelSize,
+    qreal scale,
+    QString *error) const
+{
+    QImage empty(pixelSize, QImage::Format_RGBA8888);
+    empty.fill(Qt::transparent);
+    if (layouts.isEmpty() || pixelSize.isEmpty() || scale <= 0.0)
+        return empty;
 
     fz_context *ctx = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
     if (!ctx) {
@@ -340,7 +294,6 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
     fz_try(ctx)
     {
         const fz_irect bbox = fz_make_irect(0, 0, pixelSize.width(), pixelSize.height());
-        const qreal pageWidth = pixelSize.width() / scale;
         const qreal pageHeight = pixelSize.height() / scale;
         const fz_matrix overlayDeviceMatrix = fz_make_matrix(static_cast<float>(scale),
                                                              0.0f,
@@ -352,82 +305,50 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
         fz_clear_pixmap(ctx, pix);
         device = fz_new_draw_device(ctx, overlayDeviceMatrix, pix);
 
-        for (const PDFClowne::Editing::PdfRun &run : runs) {
-            if (run.glyphs.isEmpty())
+        for (const PDFClowne::Editing::PdfEditTextLayoutResult &layout : layouts) {
+            if (!layout.valid || layout.glyphs.isEmpty())
                 continue;
 
-            const PDFClowne::Editing::PdfFontResolver::ResolvedFont resolved =
-                fontResolver.resolveEmbeddedFont(filePath, password, run.fontResourceKey);
-            bool forceFallbackFont = false;
-
-            QString originalFromGlyphs;
-            for (const PDFClowne::Editing::PdfGlyph &glyph : run.glyphs) {
-                const char32_t scalar = static_cast<char32_t>(glyph.unicode);
-                if (scalar)
-                    originalFromGlyphs.append(QString::fromUcs4(&scalar, 1));
+            if (qEnvironmentVariableIsSet("PDFCLOWNE_DEBUG_EDIT_METRICS")) {
+                qInfo().noquote()
+                    << QStringLiteral("[PDF_EDIT_FONT] resourceKey=%1 embedded=%2 fallback=%3 fontName=\"%4\" text=\"%5\"")
+                           .arg(layout.style.fontResourceKey)
+                           .arg(layout.usedEmbeddedFont)
+                           .arg(layout.usedFallbackFont)
+                           .arg(layout.debugFontName)
+                           .arg(layout.text.left(80));
+                qInfo().noquote()
+                    << QStringLiteral("[PDF_EDIT_FONT_DECISION] preview text=\"%1\" original=\"\" selected=\"%2\" embeddedOriginal=%3 bundledFallback=%4 subsetRejected=%5 reason=%6")
+                           .arg(layout.text.left(60))
+                           .arg(layout.fontName)
+                           .arg(layout.usedEmbeddedFont)
+                           .arg(layout.usedFallbackFont)
+                           .arg(layout.debugReason.contains(QStringLiteral("subset-original-rejected")))
+                           .arg(layout.debugReason);
             }
 
-            if (run.plainText != originalFromGlyphs)
-                forceFallbackFont = true;
-
             fz_font *font = nullptr;
-            if (!forceFallbackFont && !resolved.fontProgram.isEmpty()) {
+            if (!layout.fontProgram.isEmpty()) {
                 font = fz_new_font_from_memory(ctx,
-                                               resolved.originalSubsetName.toUtf8().constData(),
-                                               reinterpret_cast<const unsigned char *>(resolved.fontProgram.constData()),
-                                               resolved.fontProgram.size(),
+                                               layout.fontName.toUtf8().constData(),
+                                               reinterpret_cast<const unsigned char *>(layout.fontProgram.constData()),
+                                               layout.fontProgram.size(),
                                                0,
                                                1);
             } else {
                 font = fz_new_base14_font(ctx, "Helvetica");
             }
 
-            QVector<PDFClowne::Editing::PdfShapedGlyph> shaped;
-            if (!forceFallbackFont && !resolved.fontProgram.isEmpty())
-                shaped = shapeRun(run, resolved.fontProgram);
-
-            if (shaped.isEmpty() || forceFallbackFont) {
-                shaped.clear();
-                shaped.reserve(run.plainText.size());
-
-                for (const QChar &ch : run.plainText) {
-                    const int unicode = ch.unicode();
-                    int gid = fz_encode_character(ctx, font, unicode);
-                    if (gid <= 0)
-                        gid = fz_encode_character(ctx, font, '?');
-
-                    PDFClowne::Editing::PdfShapedGlyph shapedGlyph;
-                    shapedGlyph.glyphId = static_cast<uint>(std::max(0, gid));
-                    shapedGlyph.cluster = static_cast<uint>(shaped.size());
-                    const float advance = fz_advance_glyph(ctx,
-                                                           font,
-                                                           static_cast<int>(shapedGlyph.glyphId),
-                                                           run.wmode);
-                    shapedGlyph.advance = QPointF(advance, 0.0);
-                    shaped.append(shapedGlyph);
-                }
-            }
-
             fz_text *text = fz_new_text(ctx);
-            QPointF pen = run.glyphs.constFirst().origin;
-            const qreal fontSize = std::max<qreal>(1.0, run.glyphs.constFirst().fontSize);
-            const QRectF sourceBox = PDFClowne::Editing::unionGlyphBoxes(run.glyphs, 0, run.glyphs.size());
-            const QPointF baselineStart = run.glyphs.constFirst().origin;
-            const QPointF baselineEnd = run.glyphs.constLast().origin + run.glyphs.constLast().advance;
-            const qreal ascent = fontSize * 0.78;
-            const qreal descent = fontSize * 0.22;
             editTrace("[PDF_EDIT_TRANSFORM]",
-                      QStringLiteral("page=%1 pageWidth=%2 pageHeight=%3 zoom=%4 devicePixelRatio=1 sourcePdfRect=%5 visualRect=%5 baselineStart=(%6,%7) baselineEnd=(%8,%9) textMatrix=%10 renderMatrix=(%11,%12,%13,%14,%15,%16) finalTransform=pending yInversion=true rotation=false translatePageHeight=true scaleYMinusOne=false")
-                          .arg(run.glyphs.constFirst().pageIndex)
-                          .arg(pageWidth)
+                      QStringLiteral("pageHeight=%1 zoom=%2 visualRect=%3 baselineStart=(%4,%5) baselineEnd=(%6,%7) renderMatrix=(%8,%9,%10,%11,%12,%13) finalTransform=layout yInversion=true rotation=false translatePageHeight=true scaleYMinusOne=false")
                           .arg(pageHeight)
                           .arg(scale)
-                          .arg(rectToString(sourceBox))
-                          .arg(baselineStart.x())
-                          .arg(baselineStart.y())
-                          .arg(baselineEnd.x())
-                          .arg(baselineEnd.y())
-                          .arg(matrixToString(run.glyphs.constFirst().trm))
+                          .arg(rectToString(layout.visualBox))
+                          .arg(layout.baselineStart.x())
+                          .arg(layout.baselineStart.y())
+                          .arg(layout.baselineEnd.x())
+                          .arg(layout.baselineEnd.y())
                           .arg(overlayDeviceMatrix.a)
                           .arg(overlayDeviceMatrix.b)
                           .arg(overlayDeviceMatrix.c)
@@ -435,23 +356,22 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
                           .arg(overlayDeviceMatrix.e)
                           .arg(overlayDeviceMatrix.f));
 
-            for (int i = 0; i < shaped.size(); ++i) {
-                const auto &shapedGlyph = shaped.at(i);
-                const QTransform trm = textMatrixFromVisualSpace(run, pen, shapedGlyph, fontSize, pageHeight);
+            for (int i = 0; i < layout.glyphs.size(); ++i) {
+                const auto &laidOutGlyph = layout.glyphs.at(i);
+                if (laidOutGlyph.glyphId <= 0)
+                    continue;
+                const QTransform trm = textMatrixFromLayoutGlyph(layout, laidOutGlyph, pageHeight);
                 if (editTraceEnabled()) {
                     editTrace("[PDF_EDIT_PAINT_TEXT]",
-                              QStringLiteral("pageIndex=%1 editId=%2 text=\"%3\" text.length=%4 visualRect=%5 baseline=(%6,%7) painter.transform=(1,0,0,1,0,0) finalTransform=%8 usingScaleYMinusOne=false usingScaleXMinusOne=false drawMode=MuPDF::fz_show_glyph fontPixelSize=%9 ascent=%10 descent=%11")
-                                  .arg(run.glyphs.constFirst().pageIndex)
-                                  .arg(run.fontResourceKey)
-                                  .arg(run.plainText.left(80))
-                                  .arg(run.plainText.size())
-                                  .arg(rectToString(sourceBox.normalized()))
-                                  .arg(pen.x())
-                                  .arg(pen.y())
+                              QStringLiteral("editId=%1 text=\"%2\" text.length=%3 visualRect=%4 baseline=(%5,%6) painter.transform=(1,0,0,1,0,0) finalTransform=%7 usingScaleYMinusOne=false usingScaleXMinusOne=false drawMode=MuPDF::fz_show_glyph fontPixelSize=%8")
+                                  .arg(layout.style.fontResourceKey)
+                                  .arg(layout.text.left(80))
+                                  .arg(layout.text.size())
+                                  .arg(rectToString(layout.visualBox.normalized()))
+                                  .arg(laidOutGlyph.origin.x())
+                                  .arg(laidOutGlyph.origin.y())
                                   .arg(matrixToString(trm))
-                                  .arg(fontSize)
-                                  .arg(ascent)
-                                  .arg(descent));
+                                  .arg(layout.style.effectiveFontSize));
                     if (trm.m11() < 0.0 || trm.m22() < 0.0)
                         editTrace("[PDF_EDIT_TRANSFORM_ERROR]",
                                   QStringLiteral("negative transform while painting editable text m11=%1 m22=%2")
@@ -462,23 +382,21 @@ QImage PdfScratchPageRenderer::renderGlyphOverlay(
                               text,
                               font,
                               toFzMatrix(trm),
-                              static_cast<int>(shapedGlyph.glyphId),
-                              i < run.plainText.size() ? run.plainText.at(i).unicode() : -1,
-                              run.wmode,
-                              run.bidiLevel,
-                              run.bidiLevel % 2 ? FZ_BIDI_RTL : FZ_BIDI_LTR,
+                              static_cast<int>(laidOutGlyph.glyphId),
+                              laidOutGlyph.unicode ? static_cast<int>(laidOutGlyph.unicode) : -1,
+                              layout.style.wmode,
+                              layout.style.bidiLevel,
+                              layout.style.bidiLevel % 2 ? FZ_BIDI_RTL : FZ_BIDI_LTR,
                               FZ_LANG_UNSET);
-                pen += shapedGlyph.advance * fontSize;
             }
 
-            const QColor color = run.fillColor.isValid() ? run.fillColor : Qt::black;
+            const QColor color = layout.style.fillColor.isValid() ? layout.style.fillColor : Qt::black;
             editTrace("[PDF_EDIT_PAINT]",
-                      QStringLiteral("run textLength=%1 glyphs=%2 shaped=%3 fontSize=%4 forceFallback=%5")
-                          .arg(run.plainText.size())
-                          .arg(run.glyphs.size())
-                          .arg(shaped.size())
-                          .arg(fontSize)
-                          .arg(forceFallbackFont));
+                      QStringLiteral("layout textLength=%1 glyphs=%2 fontSize=%3 fallback=%4")
+                          .arg(layout.text.size())
+                          .arg(layout.glyphs.size())
+                          .arg(layout.style.effectiveFontSize)
+                          .arg(layout.usedFallbackFont));
             float components[3] = {
                 static_cast<float>(color.redF()),
                 static_cast<float>(color.greenF()),

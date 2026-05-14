@@ -280,6 +280,29 @@ PdfTextExtractor::PageText PdfTextExtractor::extractPage(const QString &filePath
                     glyph.advance = glyphAdvance(ctx, line, ch, glyph.originalGid);
                     glyph.fontSize = ch->size;
                     glyph.fillColor = QColor::fromRgba(ch->argb);
+#ifdef FZ_STEXT_BOLD
+                    glyph.bold = ch->font && (fz_font_is_bold(ctx, ch->font) || (ch->flags & FZ_STEXT_BOLD));
+#else
+                    glyph.bold = ch->font && fz_font_is_bold(ctx, ch->font);
+#endif
+                    glyph.italic = ch->font && fz_font_is_italic(ctx, ch->font);
+#ifdef FZ_STEXT_UNDERLINE
+                    glyph.underline = (ch->flags & FZ_STEXT_UNDERLINE) != 0;
+#endif
+#ifdef FZ_STEXT_STRIKEOUT
+                    glyph.strikeout = (ch->flags & FZ_STEXT_STRIKEOUT) != 0;
+#endif
+#ifdef FZ_STEXT_FILLED
+                    glyph.filled = (ch->flags & FZ_STEXT_FILLED) != 0;
+#else
+                    glyph.filled = true;
+#endif
+#ifdef FZ_STEXT_STROKED
+                    glyph.stroked = (ch->flags & FZ_STEXT_STROKED) != 0;
+#endif
+#ifdef FZ_STEXT_CLIPPED
+                    glyph.clipped = (ch->flags & FZ_STEXT_CLIPPED) != 0;
+#endif
                     glyph.wmode = line->wmode;
                     glyph.bidiLevel = ch->bidi;
                     glyph.direction = toPoint(line->dir);
@@ -296,6 +319,15 @@ PdfTextExtractor::PageText PdfTextExtractor::extractPage(const QString &filePath
                     const bool firstInSpan = currentRun.glyphs.isEmpty();
                     currentRun.fontResourceKey = glyph.fontResourceKey;
                     currentRun.fillColor = glyph.fillColor;
+                    currentRun.bold = glyph.bold;
+                    currentRun.italic = glyph.italic;
+                    currentRun.underline = glyph.underline;
+                    currentRun.strikeout = glyph.strikeout;
+                    currentRun.filled = glyph.filled;
+                    currentRun.stroked = glyph.stroked;
+                    currentRun.clipped = glyph.clipped;
+                    currentRun.renderMode = glyph.renderMode;
+                    currentRun.effectiveFontSize = glyph.fontSize;
                     currentRun.wmode = glyph.wmode;
                     currentRun.bidiLevel = glyph.bidiLevel;
                     currentRun.direction = glyph.direction;
@@ -348,6 +380,15 @@ QVector<PdfRun> PdfTextExtractor::buildRuns(const QVector<PdfGlyph> &glyphs)
         const bool firstInRun = currentRun.glyphs.isEmpty();
         currentRun.fontResourceKey = glyph.fontResourceKey;
         currentRun.fillColor = glyph.fillColor;
+        currentRun.bold = glyph.bold;
+        currentRun.italic = glyph.italic;
+        currentRun.underline = glyph.underline;
+        currentRun.strikeout = glyph.strikeout;
+        currentRun.filled = glyph.filled;
+        currentRun.stroked = glyph.stroked;
+        currentRun.clipped = glyph.clipped;
+        currentRun.renderMode = glyph.renderMode;
+        currentRun.effectiveFontSize = glyph.fontSize;
         currentRun.wmode = glyph.wmode;
         currentRun.bidiLevel = glyph.bidiLevel;
         currentRun.direction = glyph.direction;

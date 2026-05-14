@@ -28,6 +28,15 @@ struct PdfGlyph {
     QString fontResourceKey;
     qreal fontSize = 0.0;
     QColor fillColor = Qt::black;
+    bool bold = false;
+    bool italic = false;
+    bool underline = false;
+    bool strikeout = false;
+    bool filled = true;
+    bool stroked = false;
+    bool clipped = false;
+    int renderMode = 0;
+    qreal horizontalScale = 1.0;
     int wmode = 0;
     int bidiLevel = 0;
     QPointF direction = QPointF(1.0, 0.0);
@@ -39,10 +48,22 @@ struct PdfRun {
     QString plainText;
     QString fontResourceKey;
     QColor fillColor = Qt::black;
+    bool bold = false;
+    bool italic = false;
+    bool underline = false;
+    bool strikeout = false;
+    bool filled = true;
+    bool stroked = false;
+    bool clipped = false;
+    int renderMode = 0;
     int wmode = 0;
     int bidiLevel = 0;
     QPointF direction = QPointF(1.0, 0.0);
     QTransform trm;
+    qreal visualWidth = 0.0;
+    qreal naturalWidth = 0.0;
+    qreal horizontalScale = 1.0;
+    qreal effectiveFontSize = 0.0;
 };
 
 struct PdfEditableRegion {

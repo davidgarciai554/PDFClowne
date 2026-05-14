@@ -75,6 +75,11 @@ ApplicationWindow {
     property bool editItalicEnabled: false
     property bool editUnderlineEnabled: false
     property bool syncingPdfTextStyle: false
+    onEditFontSizeChanged: pushActiveNativeEditStyle()
+    onEditTextColorChanged: pushActiveNativeEditStyle()
+    onEditBoldEnabledChanged: pushActiveNativeEditStyle()
+    onEditItalicEnabledChanged: pushActiveNativeEditStyle()
+    onEditUnderlineEnabledChanged: pushActiveNativeEditStyle()
     property int editAnnotationSerial: 0
     readonly property var editTextColorOptions: ["#1C1C2E", "#C83040", "#1F7A4D", "#2463B6", "#7A3E9D"]
     readonly property var editHighlightColorOptions: ["#FFE45A", "#9BFFD0", "#8ED4FF", "#FFB3C7", "#D8B4FE"]
@@ -210,6 +215,37 @@ ApplicationWindow {
 
         function onOcrSuggested(message) {
             window.saveMessage = message
+        }
+
+        function onActiveStyleChanged() {
+            if (!window.editingController)
+                return
+
+            var style = {}
+            try {
+                style = JSON.parse(window.editingController.activeStyleJson || "{}")
+            } catch (e) {
+                style = {}
+            }
+
+            if (!style || !style.fontSize)
+                return
+
+            window.syncingPdfTextStyle = true
+
+            if (style.fontFamily && style.fontFamily.length > 0)
+                window.editFontFamily = window.normalizeEditFontFamily(style.fontFamily)
+
+            window.editFontSize = Math.max(1, Math.round(Number(style.fontSize || window.editFontSize)))
+
+            if (style.color && style.color.length > 0)
+                window.editTextColor = style.color
+
+            window.editBoldEnabled = !!style.bold
+            window.editItalicEnabled = !!style.italic
+            window.editUnderlineEnabled = !!style.underline
+
+            window.syncingPdfTextStyle = false
         }
 
         function onSaveCompleted(outputPath) {
@@ -3150,6 +3186,19 @@ ApplicationWindow {
             return "[]"
 
         return pdfDocument.textElementsForPage(sourcePage)
+    }
+
+    function pushActiveNativeEditStyle() {
+        if (syncingPdfTextStyle || !editingController || !editingController.active || !editingController.updateActiveStyle)
+            return
+
+        editingController.updateActiveStyle(JSON.stringify({
+            fontSize: editFontSize,
+            color: editTextColor,
+            bold: editBoldEnabled,
+            italic: editItalicEnabled,
+            underline: editUnderlineEnabled
+        }))
     }
 
     function prepareActiveTextEdit(pageIndex, point) {

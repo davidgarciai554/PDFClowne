@@ -111,8 +111,9 @@ PdfContentWriter::StreamBuildResult PdfContentWriter::buildReplacementTextStream
     const PdfGlyph &first = run.glyphs.constFirst();
     const qreal fontSize = std::max<qreal>(1.0, first.fontSize);
     QPointF pdfBaseline = visualBaselineToPdfBaseline(first.origin, pageHeight);
-    const qreal textMatrixBaselineLift = fontPlan.fallbackFont ? fontSize * 0.75 : 0.0;
+    const qreal textMatrixBaselineLift = 0.0;
     pdfBaseline.ry() += textMatrixBaselineLift;
+    pdfBaseline.ry() += fontPlan.baselineAdjustment;
     const QPointF pdfDirection = QPointF(normalizedDirection(run.direction).x(),
                                          -normalizedDirection(run.direction).y());
     const QRectF visualRect = unionGlyphBoxes(run.glyphs, 0, run.glyphs.size()).normalized();
@@ -131,7 +132,7 @@ PdfContentWriter::StreamBuildResult PdfContentWriter::buildReplacementTextStream
                    .arg(pageHeight)
                    .arg(fontPlan.debugFontName)
                    .arg(fontSize)
-                   .arg(pdfDirection.x())
+                   .arg(pdfDirection.x() * fontPlan.horizontalScale)
                    .arg(pdfDirection.y())
                    .arg(-pdfDirection.y())
                    .arg(pdfDirection.x())
@@ -161,7 +162,7 @@ PdfContentWriter::StreamBuildResult PdfContentWriter::buildReplacementTextStream
     stream.append(" ");
     stream.append(number(fontSize));
     stream.append(" Tf\n");
-    stream.append(number(pdfDirection.x()));
+    stream.append(number(pdfDirection.x() * fontPlan.horizontalScale));
     stream.append(" ");
     stream.append(number(pdfDirection.y()));
     stream.append(" ");
@@ -209,6 +210,36 @@ PdfContentWriter::StreamBuildResult PdfContentWriter::buildReplacementTextStream
     }
 
     stream.append("ET\n");
+    if (run.underline || run.strikeout) {
+        const qreal lineWidth = std::max<qreal>(0.4, fontSize * 0.045);
+        const qreal visualX1 = first.origin.x();
+        const qreal visualX2 = visualX1 + std::max<qreal>(visualRect.width(), run.visualWidth);
+        auto appendDecorationLine = [&](qreal visualY) {
+            const QPointF start = visualBaselineToPdfBaseline(QPointF(visualX1, visualY), pageHeight);
+            const QPointF end = visualBaselineToPdfBaseline(QPointF(visualX2, visualY), pageHeight);
+            stream.append(number(run.fillColor.redF()));
+            stream.append(" ");
+            stream.append(number(run.fillColor.greenF()));
+            stream.append(" ");
+            stream.append(number(run.fillColor.blueF()));
+            stream.append(" RG\n");
+            stream.append(number(lineWidth));
+            stream.append(" w\n");
+            stream.append(number(start.x()));
+            stream.append(" ");
+            stream.append(number(start.y()));
+            stream.append(" m\n");
+            stream.append(number(end.x()));
+            stream.append(" ");
+            stream.append(number(end.y()));
+            stream.append(" l\nS\n");
+        };
+
+        if (run.underline)
+            appendDecorationLine(first.origin.y() + fontSize * 0.12);
+        if (run.strikeout)
+            appendDecorationLine(first.origin.y() - fontSize * 0.32);
+    }
     stream.append("Q\n");
     result.contentStream = stream;
     return result;
