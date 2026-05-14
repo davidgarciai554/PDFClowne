@@ -13,6 +13,9 @@
 #include <QPointF>
 #include <QString>
 
+#include <mupdf/fitz.h>
+#include <mupdf/pdf.h>
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -294,6 +297,69 @@ inline int assertOriginalTailRemovedInEditedRegion(const QString &sourcePath,
         return fail(QStringLiteral("Edited region still contains stale text '%1': %2")
                         .arg(staleNeedle, savedTextInEditedBox));
     }
+
+    return 0;
+}
+
+inline int assertSavedPdfUsesIdentityFallbackFont(const QString &targetPath)
+{
+    fz_context *ctx = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
+    if (!ctx)
+        return fail(QStringLiteral("MuPDF could not create font-inspection context."));
+
+    fz_document *doc = nullptr;
+    pdf_document *pdfDoc = nullptr;
+    pdf_page *page = nullptr;
+    QString caught;
+    bool foundIdentityFallback = false;
+
+    const QByteArray pathBytes = targetPath.toUtf8();
+    fz_try(ctx)
+    {
+        fz_register_document_handlers(ctx);
+        doc = fz_open_document(ctx, pathBytes.constData());
+        pdfDoc = pdf_specifics(ctx, doc);
+        if (!pdfDoc)
+            fz_throw(ctx, FZ_ERROR_GENERIC, "Saved file is not a PDF.");
+
+        page = pdf_load_page(ctx, pdfDoc, 0);
+        pdf_obj *resources = pdf_page_resources(ctx, page);
+        pdf_obj *fonts = pdf_dict_get(ctx, resources, PDF_NAME(Font));
+        const int count = fonts ? pdf_dict_len(ctx, fonts) : 0;
+        for (int i = 0; i < count; ++i) {
+            pdf_obj *resourceNameObj = pdf_dict_get_key(ctx, fonts, i);
+            const QString resourceName = QString::fromUtf8(pdf_to_name(ctx, resourceNameObj));
+            if (!resourceName.startsWith(QStringLiteral("PclEditF")))
+                continue;
+
+            pdf_obj *fontObject = pdf_dict_get_val(ctx, fonts, i);
+            pdf_obj *subtype = pdf_dict_get(ctx, fontObject, PDF_NAME(Subtype));
+            pdf_obj *encoding = pdf_dict_get(ctx, fontObject, PDF_NAME(Encoding));
+            foundIdentityFallback =
+                pdf_is_name(ctx, subtype)
+                && QString::fromUtf8(pdf_to_name(ctx, subtype)) == QStringLiteral("Type0")
+                && pdf_is_name(ctx, encoding)
+                && QString::fromUtf8(pdf_to_name(ctx, encoding)) == QStringLiteral("Identity-H");
+            if (foundIdentityFallback)
+                break;
+        }
+    }
+    fz_catch(ctx)
+    {
+        caught = QString::fromUtf8(fz_caught_message(ctx));
+    }
+
+    if (page)
+        pdf_drop_page(ctx, page);
+    if (doc)
+        fz_drop_document(ctx, doc);
+    fz_drop_context(ctx);
+
+    if (!caught.isEmpty())
+        return fail(caught);
+
+    if (!foundIdentityFallback)
+        return fail(QStringLiteral("Unicode replacement did not embed a CID Identity-H fallback font."));
 
     return 0;
 }

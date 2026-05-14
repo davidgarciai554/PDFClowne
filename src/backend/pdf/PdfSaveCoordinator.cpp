@@ -205,12 +205,14 @@ PdfSaveCoordinator::SaveResult PdfSaveCoordinator::replaceOriginalTransaction(
         QFile::copy(result.finalPath, userBackup);
     }
 
+    qInfo().noquote() << QStringLiteral("[Save] closing MuPDF document before replacing original");
     if (!replaceFileWithBackup(result.finalPath, tempPath, &result.backupPath, &result.error)) {
         QFile::remove(tempPath);
         if (saveTraceEnabled())
             qWarning().noquote() << QStringLiteral("[PDF_SAVE_ERROR] message=\"%1\"").arg(result.error);
         return result;
     }
+    qInfo().noquote() << QStringLiteral("[Save] original PDF replaced correctly");
 
     result.ok = true;
     if (saveTraceEnabled())

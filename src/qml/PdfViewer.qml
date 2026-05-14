@@ -2907,6 +2907,10 @@ FocusScope {
             activeTextDraft = null
     }
 
+    function commitActiveEditor() {
+        commitActiveTextDraft()
+    }
+
     function stylePatchedSpan(span, patch) {
         var next = JSON.parse(JSON.stringify(span || {}))
         var keys = Object.keys(patch || {})

@@ -490,6 +490,12 @@ add_pdf_text_edit_save_test(PdfTextEditSaveMultipleEditsTest
 add_pdf_text_edit_save_test(PdfTextEditSaveUnicodeTest
     tests/cpp/PdfTextEditSaveUnicodeTest.cpp
     PdfTextEditSaveUnicode)
+add_pdf_text_edit_save_test(PdfTextEditSaveInPlaceTest
+    tests/cpp/PdfTextEditSaveInPlaceTest.cpp
+    PdfTextEditSaveInPlace)
+add_pdf_text_edit_save_test(PdfTextEditSaveNoWhiteCoverTest
+    tests/cpp/PdfTextEditSaveNoWhiteCoverTest.cpp
+    PdfTextEditSaveNoWhiteCover)
 add_pdf_text_edit_save_test(PdfTextEditSaveReopenExtractionTest
     tests/cpp/PdfTextEditSaveReopenExtractionTest.cpp
     PdfTextEditSaveReopenExtraction)

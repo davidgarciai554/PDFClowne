@@ -77,6 +77,11 @@ FocusScope {
         }
     }
 
+    function commitActiveEditor() {
+        if (controller && controller.commitActiveEdit)
+            controller.commitActiveEdit()
+    }
+
     function activeSelectionBox() {
         var quads = root.controller && root.controller.active
                 ? root.parseArray(root.controller.selectionQuadsJson)

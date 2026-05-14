@@ -124,24 +124,36 @@ Assert-Matches $controllerSource 'ClickedOutside' `
     'Clicking outside active text must commit, not clear, the active edit.'
 Assert-Matches $controllerSource 'clearEditLayerIfNoVisibleEdits' `
     'The controller must only clear the visual layer when there are no active or confirmed edits for the page.'
-Assert-Matches $mainQml 'var\s+overwriteCurrent\s*=\s*isSameFilePath\(documentModel\.get\(index\)\.path,\s*targetPath\)' `
-    'Normal Guardar must compute whether native text edit save overwrites the current PDF.'
+Assert-Matches $mainQml 'var\s+overwriteCurrent\s*=\s*requestedOverwriteCurrent\s*\|\|\s*isSameFilePath\(sourcePath,\s*targetPath\)' `
+    'Normal Guardar must force overwriteCurrent when requested or when source and target are the same PDF.'
 Assert-Matches $mainQml 'editingController\.saveDocument\(targetPath,\s*overwriteCurrent\)' `
     'Normal Guardar must route native text edits through PdfEditSessionController.saveDocument with overwrite detection.'
-Assert-Matches $mainQml 'function\s+saveActiveDocumentRotated[\s\S]{0,180}saveDocumentChanges\(activeDocumentIndex,\s*documentModel\.get\(activeDocumentIndex\)\.path,\s*true\)' `
+Assert-Matches $mainQml 'function\s+saveActiveDocumentRotated[\s\S]{0,260}saveDocumentChanges\(activeDocumentIndex,\s*currentPath,\s*true\)' `
     'The main Save action must share the saveDocumentChanges pipeline used for native text edits.'
 Assert-Matches $mainQml 'editingController\.hasPendingEdits\s*\|\|\s*editingController\.active' `
     'The Save action must be enabled for an active uncommitted native text edit.'
-Assert-Matches $mainQml 'documentRenderController\.releaseDocumentSync[\s\S]{0,500}editingController\.saveDocument' `
-    'Overwrite saves with native text edits must release render handles before replacing the current PDF.'
+Assert-Matches $mainQml 'documentRenderController\.releaseDocumentSync[\s\S]{0,900}pdfDocument\.clear\(\)' `
+    'Overwrite saves with native text edits must release render handles and clear PdfDocument before replacing the current PDF.'
+Assert-Matches $mainQml 'pdfDocument\.clear\(\)[\s\S]{0,900}editingController\.saveDocument\(targetPath,\s*overwriteCurrent\)' `
+    'In-place native text save must clear PdfDocument before calling editingController.saveDocument so Windows releases the original PDF handle.'
+Assert-NotMatches $mainQml 'pdfDocument\.close\(|pdfDocument\.open\(' `
+    'main.qml must use PdfDocument.clear/load, not close/open.'
+Assert-Matches $mainQml 'pdfViewer\.commitActiveEditor\(\)[\s\S]{0,600}editingController\.commitActiveText\("SaveRequestedFromMain"\)' `
+    'Guardar must commit the active native text editor before closing PdfDocument.'
+Assert-Matches $mainQml 'documentRenderController\.releaseDocumentSync\([^\)]*\)[\s\S]{0,900}pdfDocument\.clear\(\)' `
+    'Guardar must release render controller and clear PdfDocument before replacing the original PDF.'
+Assert-Matches $mainQml 'function\s+completeEditingControllerSave[\s\S]*pdfDocument\.clear\(\)[\s\S]{0,500}pdfDocument\.load\(targetPath' `
+    'After native save completes, main.qml must reload the saved PDF from disk.'
 Assert-Matches ($contentWriterHeader + $contentWriterSource) 'visualBaselineToPdfBaseline|buildReplacementTextStream' `
     'PdfContentWriter must expose explicit visual-to-PDF export geometry helpers.'
 Assert-Matches $contentWriterSource 'zoomUsed=false devicePixelRatioUsed=false' `
     'Text export logs must prove zoom/device pixel ratio are not part of physical PDF font sizing.'
-Assert-Matches $contentWriterSource 'buildRedactionCoverStream' `
-    'Physical PDF export must paint a white coverage rectangle over the original visual text box before writing replacement text.'
-Assert-Matches $contentWriterSource 'expandVisualRedactionRect' `
-    'Physical PDF export must expand the original visual redaction box so short replacements do not leave old glyph fragments.'
+Assert-NotMatches $contentWriterSource '1\s+1\s+1\s+rg[\s\S]{0,120}re\\n[\s\S]{0,80}f\\n' `
+    'Physical PDF text export must not paint an extra white rectangle behind edited text.'
+Assert-NotMatches $controllerSource 'buildRedactionCoverStream\(' `
+    'Physical PDF text export must not append a white cover stream; original text removal must be handled by text redaction only.'
+Assert-NotMatches $controllerSource 'expandVisualRedactionRect' `
+    'Physical PDF text export must not use expanded visual redaction rectangles that can cover adjacent lines.'
 Assert-NotMatches $contentWriterSource 'const QTransform &tm = first\.trm|number\(tm\.m11\(\)\)|number\(tm\.dy\(\)\)' `
     'Physical PDF export must not reuse the preview/extraction transform as the final PDF Tm.'
 Assert-Matches $controllerSource 'buildReplacementTextStream' `

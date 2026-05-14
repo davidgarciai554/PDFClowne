@@ -90,6 +90,16 @@ QPolygonF quadFromRect(const QRectF &rect)
     return quad;
 }
 
+QRectF tightGlyphRedactionRect(const QRectF &bbox)
+{
+    QRectF r = bbox.normalized();
+
+    const qreal insetY = std::max<qreal>(0.25, r.height() * 0.08);
+    const qreal insetX = std::max<qreal>(0.10, r.width() * 0.02);
+
+    return r.adjusted(-insetX, insetY, insetX, -insetY);
+}
+
 void applyTextRedaction(fz_context *ctx,
                         pdf_page *page,
                         const fz_quad &quad,
@@ -103,11 +113,6 @@ void applyTextRedaction(fz_context *ctx,
     pdf_dict_put_name(ctx, borderStyle, PDF_NAME(S), "S");
     pdf_dict_put_real(ctx, borderStyle, PDF_NAME(W), 0);
 
-    float fillColor[3] = {1.0f, 1.0f, 1.0f};
-    pdf_obj *interiorColor = pdf_dict_put_array(ctx, pdf_annot_obj(ctx, annot), PDF_NAME(IC), 3);
-    pdf_array_push_real(ctx, interiorColor, fillColor[0]);
-    pdf_array_push_real(ctx, interiorColor, fillColor[1]);
-    pdf_array_push_real(ctx, interiorColor, fillColor[2]);
     pdf_apply_redaction(ctx, annot, options);
     pdf_drop_annot(ctx, annot);
 }
@@ -452,40 +457,84 @@ bool PdfEditSessionController::commitActiveText(const QString &reason)
     return true;
 }
 
+void PdfEditSessionController::commitActiveEdit()
+{
+    if (m_active)
+        commitActiveText(QStringLiteral("SaveRequested"));
+}
+
+bool PdfEditSessionController::saveCurrentDocument()
+{
+    const QString localSource = toLocalPath(m_filePath);
+    qInfo().noquote() << QStringLiteral("[Save] saveCurrentDocument path=\"%1\" hasPendingTextEdits=%2")
+                             .arg(localSource)
+                             .arg(m_hasPendingEdits);
+
+    if (localSource.isEmpty()) {
+        emit saveError(tr("No hay PDF abierto para guardar."));
+        return false;
+    }
+
+    return saveDocumentToPath(localSource, true);
+}
+
+bool PdfEditSessionController::saveDocumentAs(const QUrl &outputUrl)
+{
+    const QString outputPath = outputUrl.isLocalFile()
+        ? outputUrl.toLocalFile()
+        : toLocalPath(outputUrl.toString(QUrl::PreferLocalFile | QUrl::FullyDecoded));
+
+    if (outputPath.isEmpty()) {
+        emit saveError(tr("Ruta de salida vacía."));
+        return false;
+    }
+
+    return saveDocumentToPath(outputPath, false);
+}
+
 bool PdfEditSessionController::saveDocument(const QString &outputPath, bool incremental)
+{
+    return saveDocumentToPath(outputPath, incremental);
+}
+
+bool PdfEditSessionController::saveDocumentToPath(const QString &outputPath, bool overwriteOriginal)
 {
     const QString localOutput = toLocalPath(outputPath);
     const QString localSource = toLocalPath(m_filePath);
     editTrace("[PDF_SAVE_REQUEST]",
               QStringLiteral("mode=%1 currentFilePath=\"%2\" targetPath=\"%3\" editingActive=%4 confirmedTextEditsCount=%5 documentDirty=%6")
-                  .arg(incremental ? QStringLiteral("Save") : QStringLiteral("SaveAs"))
+                  .arg(overwriteOriginal ? QStringLiteral("Save") : QStringLiteral("SaveAs"))
                   .arg(localSource)
                   .arg(localOutput)
                   .arg(m_active)
                   .arg(confirmedEditCount())
                   .arg(m_hasPendingEdits));
 
-    if (m_active) {
-        const bool committed = commitActiveText(QStringLiteral("SaveRequested"));
+    const bool wasActive = m_active;
+    commitActiveEdit();
+    if (wasActive)
         editTrace("[PDF_SAVE_COMMIT_ACTIVE]",
-                  QStringLiteral("committed=%1 confirmedTextEditsCountAfter=%2")
-                      .arg(committed)
+                  QStringLiteral("committed=true confirmedTextEditsCountAfter=%1")
                       .arg(confirmedEditCount()));
-    }
 
     if (m_textEdits.isEmpty()) {
-        emit saveError(tr("No hay cambios de texto pendientes."));
-        editTrace("[PDF_SAVE_ERROR]", QStringLiteral("message=\"No hay cambios de texto pendientes.\""));
-        return false;
+        emit saveCompleted(overwriteOriginal ? localSource : localOutput);
+        editTrace("[PDF_SAVE_DONE]", QStringLiteral("ok=true noPendingTextEdits=true"));
+        return true;
     }
 
     PdfSaveCoordinator coordinator;
-    const auto writer = [this](const QString &tempPath, QString *error) {
+    const bool replaceOriginal = overwriteOriginal
+        || QFileInfo(localOutput).canonicalFilePath() == QFileInfo(localSource).canonicalFilePath();
+    const QString finalTarget = replaceOriginal ? localSource : localOutput;
+    const auto writer = [this, finalTarget, replaceOriginal](const QString &tempPath, QString *error) {
+        qInfo().noquote() << QStringLiteral("[Save] pdf_save_document tempPath=\"%1\" targetPath=\"%2\" overwriteOriginal=%3")
+                                 .arg(tempPath)
+                                 .arg(finalTarget)
+                                 .arg(replaceOriginal);
         return writeEditedPdfCopy(tempPath, error);
     };
 
-    const bool replaceOriginal = incremental
-        || QFileInfo(localOutput).canonicalFilePath() == QFileInfo(localSource).canonicalFilePath();
     editTrace("[PDF_SAVE_EXPORT]",
               QStringLiteral("sourcePath=\"%1\" targetPath=\"%2\" overwriteCurrent=%3 editsCount=%4")
                   .arg(localSource)
@@ -503,12 +552,20 @@ bool PdfEditSessionController::saveDocument(const QString &outputPath, bool incr
         return false;
     }
 
+    clearDirtyFlagsAfterSave();
     emit saveCompleted(result.finalPath);
     editTrace("[PDF_SAVE_DONE]",
               QStringLiteral("ok=true currentFilePath=\"%1\" documentDirty=%2")
                   .arg(result.finalPath)
                   .arg(m_hasPendingEdits));
     return true;
+}
+
+void PdfEditSessionController::clearDirtyFlagsAfterSave()
+{
+    m_textEdits.clear();
+    m_hasPendingEdits = false;
+    emit pendingEditsChanged();
 }
 
 void PdfEditSessionController::updatePageViewMetrics(int pageIndex, int pixelWidth, int pixelHeight, qreal scale)
@@ -1235,8 +1292,13 @@ QVector<QPolygonF> PdfEditSessionController::activeRedactionQuads() const
     const int glyphCount = static_cast<int>(m_pageText.glyphs.size());
     const int end = std::min(glyphCount, first + region.glyphRange.second);
     quads.reserve(end - first);
-    for (int i = first; i < end; ++i)
-        quads.append(m_pageText.glyphs.at(i).quad);
+    for (int i = first; i < end; ++i) {
+        const PdfGlyph &glyph = m_pageText.glyphs.at(i);
+        if (!glyph.quad.isEmpty() && glyph.quad.size() >= 4)
+            quads.append(glyph.quad);
+        else
+            quads.append(quadFromRect(tightGlyphRedactionRect(glyph.bbox)));
+    }
     return quads;
 }
 
@@ -1300,24 +1362,9 @@ bool PdfEditSessionController::writeEditedPdfCopy(const QString &tempPath, QStri
             redactionOptions.text = PDF_REDACT_TEXT_REMOVE;
 
             for (const PdfTextEditOperation &edit : pageEdits) {
-                for (const PdfRun &run : edit.replacementRuns) {
-                    if (run.glyphs.isEmpty())
-                        continue;
-
-                    const qreal fontSize = std::max<qreal>(1.0, run.glyphs.constFirst().fontSize);
-                    const QRectF visualRect = unionGlyphBoxes(run.glyphs, 0, run.glyphs.size()).normalized();
-                    const QRectF expandedRect = PdfContentWriter::expandVisualRedactionRect(visualRect, fontSize);
-                    const QPolygonF expandedQuad = quadFromRect(expandedRect);
-                    const fz_quad fzQuad = toFzQuad(expandedQuad);
-                    applyTextRedaction(ctx, page, fzQuad, &redactionOptions);
-                    editTrace("[PDF_REDACTION_SPACE_CONFIRMED]",
-                              QStringLiteral("apiName=pdf_apply_redaction expectedSpace=MuPDFRedactionSpace rectUsed=(%1,%2,%3,%4) editId=%5")
-                                  .arg(expandedRect.x())
-                                  .arg(expandedRect.y())
-                                  .arg(expandedRect.width())
-                                  .arg(expandedRect.height())
-                                  .arg(edit.id));
-                }
+                qInfo().noquote() << QStringLiteral("[PDF_EXPORT_REDACT] applying glyph redactions only pageIndex=%1 quads=%2")
+                                      .arg(editedPageIndex)
+                                      .arg(edit.redactionQuads.size());
                 for (const QPolygonF &quad : edit.redactionQuads) {
                     const fz_quad fzQuad = toFzQuad(quad);
                     applyTextRedaction(ctx, page, fzQuad, &redactionOptions);
@@ -1336,11 +1383,6 @@ bool PdfEditSessionController::writeEditedPdfCopy(const QString &tempPath, QStri
                                                      &localError);
                     if (fontPlan.resourceName.isEmpty())
                         fz_throw(ctx, FZ_ERROR_GENERIC, localError.toUtf8().constData());
-
-                    const QByteArray coverStream =
-                        contentWriter.buildRedactionCoverStream(run, pageHeight, edit.id);
-                    if (!coverStream.isEmpty())
-                        appendContentStream(ctx, pdfDoc, page, coverStream);
 
                     const PdfContentWriter::StreamBuildResult stream =
                         contentWriter.buildReplacementTextStream(run,

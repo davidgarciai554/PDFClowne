@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 
     QString targetPath;
     QString originalText;
-    const QString replacement = QStringLiteral("Edición técnica número 123 áéíóú ñ Ñ");
+    const QString replacement = QStringLiteral("Edición técnica número 123 áéíóú ñ Ñ Ж");
     const int saved = PdfTextEditSaveTestUtils::saveOneEdit(app.arguments().at(1),
                                                             QString(),
                                                             replacement,
@@ -20,5 +20,9 @@ int main(int argc, char **argv)
     if (saved != 0)
         return saved;
 
-    return PdfTextEditSaveTestUtils::assertSavedText(targetPath, replacement, originalText);
+    const int textCheck = PdfTextEditSaveTestUtils::assertSavedText(targetPath, replacement, originalText);
+    if (textCheck != 0)
+        return textCheck;
+
+    return PdfTextEditSaveTestUtils::assertSavedPdfUsesIdentityFallbackFont(targetPath);
 }

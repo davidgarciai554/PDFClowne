@@ -12,6 +12,7 @@
 #include <QPointF>
 #include <QSize>
 #include <QString>
+#include <QUrl>
 
 namespace PDFClowne::Editing {
 
@@ -73,6 +74,9 @@ public:
     Q_INVOKABLE void clearSession();
     Q_INVOKABLE void updateActiveText(const QString &text);
     Q_INVOKABLE bool commitActiveText(const QString &reason = QStringLiteral("Explicit"));
+    Q_INVOKABLE void commitActiveEdit();
+    Q_INVOKABLE bool saveCurrentDocument();
+    Q_INVOKABLE bool saveDocumentAs(const QUrl &outputUrl);
     Q_INVOKABLE bool saveDocument(const QString &outputPath, bool incremental = false);
     Q_INVOKABLE void updatePageViewMetrics(int pageIndex, int pixelWidth, int pixelHeight, qreal scale);
     Q_INVOKABLE bool hasActiveEdit() const { return m_active; }
@@ -125,7 +129,9 @@ private:
     QVector<QPolygonF> redactionQuadsForPage(int pageIndex) const;
     QVector<PdfRun> activeReplacementRuns() const;
     QVector<QPolygonF> activeRedactionQuads() const;
+    bool saveDocumentToPath(const QString &outputPath, bool overwriteOriginal);
     bool writeEditedPdfCopy(const QString &tempPath, QString *error) const;
+    void clearDirtyFlagsAfterSave();
 
     QString m_filePath;
     QString m_password;

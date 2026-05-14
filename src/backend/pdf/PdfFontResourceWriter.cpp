@@ -1,5 +1,10 @@
 #include "PdfFontResourceWriter.h"
 
+#include <QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+
 namespace PDFClowne::Editing {
 namespace {
 
@@ -13,6 +18,95 @@ QString resourceNameFromKey(const QString &key)
     const int nameStart = start + marker.size();
     const int end = key.indexOf(QLatin1Char('/'), nameStart);
     return end < 0 ? key.mid(nameStart) : key.mid(nameStart, end - nameStart);
+}
+
+bool containsCodepointInRange(const QString &text, uint first, uint last)
+{
+    const QVector<uint> codepoints = text.toUcs4();
+    for (uint codepoint : codepoints) {
+        if (codepoint >= first && codepoint <= last)
+            return true;
+    }
+    return false;
+}
+
+QString bundledFontFileNameForText(const QString &text)
+{
+    if (containsCodepointInRange(text, 0x0590, 0x08FF)
+        || containsCodepointInRange(text, 0xFB1D, 0xFEFC)) {
+        return QStringLiteral("NotoSansArabic-Regular.ttf");
+    }
+
+    if (containsCodepointInRange(text, 0x3040, 0x9FFF))
+        return QStringLiteral("NotoSansCJK-Regular.otf");
+
+    return QStringLiteral("DejaVuSans.ttf");
+}
+
+const char *bundledFontNameForFileName(const QString &fileName)
+{
+    if (fileName == QLatin1String("NotoSansArabic-Regular.ttf"))
+        return "NotoSansArabic";
+    if (fileName == QLatin1String("NotoSansCJK-Regular.otf"))
+        return "NotoSansCJK";
+    return "DejaVuSans";
+}
+
+QByteArray loadBundledFontProgram(const QString &fileName)
+{
+    QFile resourceFont(QStringLiteral(":/fonts/%1").arg(fileName));
+    if (resourceFont.open(QIODevice::ReadOnly))
+        return resourceFont.readAll();
+
+    QDir dir(QCoreApplication::applicationDirPath());
+    for (int i = 0; i < 8; ++i) {
+        const QString candidate = dir.absoluteFilePath(
+            QStringLiteral("resources/fonts/%1").arg(fileName));
+        QFile fontFile(candidate);
+        if (fontFile.open(QIODevice::ReadOnly))
+            return fontFile.readAll();
+        if (!dir.cdUp())
+            break;
+    }
+
+    QFile sourceFont(QStringLiteral("resources/fonts/%1").arg(fileName));
+    if (sourceFont.open(QIODevice::ReadOnly))
+        return sourceFont.readAll();
+
+    return {};
+}
+
+const QByteArray &bundledFontProgram(const QString &fileName)
+{
+    static const QByteArray dejavu = loadBundledFontProgram(QStringLiteral("DejaVuSans.ttf"));
+    static const QByteArray arabic = loadBundledFontProgram(QStringLiteral("NotoSansArabic-Regular.ttf"));
+    static const QByteArray cjk = loadBundledFontProgram(QStringLiteral("NotoSansCJK-Regular.otf"));
+
+    if (fileName == QLatin1String("NotoSansArabic-Regular.ttf"))
+        return arabic;
+    if (fileName == QLatin1String("NotoSansCJK-Regular.otf"))
+        return cjk;
+    return dejavu;
+}
+
+QByteArray encodeIdentityHGlyphs(fz_context *ctx, fz_font *font, const QString &text)
+{
+    QByteArray output;
+    const QVector<uint> codepoints = text.toUcs4();
+    output.reserve(codepoints.size() * 2);
+
+    for (uint codepoint : codepoints) {
+        int gid = fz_encode_character(ctx, font, static_cast<int>(codepoint));
+        if (gid <= 0)
+            gid = fz_encode_character(ctx, font, '?');
+        if (gid <= 0)
+            return {};
+
+        output.append(char((gid >> 8) & 0xFF));
+        output.append(char(gid & 0xFF));
+    }
+
+    return output;
 }
 
 } // namespace
@@ -92,8 +186,25 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
     fz_font *font = nullptr;
     fz_try(ctx)
     {
-        font = fz_new_base14_font(ctx, "Helvetica");
-        pdf_obj *fontRef = pdf_add_simple_font(ctx, doc, font, PDF_SIMPLE_ENCODING_LATIN);
+        const QString fallbackFontFileName = bundledFontFileNameForText(newText);
+        const QByteArray &fallbackFontProgram = winAnsi ? QByteArray() : bundledFontProgram(fallbackFontFileName);
+
+        if (winAnsi) {
+            font = fz_new_base14_font(ctx, "Helvetica");
+        } else if (!fallbackFontProgram.isEmpty()) {
+            font = fz_new_font_from_memory(ctx,
+                                           bundledFontNameForFileName(fallbackFontFileName),
+                                           reinterpret_cast<const unsigned char *>(fallbackFontProgram.constData()),
+                                           static_cast<int>(fallbackFontProgram.size()),
+                                           0,
+                                           0);
+        } else {
+            font = fz_new_base14_font(ctx, "Helvetica");
+        }
+
+        pdf_obj *fontRef = winAnsi
+            ? pdf_add_simple_font(ctx, doc, font, PDF_SIMPLE_ENCODING_LATIN)
+            : pdf_add_cid_font(ctx, doc, font);
 
         QString resourceName;
         for (int i = 0; i < 1000; ++i) {
@@ -112,15 +223,19 @@ PdfFontWritePlan PdfFontResourceWriter::ensureFontForText(fz_context *ctx,
             fz_throw(ctx, FZ_ERROR_GENERIC, "No free font resource name available.");
 
         plan.resourceName = resourceName;
-        plan.debugFontName = QStringLiteral("Helvetica");
+        plan.debugFontName = winAnsi ? QStringLiteral("Helvetica") : fallbackFontFileName;
         plan.winAnsi = winAnsi;
+        plan.identityH = !winAnsi;
         plan.hexString = !plan.winAnsi;
         plan.fallbackFont = true;
 
         if (plan.winAnsi)
             plan.encodedText = encodeWinAnsi(newText);
         else
-            plan.encodedText = encodeUtf16Be(newText);
+            plan.encodedText = encodeIdentityHGlyphs(ctx, font, newText);
+
+        if (plan.encodedText.isEmpty())
+            fz_throw(ctx, FZ_ERROR_GENERIC, "Fallback font could not encode replacement text.");
     }
     fz_always(ctx)
     {

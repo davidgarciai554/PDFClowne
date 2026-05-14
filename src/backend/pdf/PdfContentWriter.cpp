@@ -60,46 +60,11 @@ QByteArray PdfContentWriter::buildRedactionCoverStream(const PdfRun &run,
                                                        qreal pageHeight,
                                                        const QString &editId) const
 {
-    if (run.glyphs.isEmpty())
-        return {};
-
-    const PdfGlyph &first = run.glyphs.constFirst();
-    const qreal fontSize = std::max<qreal>(1.0, first.fontSize);
-    const QRectF visualRect = unionGlyphBoxes(run.glyphs, 0, run.glyphs.size()).normalized();
-    const QRectF expandedVisualRect = expandVisualRedactionRect(visualRect, fontSize);
-    const QRectF pdfRect = visualRectToPdfRect(expandedVisualRect, pageHeight);
-
-    if (saveTraceEnabled()) {
-        qInfo().noquote()
-            << QStringLiteral("[PDF_EXPORT_REDACT] pageIndex=%1 editId=%2 visualRectReceived=(%3,%4,%5,%6) pdfRedactionRect=(%7,%8,%9,%10) pageHeight=%11 paddingApplied=true coordinateSpace=PdfUserSpace originalGlyphs=%12")
-                   .arg(first.pageIndex)
-                   .arg(editId)
-                   .arg(visualRect.x())
-                   .arg(visualRect.y())
-                   .arg(visualRect.width())
-                   .arg(visualRect.height())
-                   .arg(pdfRect.x())
-                   .arg(pdfRect.y())
-                   .arg(pdfRect.width())
-                   .arg(pdfRect.height())
-                   .arg(pageHeight)
-                   .arg(run.glyphs.size());
-    }
-
-    QByteArray stream;
-    stream.append("q\n");
-    stream.append("1 1 1 rg\n");
-    stream.append(number(pdfRect.left()));
-    stream.append(" ");
-    stream.append(number(pdfRect.top()));
-    stream.append(" ");
-    stream.append(number(pdfRect.width()));
-    stream.append(" ");
-    stream.append(number(pdfRect.height()));
-    stream.append(" re\n");
-    stream.append("f\n");
-    stream.append("Q\n");
-    return stream;
+    Q_UNUSED(run)
+    Q_UNUSED(pageHeight)
+    if (saveTraceEnabled())
+        qInfo().noquote() << QStringLiteral("[PDF_EXPORT_REDACT] coverStreamDisabled editId=%1").arg(editId);
+    return {};
 }
 
 QByteArray PdfContentWriter::escapedPdfBytes(const QByteArray &text)

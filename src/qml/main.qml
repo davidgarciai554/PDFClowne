@@ -217,6 +217,20 @@ ApplicationWindow {
         }
 
         function onSaveError(message) {
+            var state = window.pendingEditingSaveState
+
+            console.log("[CTRL_S_SAVE] onSaveError message=", message,
+                        "stateExists=", state !== null,
+                        "pdfDocumentWasCleared=", state ? state.pdfDocumentWasCleared : false)
+
+            if (state && state.pdfDocumentWasCleared && state.sourcePath && state.sourcePath.length > 0) {
+                pdfDocument.clear()
+                pdfDocument.load(state.sourcePath, state.password || "")
+            }
+
+            if (state && state.sourcePath && state.sourcePath.length > 0)
+                setDocumentSaveInProgress(state.sourcePath, false)
+
             window.pendingEditingSaveTarget = ""
             window.pendingEditingSaveState = null
             window.saveMessage = message
@@ -448,7 +462,7 @@ ApplicationWindow {
                             if (closeMode === "application") {
                                 var allSaved = true
                                 for (var i = 0; i < documentModel.count; ++i) {
-                                    if (documentHasPendingChanges(i) && !saveDocumentChanges(i, documentModel.get(i).path, false)) {
+                                    if (documentHasPendingChanges(i) && !saveDocumentChanges(i, documentModel.get(i).path, true)) {
                                         allSaved = false
                                         break
                                     }
@@ -459,7 +473,7 @@ ApplicationWindow {
                                 }
                             } else if (saveDocumentChanges(closeIndex,
                                                             documentModel.get(closeIndex).path,
-                                                            false)) {
+                                                            true)) {
                                 performCloseDocumentAt(closeIndex)
                             }
                         }
@@ -1054,7 +1068,11 @@ ApplicationWindow {
     }
 
     Shortcut { sequence: "Ctrl+O"; onActivated: fileDialog.open() }
-    Shortcut { sequence: "Ctrl+S"; enabled: window.activeDocumentHasPendingChanges(); onActivated: window.saveActiveDocumentRotated() }
+    Shortcut {
+        sequence: "Ctrl+S"
+        enabled: window.hasActiveDocument
+        onActivated: window.saveActiveDocumentRotated()
+    }
     Shortcut { sequence: "Ctrl+Shift+S"; enabled: window.activeDocumentHasPendingChanges(); onActivated: saveRotatedDialog.open() }
     Shortcut { sequence: "Ctrl+R"; enabled: window.hasActiveDocument; onActivated: window.refreshActiveDocumentFromDisk() }
     Shortcut { sequence: "Ctrl+H"; onActivated: window.openHomeScreen() }
@@ -2125,7 +2143,19 @@ ApplicationWindow {
     }
 
     function activeDocumentHasPendingChanges() {
-        return documentHasPendingChanges(activeDocumentIndex)
+        if (!hasActiveDocument)
+            return false
+
+        if (documentHasPendingChanges(activeDocumentIndex))
+            return true
+
+        if (editingController
+                && editingControllerFilePath.length > 0
+                && isSameFilePath(editingControllerFilePath, documentModel.get(activeDocumentIndex).path)
+                && (editingController.hasPendingEdits || editingController.active))
+            return true
+
+        return false
     }
 
     function activeDocumentCanUndoEdits() {
@@ -2650,14 +2680,17 @@ ApplicationWindow {
         return false
     }
 
-    function captureActiveViewerStateForEditingSave(targetPath) {
-        if (!hasActiveDocument)
+    function captureActiveViewerStateForEditingSave(index, targetPath, overwriteCurrent) {
+        if (index < 0 || index >= documentModel.count)
             return null
 
         return {
-            oldPath: String(documentModel.get(activeDocumentIndex).path || ""),
+            documentIndex: index,
+            oldPath: String(documentModel.get(index).path || ""),
             targetPath: String(targetPath || ""),
+            overwriteCurrent: !!overwriteCurrent,
             activePageIndex: activePageIndex,
+            pageIndex: activePageIndex,
             zoom: viewerZoom,
             layoutMode: layoutMode,
             zoomMode: zoomMode,
@@ -2667,150 +2700,241 @@ ApplicationWindow {
             pageSpacing: pageSpacing,
             viewMode: viewMode,
             topToolbarMenu: topToolbarMenu,
-            selectedBlockId: editingController ? String(editingController.selectedBlockId || "") : ""
+            selectedBlockId: editingController ? String(editingController.selectedBlockId || "") : "",
+            alreadyReleased: false,
+            pdfDocumentWasCleared: false,
+            sourcePath: String(documentModel.get(index).path || ""),
+            password: pdfDocument ? pdfDocument.password : ""
         }
+    }
+
+    function releasePdfHandlesBeforeInPlaceEditingSave(index, sourcePath, state) {
+        if (index < 0 || index >= documentModel.count)
+            return false
+
+        var sessionId = Number(documentModel.get(index).renderSessionId || 0)
+
+        console.log("[CTRL_S_SAVE] releasePdfHandlesBeforeInPlaceEditingSave sourcePath=", sourcePath,
+                    "sessionId=", sessionId,
+                    "pdfDocumentLoaded=", pdfDocument ? pdfDocument.isLoaded : false,
+                    "pdfDocumentPath=", pdfDocument ? pdfDocument.filePath : "")
+
+        documentSearchController.cancelSearchSync()
+        setDocumentSaveInProgress(sourcePath, true)
+
+        documentRenderController.releaseDocumentSync(sourcePath, sessionId)
+
+        if (state) {
+            state.alreadyReleased = true
+            state.pdfDocumentWasCleared = false
+            state.sourcePath = sourcePath
+            state.password = pdfDocument ? pdfDocument.password : ""
+        }
+
+        if (index === activeDocumentIndex
+                && pdfDocument
+                && pdfDocument.isLoaded
+                && isSameFilePath(pdfDocument.filePath, sourcePath)) {
+            console.log("[CTRL_S_SAVE] clearing PdfDocument before native overwrite")
+            pdfDocument.clear()
+            if (state)
+                state.pdfDocumentWasCleared = true
+        }
+
+        return true
     }
 
     function completeEditingControllerSave(outputPath) {
-        var target = localPathFromUrl(outputPath || pendingEditingSaveTarget)
-        var state = pendingEditingSaveState || captureActiveViewerStateForEditingSave(target)
+        var state = pendingEditingSaveState
+        var targetPath = localPathFromUrl(pendingEditingSaveTarget.length > 0 ? pendingEditingSaveTarget : outputPath)
+        console.log("[CTRL_S_SAVE] completeEditingControllerSave outputPath=", outputPath,
+                    "targetPath=", targetPath,
+                    "stateExists=", state !== null,
+                    "alreadyReleased=", state ? state.alreadyReleased : false,
+                    "pdfDocumentWasCleared=", state ? state.pdfDocumentWasCleared : false)
         pendingEditingSaveTarget = ""
         pendingEditingSaveState = null
 
-        if (!hasActiveDocument || target.length === 0)
+        if (!state) {
+            if (hasActiveDocument) {
+                pdfDocument.clear()
+                pdfDocument.load(targetPath, "")
+            }
+            saveMessage = qsTr("PDF guardado")
+            return
+        }
+
+        var index = Number(state.documentIndex)
+        if (index < 0 || index >= documentModel.count)
+            index = activeDocumentIndex
+        if (index < 0 || index >= documentModel.count)
             return
 
-        var index = activeDocumentIndex
-        var oldPath = state ? String(state.oldPath || documentModel.get(index).path || "") : String(documentModel.get(index).path || "")
+        var oldPath = String(documentModel.get(index).path || "")
         var oldSessionId = Number(documentModel.get(index).renderSessionId || 0)
+
         documentSearchController.cancelSearchSync()
+
         if (oldPath.length > 0) {
-            documentRenderController.releaseDocumentSync(oldPath, oldSessionId)
+            if (!(state && state.alreadyReleased))
+                documentRenderController.releaseDocumentSync(oldPath, oldSessionId)
+
             setDocumentSaveInProgress(oldPath, false)
         }
 
-        if (!loadPdfWithPasswordPrompt(target, documentModel.get(index).password || "")) {
-            saveMessage = qsTr("El PDF se guardó, pero no se pudo reabrir la copia.")
-            return
+        var sessionId = ++renderSessionSerial
+
+        documentModel.setProperty(index, "path", targetPath)
+        documentModel.setProperty(index, "renderSessionId", sessionId)
+        documentModel.setProperty(index, "pendingChanges", false)
+
+        if (index === activeDocumentIndex) {
+            console.log("[CTRL_S_SAVE] reloading saved PDF targetPath=", targetPath)
+
+            pdfDocument.clear()
+
+            var reloadOk = pdfDocument.load(targetPath, state.password || "")
+            if (!reloadOk) {
+                saveMessage = qsTr("PDF guardado, pero no se pudo recargar automáticamente.")
+                return
+            }
+
+            var sources = loadedPageSources()
+            var thumbnails = loadedThumbnailSources()
+            documentModel.setProperty(index, "title", pdfDocument.title)
+            documentModel.setProperty(index, "password", pdfDocument.password)
+            documentModel.setProperty(index, "previewSource", pdfDocument.previewSource)
+            documentModel.setProperty(index, "pageSourcesJson", JSON.stringify(sources))
+            documentModel.setProperty(index, "thumbnailSourcesJson", JSON.stringify(thumbnails))
+            documentModel.setProperty(index, "pageSizesJson", pdfDocument.pageSizesJson)
+            documentModel.setProperty(index, "outlineJson", pdfDocument.outlineJson)
+            documentModel.setProperty(index, "pageLinksJson", pdfDocument.pageLinksJson)
+            documentModel.setProperty(index, "pageCount", pdfDocument.pageCount)
+            documentModel.setProperty(index, "fileSizeBytes", pdfDocument.fileSizeBytes)
+            documentModel.setProperty(index, "pageTextCacheJson", "{}")
+            documentModel.setProperty(index, "searchResultsJson", "[]")
+            documentModel.setProperty(index, "activeSearchResultIndex", -1)
+            documentModel.setProperty(index, "searchInProgress", false)
+            documentRenderController.markDocumentOpened(targetPath, sessionId, pdfDocument.password)
+
+            editingControllerFilePath = ""
+            editingControllerExtractedPage = -1
+
+            if (editingController) {
+                editingController.closeDocument()
+                editingController.loadDocumentWithPassword(targetPath, state.password || "")
+            }
+
+            Qt.callLater(function() {
+                requestEditExtractionForActivePage()
+                maintainActiveDocumentRenderWindow(true)
+            })
         }
 
-        var sources = loadedPageSources()
-        var thumbnails = loadedThumbnailSources()
-        var sessionId = ++renderSessionSerial
-        documentModel.setProperty(index, "path", pdfDocument.filePath)
-        documentModel.setProperty(index, "title", pdfDocument.title)
-        documentModel.setProperty(index, "password", pdfDocument.password)
-        documentModel.setProperty(index, "previewSource", pdfDocument.previewSource)
-        documentModel.setProperty(index, "pageSourcesJson", JSON.stringify(sources))
-        documentModel.setProperty(index, "thumbnailSourcesJson", JSON.stringify(thumbnails))
-        documentModel.setProperty(index, "pageSizesJson", pdfDocument.pageSizesJson)
-        documentModel.setProperty(index, "outlineJson", pdfDocument.outlineJson)
-        documentModel.setProperty(index, "pageLinksJson", pdfDocument.pageLinksJson)
-        documentModel.setProperty(index, "pageCount", pdfDocument.pageCount)
-        documentModel.setProperty(index, "fileSizeBytes", pdfDocument.fileSizeBytes)
-        documentModel.setProperty(index, "pageOrderJson", "[]")
-        documentModel.setProperty(index, "pageRotationsJson", "[]")
-        documentModel.setProperty(index, "editAnnotationsJson", "[]")
-        documentModel.setProperty(index, "editUndoJson", "[]")
-        documentModel.setProperty(index, "editRedoJson", "[]")
-        documentModel.setProperty(index, "zoom", state ? state.zoom : viewerZoom)
-        documentModel.setProperty(index, "layoutMode", state ? state.layoutMode : layoutMode)
-        documentModel.setProperty(index, "zoomMode", state ? state.zoomMode : zoomMode)
-        documentModel.setProperty(index, "navigationPanelVisible", state ? state.navigationPanelVisible : navigationPanelVisible)
-        documentModel.setProperty(index, "sidePanelMode", state ? state.sidePanelMode : navigationSidePanelMode)
-        documentModel.setProperty(index, "snapToPage", state ? state.snapToPage : pageSnapEnabled)
-        documentModel.setProperty(index, "pageSpacing", state ? state.pageSpacing : pageSpacing)
-        documentModel.setProperty(index, "activePageIndex", Math.min(state ? state.activePageIndex : activePageIndex,
-                                                                     Math.max(0, pdfDocument.pageCount - 1)))
-        documentModel.setProperty(index, "renderSessionId", sessionId)
-        documentModel.setProperty(index, "pageTextCacheJson", "{}")
-        documentModel.setProperty(index, "searchResultsJson", "[]")
-        documentModel.setProperty(index, "activeSearchResultIndex", -1)
-        documentModel.setProperty(index, "searchInProgress", false)
-        documentRenderController.markDocumentOpened(pdfDocument.filePath, sessionId, pdfDocument.password)
-        editingControllerExtractedPage = -1
-        editingControllerFilePath = ""
-        if (editingController)
-            editingController.closeDocument()
-        setActiveDocument(index)
-        if (editingController) {
-            editingController.loadDocumentWithPassword(pdfDocument.filePath, pdfDocument.password || "")
-            editingController.extractPage(activePageIndex)
-            editingControllerFilePath = pdfDocument.filePath
-            editingControllerExtractedPage = activePageIndex
-        }
-        if (state) {
-            topToolbarMenu = state.topToolbarMenu || topToolbarMenu
-            viewMode = state.viewMode || viewMode
-        }
-        jumpToPageRequested(activePageIndex)
-        if (viewMode === "edit")
-            Qt.callLater(function() { requestEditExtractionForActivePage() })
-        saveMessage = qsTr("Guardado: ") + fileNameFromPath(target)
-        saveCurrentSession(true)
+        saveMessage = qsTr("PDF guardado")
     }
 
-    function saveDocumentChanges(index, target, refreshAfterSave) {
-        if (index === activeDocumentIndex
-                && editingController
-                && editingController.ready
-                && (editingController.hasPendingEdits || editingController.active)) {
-            var targetPath = localPathFromUrl(target)
-            var overwriteCurrent = isSameFilePath(documentModel.get(index).path, targetPath)
-            var sessionId = Number(documentModel.get(index).renderSessionId || 0)
-            var password = documentModel.get(index).password || ""
-            pendingEditingSaveTarget = targetPath
-            pendingEditingSaveState = captureActiveViewerStateForEditingSave(targetPath)
-            if (overwriteCurrent) {
-                documentSearchController.cancelSearchSync()
-                setDocumentSaveInProgress(documentModel.get(index).path, true)
-                documentRenderController.releaseDocumentSync(documentModel.get(index).path, sessionId)
-            }
-            if (!editingController.saveDocument(targetPath, overwriteCurrent)) {
-                if (overwriteCurrent) {
-                    setDocumentSaveInProgress(documentModel.get(index).path, false)
-                    restoreDocumentAfterFailedSave(index, password, sessionId)
+    function saveDocumentChanges(index, targetPath, requestedOverwriteCurrent) {
+        if (index < 0 || index >= documentModel.count)
+            return false
+
+        targetPath = localPathFromUrl(targetPath)
+        if (!targetPath || targetPath.length === 0)
+            return false
+
+        var sourcePath = documentModel.get(index).path
+        var overwriteCurrent = requestedOverwriteCurrent || isSameFilePath(sourcePath, targetPath)
+
+        var editFilePath = editingController ? editingController.filePath : ""
+        var editFilePathMatches = editingController
+                && (
+                    editFilePath.length === 0
+                    || isSameFilePath(editFilePath, sourcePath)
+                    || isSameFilePath(editingControllerFilePath, sourcePath)
+                )
+
+        var nativeTextEditCandidate = editingController
+                && editFilePathMatches
+                && (editingController.hasPendingEdits || editingController.active)
+
+        console.log("[CTRL_S_SAVE] saveDocumentChanges sourcePath=", sourcePath,
+                    "targetPath=", targetPath,
+                    "requestedOverwriteCurrent=", requestedOverwriteCurrent,
+                    "overwriteCurrent=", overwriteCurrent,
+                    "editFilePath=", editFilePath,
+                    "editingControllerFilePath=", editingControllerFilePath,
+                    "nativeTextEditCandidate=", nativeTextEditCandidate,
+                    "editingHasPending=", editingController ? editingController.hasPendingEdits : false,
+                    "editingActive=", editingController ? editingController.active : false)
+
+        if (nativeTextEditCandidate) {
+            if (pdfViewer && pdfViewer.commitActiveEditor)
+                pdfViewer.commitActiveEditor()
+
+            if (editingController.active)
+                editingController.commitActiveText("SaveRequestedFromMain")
+
+            console.log("[CTRL_S_SAVE] after commit editingHasPending=",
+                        editingController ? editingController.hasPendingEdits : false,
+                        "editingActive=", editingController ? editingController.active : false)
+
+            if (editingController.hasPendingEdits) {
+                pendingEditingSaveTarget = targetPath
+                pendingEditSaveIncremental = overwriteCurrent
+                pendingEditingSaveState = captureActiveViewerStateForEditingSave(index, targetPath, overwriteCurrent)
+                pendingEditingSaveState.alreadyReleased = false
+                pendingEditingSaveState.pdfDocumentWasCleared = false
+                pendingEditingSaveState.sourcePath = sourcePath
+                pendingEditingSaveState.password = pdfDocument ? pdfDocument.password : ""
+
+                if (overwriteCurrent)
+                    releasePdfHandlesBeforeInPlaceEditingSave(index, sourcePath, pendingEditingSaveState)
+
+                if (overwriteCurrent && pendingEditingSaveState.pdfDocumentWasCleared)
+                    pdfDocument.clear()
+
+                console.log("[CTRL_S_SAVE] calling editingController.saveDocument targetPath=", targetPath,
+                            "overwriteCurrent=", overwriteCurrent)
+
+                var editSaved = editingController.saveDocument(targetPath, overwriteCurrent)
+
+                if (!editSaved) {
+                    console.log("[CTRL_S_SAVE] editingController.saveDocument returned false")
+
+                    if (overwriteCurrent) {
+                        setDocumentSaveInProgress(sourcePath, false)
+
+                        if (pendingEditingSaveState
+                                && pendingEditingSaveState.pdfDocumentWasCleared
+                                && sourcePath.length > 0) {
+                            console.log("[CTRL_S_SAVE] reopening original PDF after failed native save")
+                            pdfDocument.load(sourcePath, pendingEditingSaveState.password || "")
+                        }
+                    }
+
+                    pendingEditingSaveTarget = ""
+                    pendingEditingSaveState = null
+                    return false
                 }
-                pendingEditingSaveTarget = ""
-                pendingEditingSaveState = null
-                return false
+
+                return true
             }
-            return true
         }
 
-        return performDocumentSaveTransaction(index, target, refreshAfterSave)
+        return performDocumentSaveTransaction(index, targetPath, overwriteCurrent)
     }
 
     function saveActiveDocumentAsRotated(target) {
         if (!hasActiveDocument)
-            return
+            return false
 
         var targetPath = localPathFromUrl(target)
-        if (editingController
-                && editingController.ready
-                && (editingController.hasPendingEdits || editingController.active)) {
-            pendingEditingSaveTarget = targetPath
-            pendingEditingSaveState = captureActiveViewerStateForEditingSave(targetPath)
-            var overwriteCurrent = isSameFilePath(documentModel.get(activeDocumentIndex).path, targetPath)
-            var sessionId = Number(documentModel.get(activeDocumentIndex).renderSessionId || 0)
-            var password = documentModel.get(activeDocumentIndex).password || ""
-            if (overwriteCurrent) {
-                documentSearchController.cancelSearchSync()
-                setDocumentSaveInProgress(documentModel.get(activeDocumentIndex).path, true)
-                documentRenderController.releaseDocumentSync(documentModel.get(activeDocumentIndex).path, sessionId)
-            }
-            if (!editingController.saveDocument(targetPath, pendingEditSaveIncremental)) {
-                if (overwriteCurrent) {
-                    setDocumentSaveInProgress(documentModel.get(activeDocumentIndex).path, false)
-                    restoreDocumentAfterFailedSave(activeDocumentIndex, password, sessionId)
-                }
-                pendingEditingSaveTarget = ""
-                pendingEditingSaveState = null
-            }
-            return
-        }
+        if (!targetPath || targetPath.length === 0)
+            return false
 
-        saveDocumentChanges(activeDocumentIndex, targetPath, isSameFilePath(documentModel.get(activeDocumentIndex).path, targetPath))
+        var currentPath = documentModel.get(activeDocumentIndex).path
+        var overwriteCurrent = isSameFilePath(currentPath, targetPath)
+        return saveDocumentChanges(activeDocumentIndex, targetPath, overwriteCurrent)
     }
 
     function refreshActiveDocumentFromDisk() {
@@ -3902,9 +4026,12 @@ ApplicationWindow {
 
     function saveActiveDocumentRotated() {
         if (!hasActiveDocument)
-            return
+            return false
 
-        saveDocumentChanges(activeDocumentIndex, documentModel.get(activeDocumentIndex).path, true)
+        var currentPath = documentModel.get(activeDocumentIndex).path
+        console.log("[CTRL_S_SAVE] saveActiveDocumentRotated currentPath=", currentPath)
+
+        return saveDocumentChanges(activeDocumentIndex, currentPath, true)
     }
 
     function zoomIn() {
